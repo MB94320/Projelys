@@ -4,7 +4,7 @@ import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-const SESSION_COOKIE_NAME = "projelys_session";
+export const SESSION_COOKIE_NAME = "projelys_session";
 const SESSION_DURATION_DAYS = 7;
 
 export type AuthUser = {
@@ -65,21 +65,16 @@ export async function loginWithCredentials(email: string, password: string) {
     },
   });
 
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    expires: expiresAt,
-    path: "/",
-  });
-
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-  } satisfies AuthUser;
+    token,
+    expiresAt,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    } satisfies AuthUser,
+  };
 }
 
 export async function logout() {
@@ -91,8 +86,6 @@ export async function logout() {
       where: { token },
     });
   }
-
-  cookieStore.delete(SESSION_COOKIE_NAME);
 }
 
 export async function getCurrentUser() {
@@ -112,12 +105,10 @@ export async function getCurrentUser() {
     await prisma.session.delete({
       where: { token },
     });
-    cookieStore.delete(SESSION_COOKIE_NAME);
     return null;
   }
 
   if (!session.user.isActive) {
-    cookieStore.delete(SESSION_COOKIE_NAME);
     return null;
   }
 
