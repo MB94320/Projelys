@@ -44,8 +44,10 @@ export async function createPasswordHash(password: string) {
 }
 
 export async function loginWithCredentials(email: string, password: string) {
+  const normalizedEmail = email.toLowerCase().trim();
+
   const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase().trim() },
+    where: { email: normalizedEmail },
   });
 
   if (!user || !user.isActive) return null;
@@ -81,11 +83,11 @@ export async function logout() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
-  if (token) {
-    await prisma.session.deleteMany({
-      where: { token },
-    });
-  }
+  if (!token) return;
+
+  await prisma.session.deleteMany({
+    where: { token },
+  });
 }
 
 export async function getCurrentUser() {
@@ -102,7 +104,7 @@ export async function getCurrentUser() {
   if (!session) return null;
 
   if (session.expiresAt < new Date()) {
-    await prisma.session.delete({
+    await prisma.session.deleteMany({
       where: { token },
     });
     return null;
@@ -121,8 +123,7 @@ export async function getCurrentUser() {
 }
 
 export async function requireUser() {
-  const user = await getCurrentUser();
-  return user;
+  return getCurrentUser();
 }
 
 export async function requireAdmin() {
