@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Absence" ALTER COLUMN "daysCount" SET DATA TYPE DOUBLE PRECISION;

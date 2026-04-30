@@ -1,0 +1,467 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Project {
+  id                 Int     @id @default(autoincrement())
+  projectNumber      String?
+  clientName         String?
+  projectManagerName String?
+  titleProject       String?
+
+  status        String?
+  startDate     DateTime?
+  endDate       DateTime?
+  estimatedDate DateTime?
+  
+
+  progressPercent Int?
+  riskCriticality String?
+
+  plannedLoadDays  Int?
+  consumedLoadDays Int?
+
+  comments String?
+
+  tasks   ProjectTask[]
+  actions Action[]
+  risks   Risk[]
+  audits  Audit[]
+
+  // --- Qualité ---
+  deliverables      Deliverable[]
+  nonConformities   NonConformity[]
+  customerIssues    CustomerIssue[]
+  qualityActions    QualityAction[]
+  qualityChecklists ProjectQualityChecklist[]
+
+  openRiskCount    Int? @default(0)
+  highRiskCount    Int? @default(0)
+  opportunityCount Int? @default(0)
+
+  // --- KPIs livrables / NC / audits stockés sur le projet ---
+  deliverablesCount        Int    @default(0)
+  deliveredCount           Int    @default(0)
+  deliverablesOtdRate      Float  @default(0) // 0–100
+  deliverablesDodRate      Float  @default(0) // 0–100
+  deliverablesOqdRate      Float  @default(0) // 0–100
+
+  nonConformitiesCount     Int    @default(0)
+  openNonConformitiesCount Int    @default(0)
+  criticalNcRate           Float  @default(0) // 0–100
+  avgNcClosureDelayDays    Float  @default(0)
+
+  previousAuditRate        Float  @default(0) // 0–100
+  currentAuditRate         Float  @default(0) // 0–100
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectTask {
+  id        Int     @id @default(autoincrement())
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String? @db.Text
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  plannedWorkHours  Int @default(0)
+  consumedWorkHours Int @default(0)
+
+  progressPercent Int     @default(0)
+  status          String  @default("Planifiée")
+  assigneeName    String?
+  role            String? // ex: Chef de projet, Consultant, Développeur...
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Resource {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  role        String?
+  weeklyHours Int     @default(35)
+  isActive    Boolean @default(true)
+
+  absences Absence[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Absence {
+  id         Int       @id @default(autoincrement())
+  resourceId Int?
+  resource   Resource? @relation(fields: [resourceId], references: [id])
+  type       String
+  startDate  DateTime
+  endDate    DateTime
+  daysCount  Float
+  duration   String
+  comment    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Risk {
+  id        Int     @id @default(autoincrement())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+
+  ref        String?
+  title      String
+  nature     String? // "Risque" ou "Opportunité"
+  clientName String?
+  category   String?
+
+  createdAt  DateTime  @default(now())
+  statusDate DateTime?
+  status     String    @default("Ouvert")
+
+  initialEvalDate        DateTime?
+  initialImpact          Int?
+  initialProbability     Int?
+  initialScore           Int?
+  initialLevel           String?
+  initialPotentialImpact Float?
+  initialValuatedImpact  Float?
+  initialStrategy        String?
+
+  updateEvalDate        DateTime?
+  updateImpact          Int?
+  updateProbability     Int?
+  updateScore           Int?
+  updateLevel           String?
+  updatePotentialImpact Float?
+  updateValuatedImpact  Float?
+  updateStrategy        String?
+
+  cause    String? @db.Text
+  comments String? @db.Text
+
+  actions Action[] @relation("RiskActions")
+
+  updatedAt DateTime @updatedAt
+}
+
+model Action {
+  id        Int      @id @default(autoincrement())
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
+  risk      Risk?    @relation("RiskActions", fields: [riskId], references: [id])
+  riskId    Int?
+
+  title       String
+  description String? @db.Text
+
+  origin   String?
+  priority String?
+  owner    String?
+
+  status   String @default("Ouverte")
+  progress Int    @default(0)
+
+  createdAt  DateTime  @default(now())
+  startDate  DateTime?
+  dueDate    DateTime?
+  closedDate DateTime?
+
+  efficience String?
+
+  updatedAt DateTime @updatedAt
+
+  // lien inverse vers QualityAction (plan d'action Qualité lié à cette action globale)
+  qualityActions QualityAction[]
+}
+
+//// ===================== QUALITE =====================
+
+// Livrables projet
+model Deliverable {
+  id        Int     @id @default(autoincrement())
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  reference       String? @db.VarChar(50)
+  title           String
+  type            String?
+  description     String?
+  owner           String?
+  clientReference String?
+  internalVersion String?
+  clientVersion   String?
+
+  // Dates métier
+  contractualDate DateTime?   // échéance initiale
+  revisedDate     DateTime?   // "Date de fin Màj (échéance revue)"
+  deliveredDate   DateTime?   // Date réalisée
+  validatedDate   DateTime?   // Date validation
+
+  progress           Int?
+
+  status             String  @default("Non commencé")
+  qualityStatus      String?
+  delayCause         String?
+  deliveryIterations Int?
+  validatedBy        String?
+  comments           String?
+  linkDoc            String?
+
+  nonConformities NonConformity[]
+  customerIssues  CustomerIssue[]
+  qualityActions  QualityAction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NonConformity {
+  id        Int     @id @default(autoincrement())
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+
+  // référence auto
+  reference String? @db.VarChar(50)
+
+  deliverableId Int?
+  deliverable   Deliverable? @relation(fields: [deliverableId], references: [id])
+
+  type        String?
+  origin      String?
+  description String
+  severity    String?
+  detectedOn  DateTime?
+  detectedBy  String?
+  dueDate     DateTime?
+  status      String    @default("Ouvert")
+  closedDate  DateTime?
+
+  rootCause        String?
+  immediateAction  String?
+  correctiveAction String?
+  preventiveAction String?
+  comments         String?
+  fncUrl           String?
+  eightDProgress   Int       @default(0) // 0-100 pour 8D phases
+  eightDComment    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        Int?
+  qualityActions   QualityAction[]
+
+  @@index([projectId])
+  @@index([deliverableId])
+  @@index([status])
+  @@index([severity])
+}
+
+// Insatisfactions / retours client
+model CustomerIssue {
+  id        Int     @id @default(autoincrement())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+
+  deliverableId Int?
+  deliverable   Deliverable? @relation(fields: [deliverableId], references: [id])
+
+  date            DateTime?
+  customerContact String?
+  channel         String? // mail, ticket, réunion...
+
+  satisfactionScore Int?
+  isMajorIssue      Boolean @default(false)
+
+  description   String  @db.Text
+  expectation   String? @db.Text
+  responseGiven String? @db.Text
+
+  status String @default("Ouverte") // Ouverte, En cours, Clôturée
+
+  qualityActions QualityAction[]
+
+  createdAt  DateTime  @default(now())
+  closedDate DateTime?
+  updatedAt  DateTime  @updatedAt
+}
+
+// Plan d'action Qualité (lié au plan d'action général)
+model QualityAction {
+  id        Int     @id @default(autoincrement())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+
+  title       String
+  description String? @db.Text
+  category    String? // Préventive, Corrective, Amélioration...
+
+  owner    String?
+  priority String?
+  status   String  @default("Ouverte") // Ouverte, En cours, Terminée
+  progress Int     @default(0)
+
+  startDate  DateTime?
+  dueDate    DateTime?
+  closedDate DateTime?
+
+  // liens vers objets Qualité
+  nonConformityId Int?
+  nonConformity   NonConformity? @relation(fields: [nonConformityId], references: [id])
+
+  customerIssueId Int?
+  customerIssue   CustomerIssue? @relation(fields: [customerIssueId], references: [id])
+
+  deliverableId Int?
+  deliverable   Deliverable? @relation(fields: [deliverableId], references: [id])
+
+  // lien vers Action "générale" existante si tu veux synchroniser
+  globalActionId Int?
+  globalAction   Action? @relation(fields: [globalActionId], references: [id])
+
+  effectiveness String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Template générique ISO 9001 (items de checklist)
+model QualityChecklistTemplateItem {
+  id          Int     @id @default(autoincrement())
+  clause      String // ex: "4.1", "8.5.1", "9.2"
+  category    String // Contexte, Leadership, Planification...
+  title       String
+  expectation String  @db.Text // ce qui est attendu concrètement
+  helpText    String? @db.Text // exemples / précisions
+  order       Int     @default(0)
+
+  projectItems ProjectQualityChecklistItem[]
+}
+
+// Instance de checklist pour un projet (audit interne / client)
+model ProjectQualityChecklist {
+  id        Int     @id @default(autoincrement())
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId Int
+
+  name        String? // ex: "Audit interne ISO 9001 - T1 2026"
+  auditType   String? // Interne, Client, Renouvellement...
+  auditorName String?
+  auditDate   DateTime?
+
+  status String @default("Brouillon") // Brouillon, En cours, Clôturé, Revu
+
+  items ProjectQualityChecklistItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Réponses projet pour chaque item de la checklist ISO
+model ProjectQualityChecklistItem {
+  id Int @id @default(autoincrement())
+
+  checklist   ProjectQualityChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  checklistId Int
+
+  templateItem   QualityChecklistTemplateItem @relation(fields: [templateItemId], references: [id])
+  templateItemId Int
+
+  clause String
+  title  String
+
+  status       String  @default("Non évalué") // Conforme, Non conforme, NA, Non évalué
+  comment      String? @db.Text
+  evidenceLink String? // URL vers preuve
+
+  lastUpdate DateTime @default(now())
+}
+
+model Audit {
+  id                    Int        @id @default(autoincrement())
+  ref                   String     @unique
+
+  projectId             Int
+  project               Project    @relation(fields: [projectId], references: [id])
+
+  evaluationDate        DateTime
+  lastEvaluationDate    DateTime?
+  globalConformityRate  Float      // 0–1
+  previousGlobalRate    Float?     // 0–1
+
+  qualityFollowUp       String?
+  outsourcing           String?
+  xshore                String?
+
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+
+  themes                AuditTheme[]
+  ncFromAuditCount      Int        @default(0)
+  avgActionClosureDelay Int?       // en jours
+}
+
+enum AuditArea {
+  AVV
+  DELIVERY
+}
+
+model AuditTheme {
+  id             Int             @id @default(autoincrement())
+  auditId        Int
+  audit          Audit           @relation(fields: [auditId], references: [id])
+  type           AuditThemeType
+  area           AuditArea
+  conformityRate Float?
+  color          String
+  questions      AuditQuestion[]
+}
+
+model AuditQuestion {
+  id      Int         @id @default(autoincrement())
+  themeId Int
+  theme   AuditTheme  @relation(fields: [themeId], references: [id])
+
+  code    Int         // 1, 2, 3...
+  text    String
+  weight  Int         // poids
+  answer  AuditAnswer @default(NA)
+  comment String?
+}
+
+enum AuditThemeType {
+  REVUE_OPPORTUNITE
+  PILOTAGE_REPONSE
+  REVUE_CONTRAT
+  REVUE_PROPOSITION
+  GESTION_EXIGENCES
+  GESTION_RISQUES_OPPORTUNITES
+  PLANIFICATION
+  PERFORMANCE
+  REUNIONS_COMMUNICATION
+  VERIFICATION_VALIDATION
+  CAPITALISATION
+  GESTION_CONFIGURATION
+  GESTION_DOCUMENTAIRE
+  SECURITE_PERSONNES
+  SECURITE_DONNEES
+  GESTION_RESSOURCES
+  GESTION_SOUS_TRAITANCE
+  GESTION_XSHORE
+  GESTION_NON_CONFORMITES
+  GESTION_INSATISFACTIONS
+  PMP
+}
+
+enum AuditAnswer {
+  OUI
+  NON
+  NA
+}
