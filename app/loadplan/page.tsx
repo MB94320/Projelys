@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-// import { useSearchParams } from "next/navigation"; // supprimé pour éviter l’erreur de build
+import { useSearchParams } from "next/navigation";
 import AppShell from "../components/AppShell";
 import { ChargeVsCapacityChart } from "./ChargeVsCapacityChart";
 import Link from "next/link";
@@ -218,20 +218,11 @@ export default function LoadplanPage() {
   const [includeHolidays, setIncludeHolidays] = useState<boolean>(true);
   const [windowSize, setWindowSize] = useState<number>(12);
 
-  // On lit les query params côté client seulement
-  const [initialProject, setInitialProject] = useState<string | null>(null);
-  const [initialResourceName, setInitialResourceName] = useState<string | null>(
-    null,
-  );
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const p = params.get("projectId");
-    const r = params.get("resourceName");
-    setInitialProject(p);
-    setInitialResourceName(r);
-  }, []);
+
+  const searchParams = useSearchParams();
+  const initialProject = searchParams.get("projectId");
+  const initialResourceName = searchParams.get("resourceName");
 
   const [apiData, setApiData] = useState<LoadplanApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -247,7 +238,7 @@ export default function LoadplanPage() {
     }
   }, [initialProject]);
 
-  // fetch API loadplan quand l'année / filtres init changent
+  // fetch API loadplan quand l'année change
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
@@ -314,6 +305,7 @@ export default function LoadplanPage() {
     return effectiveDays * 7;
   }
 
+
   // -------- dérivés --------
 
   // semaines de la période (déjà filtrées par année côté API)
@@ -338,6 +330,7 @@ export default function LoadplanPage() {
     const end = Math.min(yearWeeks.length, start + size);
     return yearWeeks.slice(start, end);
   }, [yearWeeks, currentWeekId, windowSize]);
+
 
   const allRoles: Role[] = useMemo(() => {
     const set = new Set<Role>();
@@ -574,9 +567,7 @@ export default function LoadplanPage() {
             `Charge moyenne à ${(avgRatio * 100).toFixed(0)}% de la capacité sur ${
               labels.length
             } semaine(s).` +
-            (extra > 0
-              ? ` Dont ${extra} semaine(s) supplémentaire(s) non listée(s).`
-              : ""),
+            (extra > 0 ? ` Dont ${extra} semaine(s) supplémentaire(s) non listée(s).` : ""),
           recommendation:
             "Limiter les nouvelles affectations, déplacer des tâches vers des profils ou semaines moins chargés.",
         });
@@ -593,9 +584,7 @@ export default function LoadplanPage() {
           weeks: shownLabels,
           summary:
             `${labels.length} semaine(s) significativement sous-utilisées.` +
-            (extra > 0
-              ? ` Dont ${extra} semaine(s) supplémentaire(s) non listée(s).`
-              : ""),
+            (extra > 0 ? ` Dont ${extra} semaine(s) supplémentaire(s) non listée(s).` : ""),
           recommendation:
             "Positionner des activités de préparation, tests, documentation, formation ou support.",
         });
@@ -627,6 +616,8 @@ export default function LoadplanPage() {
       totalDays: totalFormationDays,
     };
   }, [filteredAbsences, resources]);
+
+
 
   // -------- export CSV --------
 
@@ -873,7 +864,42 @@ export default function LoadplanPage() {
 
         {/* KPIs 2 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div
+          <div 
+            className="bg-white border border-slate-200 rounded-lg p-4"
+            title="Nombre de semaines où la charge totale dépasse la capacité totale"
+            >
+            <div className="text-xs text-slate-600">
+              Semaines en surcharge
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-rose-600">
+              {globalStats.overloadWeeks}
+            </div>
+          </div>
+          <div 
+            className="bg-white border border-slate-200 rounded-lg p-4"
+            title="Nombre de semaines où la charge totale est en dessous de la capacité totale"
+            >
+            <div className="text-xs text-slate-600">
+              Semaines en sous-charge
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-sky-600">
+              {globalStats.underWeeks}
+            </div>
+          </div>
+          <div 
+            className="bg-white border border-slate-200 rounded-lg p-4"
+            title="Nombre de ressources filtrées"
+            >
+            <div className="text-xs text-slate-600">Ressources filtrées</div>
+            <div className="mt-2 text-2xl font-semibold text-slate-900">
+              {globalStats.nbResources}
+            </div>
+          </div>
+        </div>
+
+        {/* KPIs 3 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div 
             className="bg-white border border-slate-200 rounded-lg p-4"
             title="Charge totale divisée par la capacité totale sur la période filtrée"
           >
@@ -887,10 +913,10 @@ export default function LoadplanPage() {
               Charge totale / capacité totale sur la période.
             </div>
           </div>
-          <div
+          <div 
             className="bg-white border border-slate-200 rounded-lg p-4"
             title="Nombre de ressources dont la charge moyenne est ≥ 95% de leur capacité"
-          >
+            >            
             <div className="text-xs text-slate-600">
               Ressources ≥ 95% de charge
             </div>
@@ -901,10 +927,10 @@ export default function LoadplanPage() {
               Profils proches de la saturation continue.
             </div>
           </div>
-          <div
+          <div 
             className="bg-white border border-slate-200 rounded-lg p-4"
             title="Nombre de ressources dont la charge moyenne est < 50% de leur capacité"
-          >
+            >
             <div className="text-xs text-slate-600">
               Ressources &lt; 50% de charge
             </div>
@@ -965,10 +991,9 @@ export default function LoadplanPage() {
                     className={`border rounded-md p-3 ${alertColor(a.level)}`}
                   >
                     <div className="flex items-start gap-2">
-                      <span
-                        className="mt-0.5 text-lg"
-                        title="Sous-charge significative sur plusieurs semaines"
-                      >
+                      <span 
+                        className="mt-0.5 text-lg" 
+                        title="Sous-charge significative sur plusieurs semaines">
                         🔔
                       </span>
                       <div className="space-y-1">
@@ -1011,10 +1036,9 @@ export default function LoadplanPage() {
                     className={`border rounded-md p-3 ${alertColor(a.level)}`}
                   >
                     <div className="flex items-start gap-2">
-                      <span
-                        className="mt-0.5 text-lg"
-                        title="Surcharge persistante, risque de saturation"
-                      >
+                      <span 
+                        className="mt-0.5 text-lg" 
+                        title="Surcharge persistante, risque de saturation">
                         ⚠️
                       </span>
 
@@ -1205,11 +1229,7 @@ export default function LoadplanPage() {
                             )}`}
                           >
                             <span>{cap}h</span>
-                            {cap === 0 && (
-                              <span className="uppercase tracking-wide">
-                                OFF
-                              </span>
-                            )}
+                            {cap === 0 && <span className="uppercase tracking-wide">OFF</span>}
                           </span>
                         </td>
                       );
@@ -1252,6 +1272,7 @@ export default function LoadplanPage() {
                 {formationStats.totalDays.toFixed(1)} jour(s)
               </span>
             </span>
+
           </div>
 
           <div className="overflow-x-auto mt-3">
@@ -1265,7 +1286,7 @@ export default function LoadplanPage() {
                     Collaborateur
                   </th>
                   <th className="px-3 py-2 text-left font-medium">
-                    Type
+                      Type
                   </th>
                   <th className="px-3 py-2 text-right font-medium">
                     Jours
