@@ -3,6 +3,7 @@ import "server-only";
 import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
+import type { UserRole } from "@prisma/client";
 
 export const SESSION_COOKIE_NAME = "projelys_session";
 const SESSION_DURATION_DAYS = 7;
@@ -11,7 +12,7 @@ export type AuthUser = {
   id: number;
   email: string;
   name: string | null;
-  role: "ADMIN" | "USER";
+  role: UserRole; // ADMIN | FULL | LIMITED (depuis Prisma)
 };
 
 function hashPassword(password: string, salt?: string) {
@@ -27,7 +28,7 @@ function verifyPassword(password: string, storedHash: string) {
   const hashedBuffer = Buffer.from(key, "hex");
   const suppliedBuffer = Buffer.from(
     scryptSync(password, salt, 64).toString("hex"),
-    "hex"
+    "hex",
   );
 
   if (hashedBuffer.length !== suppliedBuffer.length) return false;
