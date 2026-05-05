@@ -4,14 +4,14 @@ import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 
-const SESSION_COOKIE_NAME = "projelys_session";
+export const SESSION_COOKIE_NAME = "projelys_session";
 const SESSION_DURATION_DAYS = 7;
 
 export type AuthUser = {
   id: number;
   email: string;
   name: string | null;
-  role: "ADMIN" | "USER";
+  role: "ADMIN" | "FULL" | "LIMITED";
 };
 
 function hashPassword(password: string, salt?: string) {
@@ -43,9 +43,50 @@ export async function createPasswordHash(password: string) {
   return hashPassword(password);
 }
 
+export async function ensureAdminUser() {
+  const email = String(process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
+  const password = String(process.env.ADMIN_PASSWORD ?? "");
+  const name = String(process.env.ADMIN_NAME ?? "Administrateur").trim();
+
+  if (!email || !password) return;
+
+  const existing = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  const passwordHash = await createPasswordHash(password);
+
+  if (!existing) {
+    await prisma.user.create({
+      data: {
+        email,
+        name,
+        passwordHash,
+        role: "ADMIN",
+        isActive: true,
+      },
+    });
+    return;
+  }
+
+  if (existing.role !== "ADMIN" || !existing.isActive) {
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: {
+        role: "ADMIN",
+        isActive: true,
+      },
+    });
+  }
+}
+
 export async function loginWithCredentials(email: string, password: string) {
+  const normalizedEmail = email.toLowerCase().trim();
+
+  await ensureAdminUser();
+
   const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase().trim() },
+    where: { email: normalizedEmail },
   });
 
   if (!user || !user.isActive) return null;
@@ -65,34 +106,27 @@ export async function loginWithCredentials(email: string, password: string) {
     },
   });
 
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    expires: expiresAt,
-    path: "/",
-  });
-
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-  } satisfies AuthUser;
+    token,
+    expiresAt,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as AuthUser["role"],
+    } satisfies AuthUser,
+  };
 }
 
 export async function logout() {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
-  if (token) {
-    await prisma.session.deleteMany({
-      where: { token },
-    });
-  }
+  if (!token) return;
 
-  cookieStore.delete(SESSION_COOKIE_NAME);
+  await prisma.session.deleteMany({
+    where: { token },
+  });
 }
 
 export async function getCurrentUser() {
@@ -109,15 +143,13 @@ export async function getCurrentUser() {
   if (!session) return null;
 
   if (session.expiresAt < new Date()) {
-    await prisma.session.delete({
+    await prisma.session.deleteMany({
       where: { token },
     });
-    cookieStore.delete(SESSION_COOKIE_NAME);
     return null;
   }
 
   if (!session.user.isActive) {
-    cookieStore.delete(SESSION_COOKIE_NAME);
     return null;
   }
 
@@ -125,13 +157,12 @@ export async function getCurrentUser() {
     id: session.user.id,
     email: session.user.email,
     name: session.user.name,
-    role: session.user.role,
+    role: session.user.role as AuthUser["role"],
   } satisfies AuthUser;
 }
 
 export async function requireUser() {
-  const user = await getCurrentUser();
-  return user;
+  return getCurrentUser();
 }
 
 export async function requireAdmin() {

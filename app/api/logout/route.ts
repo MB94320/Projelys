@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { logout } from "@/app/lib/auth";
 
-export async function POST() {
+async function handleLogout() {
   try {
     await logout();
-    return NextResponse.json({ ok: true });
+
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set("projelys_session", "", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(0),
+      path: "/",
+    });
+
+    return res;
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -12,4 +22,12 @@ export async function POST() {
       { status: 500 }
     );
   }
+}
+
+export async function POST() {
+  return handleLogout();
+}
+
+export async function GET() {
+  return handleLogout();
 }
