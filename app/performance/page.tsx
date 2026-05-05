@@ -1328,40 +1328,55 @@ export default function PerformancePage() {
       pageTitle="Performance opérationnelle"
       pageSubtitle="Synthèse qualité, satisfaction, scoring projet et charge d'équipe."
     >
-      <section className="mb-4 flex flex-wrap items-center gap-2">
-        <button
-          onClick={exportProjectsCsv}
-          className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-        >
-          Export Excel projets
-        </button>
+      <section className="mb-4 flex flex-wrap items-center gap-2 text-xs">
+        {/* Bloc gauche : tous les boutons */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={exportProjectsCsv}
+            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+          >
+            Export Excel projets
+          </button>
 
-        <button
-          onClick={exportTaceCsv}
-          className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
-        >
-          Export Excel TACE
-        </button>
-        
-        <button
-          onClick={() => {
-            setEvaluationDate(
-              new Date().toISOString().slice(0, 10)
-            );
-            setShowSatisfactionModal(true);
-          }}
-          className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
-        >
-          Nouvelle évaluation satisfaction
-        </button>
+          <button
+            onClick={exportTaceCsv}
+            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50"
+          >
+            Export Excel TACE
+          </button>
+          
+          <button
+            onClick={() => {
+              setEvaluationDate(new Date().toISOString().slice(0, 10));
+              setShowSatisfactionModal(true);
+            }}
+            className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white hover:bg-indigo-700"
+          >
+            Nouvelle évaluation satisfaction
+          </button>
 
-        <button
-          onClick={() => setShowPerformanceHelp(true)}
-          className="px-3 py-1.5 text-xs rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700"
-        >
-          Synoptique & méthode
-        </button>
+          <button
+            onClick={() => setShowPerformanceHelp(true)}
+            className="px-3 py-1.5 text-xs rounded-md border border-indigo-200 bg-indigo-50 text-indigo-700"
+          >
+            Synoptique & méthode
+          </button>
+        </div>
 
+        {/* Bouton droite */}
+        <div className="ml-auto">
+          <Link
+            href="/Tutoriel/projelys-performance-tutorial.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          >
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[11px] font-bold text-white dark:bg-indigo-500">
+              ?
+            </span>
+            <span>Tutoriel</span>
+          </Link>
+        </div>
       </section>
 
       <section className="bg-white rounded-lg shadow-sm p-3 border border-slate-200 mb-4">

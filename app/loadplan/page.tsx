@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-// import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import AppShell from "../components/AppShell";
 import { ChargeVsCapacityChart } from "./ChargeVsCapacityChart";
 import Link from "next/link";
 import { ResourceUtilizationChart } from "./ResourceUtilizationChart";
+
+export const dynamic = "force-dynamic";
 
 type Role =
   | "Chef de projet"
@@ -13,18 +15,19 @@ type Role =
   | "Développeur"
   | "Testeur"
   | string;
+
 type WeekId = string;
 
 type ApiProject = {
-  id: string; // p-<id>
+  id: string;
   projectId: number;
-  number: string; // n° projet
-  label: string; // libellé
+  number: string;
+  label: string;
   clientName: string;
 };
 
 type ApiResource = {
-  id: string; // res-<name>
+  id: string;
   name: string;
   roles: string[];
 };
@@ -34,6 +37,7 @@ type ApiLoad = {
   resourceId: string;
   weekId: WeekId;
   hours: number;
+  role: string;
 };
 
 type ApiHoliday = {
@@ -62,9 +66,16 @@ type AlertLevel = "Surcharge" | "Sous-charge";
 type Alert = {
   level: AlertLevel;
   resourceName: string;
-  weeks: string[]; // S49, S50...
+  role?: string;
+  weeks: string[];
   summary: string;
   recommendation: string;
+};
+
+type ResourceRoleRow = {
+  resourceId: string;
+  resourceName: string;
+  role: string;
 };
 
 const BASE_WEEK_CAPACITY = 35;
@@ -98,99 +109,126 @@ function getCurrentWeekId(): WeekId {
 }
 
 function badgeClass(hours: number) {
-  if (hours > OVERLOAD_THRESHOLD) return "bg-rose-100 text-rose-700";
-  if (hours < UNDERLOAD_THRESHOLD) return "bg-sky-100 text-sky-700";
-  return "bg-emerald-100 text-emerald-700";
+  if (hours > OVERLOAD_THRESHOLD)
+    return "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200";
+  if (hours < UNDERLOAD_THRESHOLD)
+    return "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200";
+  return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200";
 }
+
 function capacityBadgeClass(hours: number) {
-  if (hours >= 35) return "bg-slate-100 text-slate-700";
-  if (hours >= 28) return "bg-indigo-100 text-indigo-700";
-  if (hours >= 21) return "bg-violet-100 text-violet-700";
-  if (hours > 0) return "bg-rose-100 text-rose-700";
-  return "bg-rose-200 text-rose-800";
+  if (hours >= 35)
+    return "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-100";
+  if (hours >= 28)
+    return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-100";
+  if (hours >= 21)
+    return "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-100";
+  if (hours > 0)
+    return "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-100";
+  return "bg-rose-200 text-rose-800 dark:bg-rose-950 dark:text-rose-200";
 }
 
 function alertColor(level: AlertLevel) {
   if (level === "Surcharge")
-    return "border-rose-200 bg-rose-50 text-rose-800";
-  return "border-sky-200 bg-sky-50 text-sky-800";
+    return "border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/50 dark:text-rose-100";
+  return "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/50 dark:text-sky-100";
+}
+
+function cardTone(value: number) {
+  if (value >= 80) {
+    return "border-emerald-300 bg-emerald-50 text-emerald-950 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100";
+  }
+  if (value >= 60) {
+    return "border-sky-300 bg-sky-50 text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100";
+  }
+  if (value >= 40) {
+    return "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100";
+  }
+  return "border-rose-300 bg-rose-50 text-rose-950 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-100";
 }
 
 // --- export tableaux détaillés ---
 
 function exportTableCharge(
   projects: ApiProject[],
-  resources: ApiResource[],
   weeks: WeekId[],
-  loads: ApiLoad[],
   selectedProject: string,
-  filteredResources: ApiResource[],
+  rows: ResourceRoleRow[],
+  filteredLoads: ApiLoad[],
 ) {
   const header = [
     "N° projet",
     "Intitulé",
     "Collaborateur",
-    "Rôles",
+    "Rôle",
     ...weeks.map(weekLabel),
   ];
-  const rows: string[][] = [];
+  const csvRows: string[][] = [];
 
   projects
     .filter((p) => selectedProject === "Tous" || p.id === selectedProject)
     .forEach((p) => {
-      filteredResources.forEach((r) => {
+      rows.forEach((row) => {
         const hasLoad = weeks.some((w) =>
-          loads.some(
+          filteredLoads.some(
             (l) =>
-              l.projectId === p.id && l.resourceId === r.id && l.weekId === w,
+              l.projectId === p.id &&
+              l.resourceId === row.resourceId &&
+              l.role === row.role &&
+              l.weekId === w,
           ),
         );
         if (!hasLoad) return;
 
-        const row: string[] = [p.number, p.label, r.name, r.roles.join(", ")];
+        const csvRow: string[] = [
+          p.number,
+          p.label,
+          row.resourceName,
+          row.role,
+        ];
 
         weeks.forEach((w) => {
-          const h = loads
+          const h = filteredLoads
             .filter(
               (l) =>
                 l.projectId === p.id &&
-                l.resourceId === r.id &&
+                l.resourceId === row.resourceId &&
+                l.role === row.role &&
                 l.weekId === w,
             )
             .reduce((sum, l) => sum + l.hours, 0);
-          row.push(h === 0 ? "" : h.toFixed(1));
+          csvRow.push(h === 0 ? "" : h.toFixed(1));
         });
 
-        rows.push(row);
+        csvRows.push(csvRow);
       });
     });
 
-  return { header, rows };
+  return { header, rows: csvRows };
 }
 
 function exportTableCapacity(
-  resources: ApiResource[],
   weeks: WeekId[],
-  capacityByResWeek: Map<string, number>,
+  rows: ResourceRoleRow[],
+  capacityByResRoleWeek: Map<string, number>,
 ) {
-  const header = ["Collaborateur", "Rôles", ...weeks.map(weekLabel)];
-  const rows: string[][] = [];
+  const header = ["Collaborateur", "Rôle", ...weeks.map(weekLabel)];
+  const csvRows: string[][] = [];
 
-  resources.forEach((r) => {
-    const row: string[] = [r.name, r.roles.join(", ")];
+  rows.forEach((row) => {
+    const csvRow: string[] = [row.resourceName, row.role];
     weeks.forEach((w) => {
-      const key = `${r.id}|${w}`;
-      const cap = capacityByResWeek.get(key) ?? BASE_WEEK_CAPACITY;
-      row.push(cap.toFixed(1));
+      const cap =
+        capacityByResRoleWeek.get(`${row.resourceId}|${row.role}|${w}`) ?? 0;
+      csvRow.push(cap.toFixed(1));
     });
-    rows.push(row);
+    csvRows.push(csvRow);
   });
 
-  return { header, rows };
+  return { header, rows: csvRows };
 }
 
 function exportTableHolidaysAbsences(
-  _holidays: ApiHoliday[],
   absences: ApiAbsence[],
   resources: ApiResource[],
 ) {
@@ -201,7 +239,7 @@ function exportTableHolidaysAbsences(
     const res = resources.find((r) => r.id === a.resourceId);
     rows.push([
       weekLabel(a.weekId),
-      "Absence",
+      a.type,
       res?.name ?? a.resourceId,
       a.daysOff.toString(),
     ]);
@@ -210,26 +248,18 @@ function exportTableHolidaysAbsences(
   return { header, rows };
 }
 
-// -------- page --------
+// -------- composant interne avec useSearchParams --------
 
-export default function LoadplanPage() {
-  // filtre année : 0 = toutes les années
+function LoadplanPageInner() {
   const [year, setYear] = useState<number>(0);
   const [includeHolidays, setIncludeHolidays] = useState<boolean>(true);
-  const [windowSize, setWindowSize] = useState<number>(12);
 
-  // on remplace useSearchParams par une lecture via window.location.search
-  const [initialProject, setInitialProject] = useState<string | null>(null);
-  const [initialResourceName, setInitialResourceName] = useState<string | null>(
-    null,
-  );
+  const [weekWindowStart, setWeekWindowStart] = useState<number>(0);
+  const [weekWindowSize, setWeekWindowSize] = useState<number>(12);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    setInitialProject(params.get("projectId"));
-    setInitialResourceName(params.get("resourceName"));
-  }, []);
+  const searchParams = useSearchParams();
+  const initialProject = searchParams.get("projectId");
+  const initialResourceName = searchParams.get("resourceName");
 
   const [apiData, setApiData] = useState<LoadplanApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -237,27 +267,28 @@ export default function LoadplanPage() {
   const [selectedResource, setSelectedResource] = useState<string>("Tous");
   const [selectedRole, setSelectedRole] = useState<Role | "Tous">("Tous");
   const [selectedProject, setSelectedProject] = useState<string>("Tous");
+  const [selectedClient, setSelectedClient] = useState<string>("Tous");
+  const [openedCard, setOpenedCard] = useState<string | null>(null);
 
-  // filtre projet initial
   useEffect(() => {
     if (initialProject) {
       setSelectedProject(`p-${initialProject}`);
     }
   }, [initialProject]);
 
-  // fetch API loadplan quand l'année ou les filtres init changent
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
-        // year = 0 => pas de filtre d'année envoyé à l'API
-        if (year !== 0) {
-          params.set("year", String(year));
-        }
+        if (year !== 0) params.set("year", String(year));
         if (initialProject) params.set("projectId", initialProject);
-        if (initialResourceName)
+        if (initialResourceName) {
           params.set("resourceName", initialResourceName);
+        }
+        if (selectedClient !== "Tous") {
+          params.set("clientName", selectedClient);
+        }
 
         const res = await fetch(`/api/loadplan?${params.toString()}`);
         const json: LoadplanApiResponse = await res.json();
@@ -269,7 +300,7 @@ export default function LoadplanPage() {
       }
     }
     fetchData();
-  }, [year, initialProject, initialResourceName]);
+  }, [year, initialProject, initialResourceName, selectedClient]);
 
   const projects = apiData?.projects ?? [];
   const resources = apiData?.resources ?? [];
@@ -278,64 +309,50 @@ export default function LoadplanPage() {
   const absences = apiData?.absences ?? [];
   const allWeekIds = apiData?.allWeekIds ?? [];
 
-  // années dispo d'après les semaines renvoyées par l'API
   const allYears = useMemo(() => {
     if (!allWeekIds || allWeekIds.length === 0) {
       return [0];
     }
-    const years = Array.from(
-      new Set(allWeekIds.map((w) => yearFromWeek(w))),
-    );
+    const years = Array.from(new Set(allWeekIds.map((w) => yearFromWeek(w))));
     years.sort((a, b) => a - b);
-    return [0, ...years]; // 0 = Toutes
+    return [0, ...years];
   }, [allWeekIds]);
 
   const currentWeekId = useMemo(() => getCurrentWeekId(), []);
 
-  // helpers jours fériés / absences / capacité
-  function getHolidayDays(weekId: WeekId) {
-    return holidays.find((h) => h.weekId === weekId)?.daysOff ?? 0;
-  }
-
-  function getAbsenceDays(resourceId: string, weekId: WeekId) {
-    return (
-      absences.find(
-        (a) => a.resourceId === resourceId && a.weekId === weekId,
-      )?.daysOff ?? 0
-    );
-  }
-
-  function capacityHours(resourceId: string, weekId: WeekId) {
-    const holidayDays = includeHolidays ? getHolidayDays(weekId) : 0;
-    const daysOff = holidayDays + getAbsenceDays(resourceId, weekId);
-    const effectiveDays = Math.max(0, 5 - daysOff);
-    return effectiveDays * 7;
-  }
-
-  // -------- dérivés --------
-
-  // semaines de la période (déjà filtrées par année côté API)
   const yearWeeks = useMemo(() => {
     if (!allWeekIds || allWeekIds.length === 0) return [];
     return allWeekIds;
   }, [allWeekIds]);
 
-  // fenêtre visible de 12 semaines autour de la semaine actuelle
-  const visibleWeeks = useMemo(() => {
-    if (yearWeeks.length === 0) return [];
+  useEffect(() => {
+    if (!yearWeeks.length) return;
 
     const idx = yearWeeks.indexOf(currentWeekId);
-    const size = windowSize; // 12, 26, 52
-
     if (idx === -1) {
-      const start = Math.max(0, yearWeeks.length - size);
-      return yearWeeks.slice(start);
+      setWeekWindowStart(
+        Math.max(0, Math.floor((yearWeeks.length - weekWindowSize) / 2)),
+      );
+      return;
     }
 
-    const start = Math.max(0, idx - Math.floor(size / 4));
-    const end = Math.min(yearWeeks.length, start + size);
+    const centered = Math.max(0, idx - Math.floor(weekWindowSize / 2));
+    const bounded = Math.min(
+      centered,
+      Math.max(0, yearWeeks.length - weekWindowSize),
+    );
+    setWeekWindowStart(bounded);
+  }, [currentWeekId, yearWeeks, weekWindowSize]);
+
+  const visibleWeeks = useMemo(() => {
+    if (yearWeeks.length === 0) return [];
+    const start = Math.min(
+      Math.max(0, weekWindowStart),
+      Math.max(0, yearWeeks.length - weekWindowSize),
+    );
+    const end = Math.min(yearWeeks.length, start + weekWindowSize);
     return yearWeeks.slice(start, end);
-  }, [yearWeeks, currentWeekId, windowSize]);
+  }, [yearWeeks, weekWindowStart, weekWindowSize]);
 
   const allRoles: Role[] = useMemo(() => {
     const set = new Set<Role>();
@@ -344,8 +361,31 @@ export default function LoadplanPage() {
         if (role) set.add(role as Role);
       }),
     );
-    return Array.from(set);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
   }, [resources]);
+
+  const allClients = useMemo(() => {
+    const set = new Set<string>();
+    projects.forEach((p) => {
+      if (p.clientName?.trim()) set.add(p.clientName.trim());
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [projects]);
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      if (selectedProject !== "Tous" && p.id !== selectedProject) return false;
+      if (selectedClient !== "Tous" && p.clientName !== selectedClient) {
+        return false;
+      }
+      return true;
+    });
+  }, [projects, selectedProject, selectedClient]);
+
+  const filteredProjectIds = useMemo(
+    () => new Set(filteredProjects.map((p) => p.id)),
+    [filteredProjects],
+  );
 
   const filteredResources = useMemo(() => {
     let list = [...resources];
@@ -358,19 +398,19 @@ export default function LoadplanPage() {
     return list;
   }, [resources, selectedResource, selectedRole]);
 
+  const filteredResourceIds = useMemo(
+    () => new Set(filteredResources.map((r) => r.id)),
+    [filteredResources],
+  );
+
   const filteredAbsences = useMemo(() => {
-    if (year === 0) {
-      return absences.filter((a) =>
-        filteredResources.some((r) => r.id === a.resourceId),
-      );
-    }
     return absences.filter((a) => {
-      if (yearFromWeek(a.weekId) !== year) return false;
-      if (selectedResource !== "Tous" && a.resourceId !== selectedResource)
-        return false;
-      return filteredResources.some((r) => r.id === a.resourceId);
+      if (year === 0) {
+        return filteredResourceIds.has(a.resourceId);
+      }
+      return yearFromWeek(a.weekId) === year && filteredResourceIds.has(a.resourceId);
     });
-  }, [year, selectedResource, filteredResources, absences]);
+  }, [absences, year, filteredResourceIds]);
 
   const filteredHolidays = useMemo(() => {
     if (year === 0) return holidays;
@@ -380,72 +420,206 @@ export default function LoadplanPage() {
   const filteredLoads = useMemo(() => {
     return loads.filter((l) => {
       if (year !== 0 && yearFromWeek(l.weekId) !== year) return false;
-      if (selectedProject !== "Tous" && l.projectId !== selectedProject)
-        return false;
-      if (selectedResource !== "Tous" && l.resourceId !== selectedResource)
-        return false;
+      if (!filteredProjectIds.has(l.projectId)) return false;
+      if (!filteredResourceIds.has(l.resourceId)) return false;
+      if (selectedRole !== "Tous" && l.role !== selectedRole) return false;
       return true;
     });
-  }, [year, selectedProject, selectedResource, loads]);
+  }, [year, filteredProjectIds, filteredResourceIds, selectedRole, loads]);
 
-  const totalLoadByResWeek = useMemo(() => {
+  // --- capa / absences ---
+
+  function getHolidayDays(weekId: WeekId) {
+    return includeHolidays
+      ? filteredHolidays.find((h) => h.weekId === weekId)?.daysOff ?? 0
+      : 0;
+  }
+
+  function getAbsenceDays(resourceId: string, weekId: WeekId) {
+    return filteredAbsences
+      .filter((a) => a.resourceId === resourceId && a.weekId === weekId)
+      .reduce((sum, a) => sum + a.daysOff, 0);
+  }
+
+  function capacityHours(resourceId: string, weekId: WeekId) {
+    const holidayDays = getHolidayDays(weekId);
+    const daysOff = holidayDays + getAbsenceDays(resourceId, weekId);
+    const effectiveDays = Math.max(0, 5 - daysOff);
+    return effectiveDays * 7;
+  }
+
+  // --- base : charge totale et capa totale par ressource/semaine, indépendants du filtre rôle ---
+
+  const baseTotalLoadByResWeek = useMemo(() => {
     const map = new Map<string, number>();
-    filteredLoads.forEach((l) => {
-      const key = `${l.resourceId}|${l.weekId}`;
-      map.set(key, (map.get(key) || 0) + l.hours);
-    });
+    loads
+      .filter((l) => (year === 0 ? true : yearFromWeek(l.weekId) === year))
+      .forEach((l) => {
+        const key = `${l.resourceId}|${l.weekId}`;
+        map.set(key, Math.round(((map.get(key) || 0) + l.hours) * 10) / 10);
+      });
     return map;
-  }, [filteredLoads]);
+  }, [loads, year]);
 
   const capacityByResWeek = useMemo(() => {
     const map = new Map<string, number>();
-    filteredResources.forEach((r) => {
+    resources.forEach((r) => {
       yearWeeks.forEach((w) => {
         map.set(`${r.id}|${w}`, capacityHours(r.id, w));
       });
     });
     return map;
-  }, [yearWeeks, filteredResources, includeHolidays]);
+  }, [yearWeeks, resources, includeHolidays, filteredAbsences, filteredHolidays]);
+
+  // --- répartition figée de la capacité par rôle, indépendante du filtre rôle ---
+
+  const baseCapacityByResRoleWeek = useMemo(() => {
+    const map = new Map<string, number>();
+
+    resources.forEach((r) => {
+      yearWeeks.forEach((w) => {
+        const totalCap =
+          capacityByResWeek.get(`${r.id}|${w}`) ?? BASE_WEEK_CAPACITY;
+
+        // tous les rôles réellement chargés sur cette ressource/semaine
+        const rolesOnWeek = new Set<string>();
+        loads
+          .filter(
+            (l) =>
+              l.resourceId === r.id &&
+              (year === 0 || yearFromWeek(l.weekId) === year) &&
+              l.weekId === w,
+          )
+          .forEach((l) => rolesOnWeek.add(l.role || "Sans rôle"));
+
+        const roleList =
+          rolesOnWeek.size > 0
+            ? Array.from(rolesOnWeek)
+            : r.roles.length > 0
+              ? r.roles
+              : ["Sans rôle"];
+
+        const divisor = roleList.length || 1;
+        const capPerRole = Math.round((totalCap / divisor) * 10) / 10;
+
+        roleList.forEach((role) => {
+          map.set(`${r.id}|${role}|${w}`, capPerRole);
+        });
+      });
+    });
+
+    return map;
+  }, [resources, yearWeeks, capacityByResWeek, loads, year]);
+
+  // --- dérivés filtrés par ressource/projet/rôle ---
+
+  const rolesByResWeek = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    filteredLoads.forEach((l) => {
+      const key = `${l.resourceId}|${l.weekId}`;
+      if (!map.has(key)) map.set(key, new Set());
+      map.get(key)!.add(l.role || "Sans rôle");
+    });
+    return map;
+  }, [filteredLoads]);
+
+  const resourceRoleRows = useMemo<ResourceRoleRow[]>(() => {
+    const rowsMap = new Map<string, ResourceRoleRow>();
+
+    filteredResources.forEach((r) => {
+      const matchingLoads = filteredLoads.filter((l) => l.resourceId === r.id);
+      const roles =
+        selectedRole === "Tous"
+          ? Array.from(new Set(matchingLoads.map((l) => l.role || "Sans rôle")))
+          : [selectedRole];
+
+      const finalRoles = roles.length
+        ? roles
+        : r.roles.length
+          ? r.roles
+          : ["Sans rôle"];
+
+      finalRoles.forEach((role) => {
+        const key = `${r.id}|${role}`;
+        rowsMap.set(key, {
+          resourceId: r.id,
+          resourceName: r.name,
+          role,
+        });
+      });
+    });
+
+    return Array.from(rowsMap.values()).sort((a, b) => {
+      if (a.resourceName !== b.resourceName) {
+        return a.resourceName.localeCompare(b.resourceName, "fr");
+      }
+      return a.role.localeCompare(b.role, "fr");
+    });
+  }, [filteredResources, filteredLoads, selectedRole]);
+
+  const loadByResRoleWeek = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredLoads.forEach((l) => {
+      const key = `${l.resourceId}|${l.role}|${l.weekId}`;
+      map.set(key, Math.round(((map.get(key) || 0) + l.hours) * 10) / 10);
+    });
+    return map;
+  }, [filteredLoads]);
+
+  const totalLoadByResWeek = useMemo(() => {
+    const map = new Map<string, number>();
+    filteredLoads.forEach((l) => {
+      const key = `${l.resourceId}|${l.weekId}`;
+      map.set(key, Math.round(((map.get(key) || 0) + l.hours) * 10) / 10);
+    });
+    return map;
+  }, [filteredLoads]);
+
+  // capacité par rôle côté UI : on réutilise la répartition figée mais seulement pour les lignes visibles
+  const capacityByResRoleWeek = useMemo(() => {
+    const map = new Map<string, number>();
+    resourceRoleRows.forEach((row) => {
+      yearWeeks.forEach((w) => {
+        const key = `${row.resourceId}|${row.role}|${w}`;
+        const cap = baseCapacityByResRoleWeek.get(key) ?? 0;
+        map.set(key, cap);
+      });
+    });
+    return map;
+  }, [resourceRoleRows, yearWeeks, baseCapacityByResRoleWeek]);
 
   const weeklySummary = useMemo(() => {
-    return yearWeeks.map((w) => {
-      let totalLoad = 0;
-      let totalCap = 0;
-      filteredResources.forEach((r) => {
-        const key = `${r.id}|${w}`;
-        totalLoad += totalLoadByResWeek.get(key) || 0;
-        totalCap += capacityByResWeek.get(key) || 0;
-      });
-      return {
-        weekId: w,
-        totalLoad,
-        totalCap,
-        totalLoadETP: totalLoad / BASE_WEEK_CAPACITY,
-        totalCapETP: totalCap / BASE_WEEK_CAPACITY,
-      };
+  return yearWeeks.map((w) => {
+    let totalLoad = 0;
+    let totalCap = 0;
+
+    resourceRoleRows.forEach((row) => {
+      totalLoad += loadByResRoleWeek.get(`${row.resourceId}|${row.role}|${w}`) || 0;
+      totalCap += capacityByResRoleWeek.get(`${row.resourceId}|${row.role}|${w}`) || 0;
     });
-  }, [yearWeeks, filteredResources, totalLoadByResWeek, capacityByResWeek]);
+
+    return {
+      weekId: w,
+      totalLoad,
+      totalCap,
+      totalLoadETP: totalLoad / BASE_WEEK_CAPACITY,
+      totalCapETP: totalCap / BASE_WEEK_CAPACITY,
+    };
+  });
+}, [yearWeeks, resourceRoleRows, loadByResRoleWeek, capacityByResRoleWeek]);
 
   const chartData = useMemo(() => {
     return visibleWeeks.map((w) => {
-      const totalHours = filteredLoads
-        .filter((l) => l.weekId === w)
-        .reduce((sum, l) => sum + l.hours, 0);
-
-      const totalCapacityHours = Array.from(capacityByResWeek.entries())
-        .filter(([key]) => key.endsWith(`|${w}`))
-        .reduce((sum, [, cap]) => sum + cap, 0);
-
-      const loadEtp = totalHours / BASE_WEEK_CAPACITY;
-      const capacityEtp = totalCapacityHours / BASE_WEEK_CAPACITY;
-
+      const weekly = weeklySummary.find((x) => x.weekId === w);
+      const loadEtp = weekly ? weekly.totalLoadETP : 0;
+      const capacityEtp = weekly ? weekly.totalCapETP : 0;
       return {
         label: weekLabel(w),
         loadEtp,
         capacityEtp,
       };
     });
-  }, [visibleWeeks, filteredLoads, capacityByResWeek]);
+  }, [visibleWeeks, weeklySummary]);
 
   const globalStats = useMemo(() => {
     const totalLoad = weeklySummary.reduce((s, w) => s + w.totalLoad, 0);
@@ -466,37 +640,28 @@ export default function LoadplanPage() {
     const utilization =
       totalCap > 0 ? Math.round((totalLoad / totalCap) * 100) : 0;
 
-    const resourcesOver95 = (() => {
-      if (filteredResources.length === 0 || yearWeeks.length === 0) return 0;
-      let count = 0;
-      filteredResources.forEach((r) => {
-        let load = 0;
-        let cap = 0;
-        yearWeeks.forEach((w) => {
-          const key = `${r.id}|${w}`;
-          load += totalLoadByResWeek.get(key) || 0;
-          cap += capacityByResWeek.get(key) || 0;
-        });
-        if (cap > 0 && load / cap >= 0.95) count++;
-      });
-      return count;
-    })();
+    let resourcesOver95 = 0;
+    let resourcesUnder50 = 0;
+    const overList: string[] = [];
+    const underList: string[] = [];
 
-    const resourcesUnder50 = (() => {
-      if (filteredResources.length === 0 || yearWeeks.length === 0) return 0;
-      let count = 0;
-      filteredResources.forEach((r) => {
-        let load = 0;
-        let cap = 0;
-        yearWeeks.forEach((w) => {
-          const key = `${r.id}|${w}`;
-          load += totalLoadByResWeek.get(key) || 0;
-          cap += capacityByResWeek.get(key) || 0;
-        });
-        if (cap > 0 && load / cap <= 0.5) count++;
+    filteredResources.forEach((r) => {
+      let load = 0;
+      let cap = 0;
+      yearWeeks.forEach((w) => {
+        const key = `${r.id}|${w}`;
+        load += totalLoadByResWeek.get(key) || 0;
+        cap += capacityByResWeek.get(key) || 0;
       });
-      return count;
-    })();
+      if (cap > 0 && load / cap >= 0.95) {
+        resourcesOver95++;
+        overList.push(r.name);
+      }
+      if (cap > 0 && load / cap <= 0.5) {
+        resourcesUnder50++;
+        underList.push(r.name);
+      }
+    });
 
     return {
       totalLoad,
@@ -509,10 +674,12 @@ export default function LoadplanPage() {
       utilization,
       resourcesOver95,
       resourcesUnder50,
+      overList,
+      underList,
     };
   }, [
     weeklySummary,
-    filteredResources.length,
+    filteredResources,
     yearWeeks,
     totalLoadByResWeek,
     capacityByResWeek,
@@ -540,15 +707,18 @@ export default function LoadplanPage() {
     const overloadAlerts: Alert[] = [];
     const underloadAlerts: Alert[] = [];
 
-    filteredResources.forEach((r) => {
+    resourceRoleRows.forEach((row) => {
       const weeksData = yearWeeks.map((w) => {
-        const key = `${r.id}|${w}`;
-        const load = totalLoadByResWeek.get(key) || 0;
-        const cap = capacityByResWeek.get(key) ?? BASE_WEEK_CAPACITY;
+        const load =
+          loadByResRoleWeek.get(`${row.resourceId}|${row.role}|${w}`) || 0;
+        const cap =
+          capacityByResRoleWeek.get(`${row.resourceId}|${row.role}|${w}`) || 0;
         return { weekId: w, load, cap };
       });
 
-      const overloadedWeeks = weeksData.filter((w) => w.load > w.cap);
+      const overloadedWeeks = weeksData.filter(
+        (w) => w.cap > 0 && w.load > w.cap,
+      );
       const underloadedWeeks = weeksData.filter(
         (w) =>
           w.cap > 0 &&
@@ -557,45 +727,26 @@ export default function LoadplanPage() {
       );
 
       if (overloadedWeeks.length > 0) {
-        const labels = overloadedWeeks.map((w) => weekLabel(w.weekId));
-        const shownLabels = labels.slice(0, 4);
-        const extra = labels.length - shownLabels.length;
-        const avgRatio =
-          overloadedWeeks.reduce((s, w) => s + w.load / (w.cap || 1), 0) /
-          overloadedWeeks.length;
-
         overloadAlerts.push({
           level: "Surcharge",
-          resourceName: r.name,
-          weeks: shownLabels,
-          summary:
-            `Charge moyenne à ${(avgRatio * 100).toFixed(0)}% de la capacité sur ${
-              labels.length
-            } semaine(s).` +
-            (extra > 0
-              ? ` Dont ${extra} semaine(s) supplémentaire(s) non listée(s).`
-              : ""),
+          resourceName: row.resourceName,
+          role: row.role,
+          weeks: overloadedWeeks.map((w) => weekLabel(w.weekId)).slice(0, 4),
+          summary: `Surcharge détectée sur ${overloadedWeeks.length} semaine(s) pour ce rôle.`,
           recommendation:
-            "Limiter les nouvelles affectations, déplacer des tâches vers des profils ou semaines moins chargés.",
+            "Déplacer une partie de la charge vers un autre rôle, une autre ressource ou une autre semaine.",
         });
       }
 
       if (underloadedWeeks.length > 0) {
-        const labels = underloadedWeeks.map((w) => weekLabel(w.weekId));
-        const shownLabels = labels.slice(0, 4);
-        const extra = labels.length - shownLabels.length;
-
         underloadAlerts.push({
           level: "Sous-charge",
-          resourceName: r.name,
-          weeks: shownLabels,
-          summary:
-            `${labels.length} semaine(s) significativement sous-utilisées.` +
-            (extra > 0
-              ? ` Dont ${extra} semaine(s) supplémentaire(s) non listée(s).`
-              : ""),
+          resourceName: row.resourceName,
+          role: row.role,
+          weeks: underloadedWeeks.map((w) => weekLabel(w.weekId)).slice(0, 4),
+          summary: `Sous-charge détectée sur ${underloadedWeeks.length} semaine(s) pour ce rôle.`,
           recommendation:
-            "Positionner des activités de préparation, tests, documentation, formation ou support.",
+            "Affecter davantage d’activités utiles sur ce rôle ou regrouper la charge.",
         });
       }
     });
@@ -604,9 +755,8 @@ export default function LoadplanPage() {
       overloads: overloadAlerts.slice(0, 10),
       underloads: underloadAlerts.slice(0, 10),
     };
-  }, [filteredResources, yearWeeks, totalLoadByResWeek, capacityByResWeek]);
+  }, [resourceRoleRows, yearWeeks, loadByResRoleWeek, capacityByResRoleWeek]);
 
-  // stats formation (basées sur les absences)
   const formationStats = useMemo(() => {
     const resourcesSet = new Set<string>();
     let totalFormationDays = 0;
@@ -625,8 +775,6 @@ export default function LoadplanPage() {
       totalDays: totalFormationDays,
     };
   }, [filteredAbsences, resources]);
-
-  // -------- export CSV --------
 
   function exportToCsv(filename: string, rows: string[][]) {
     const processRow = (row: string[]) =>
@@ -649,35 +797,35 @@ export default function LoadplanPage() {
     const weeks = visibleWeeks.length > 0 ? visibleWeeks : yearWeeks;
 
     const charge = exportTableCharge(
-      projects,
-      resources,
+      filteredProjects,
       weeks,
-      filteredLoads,
       selectedProject,
-      filteredResources,
+      resourceRoleRows,
+      filteredLoads,
     );
-    exportToCsv("plan_charge_par_projet.csv", [
+    exportToCsv("plan_charge_par_projet_role.csv", [
       charge.header,
       ...charge.rows,
     ]);
 
     const capacity = exportTableCapacity(
-      filteredResources,
       weeks,
-      capacityByResWeek,
+      resourceRoleRows,
+      capacityByResRoleWeek,
     );
-    exportToCsv("capacite_par_ressource.csv", [
+    exportToCsv("capacite_par_ressource_role.csv", [
       capacity.header,
       ...capacity.rows,
     ]);
 
     const holAbs = exportTableHolidaysAbsences(
-      filteredHolidays,
       filteredAbsences,
       resources,
     );
     exportToCsv("conges_absences.csv", [holAbs.header, ...holAbs.rows]);
   };
+
+  const avgUtil = globalStats.utilization;
 
   if (isLoading && !apiData) {
     return (
@@ -686,7 +834,7 @@ export default function LoadplanPage() {
         pageTitle="Plan de charge"
         pageSubtitle="Charge vs capacité par ressource et par projet."
       >
-        <div className="p-6 text-sm text-slate-500">
+        <div className="p-6 text-sm text-slate-500 dark:text-slate-300">
           Chargement du plan de charge…
         </div>
       </AppShell>
@@ -700,35 +848,47 @@ export default function LoadplanPage() {
       pageSubtitle="Charge réelle vs capacité disponible par ressource."
     >
       <section className="space-y-6">
-        <div className="flex items-start justify_between gap-4">
+        <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <button
               onClick={handleExportAll}
-              className="px-3 py-1.5 text-xs rounded-md border border-slate-300 bg-white text-slate-700"
+              className="px-3 py-1.5 text-xs rounded-md border border-slate-300 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             >
               Export Excel (3 tableaux)
             </button>
             <Link
               href="/loadplan/holidays"
-              className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white"
+              className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white dark:bg-indigo-500"
             >
               Saisie congés / absences
             </Link>
           </div>
-          <div />
+          
+          <div className="flex items-center gap-2">
+          <Link
+            href="/Tutoriel/projelys-loadplan-tutorial.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          >
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[11px] font-bold text-white dark:bg-indigo-500">
+              ?
+            </span>
+            <span>Tutoriel</span>
+          </Link>
+        </div>
         </div>
 
-        {/* Filtres */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 text-xs">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="grid grid-cols-1 gap-4 text-xs md:grid-cols-7">
             <div>
-              <div className="font-semibold text-slate-700 mb-1">
+              <div className="mb-1 font-semibold text-slate-700 dark:text-slate-200">
                 Année
               </div>
               <select
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
-                className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-xs"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value={0}>Toutes les années</option>
                 {allYears
@@ -742,13 +902,19 @@ export default function LoadplanPage() {
             </div>
 
             <div>
-              <div className="font-semibold text-slate-700 mb-1">
+              <div className="mb-1 font-semibold text-slate-700 dark:text-slate-200">
                 Fenêtre (semaines)
               </div>
               <select
-                value={windowSize}
-                onChange={(e) => setWindowSize(Number(e.target.value))}
-                className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-xs"
+                value={weekWindowSize}
+                onChange={(e) => {
+                  const size = Number(e.target.value);
+                  setWeekWindowSize(size);
+                  setWeekWindowStart((prev) =>
+                    Math.min(prev, Math.max(0, yearWeeks.length - size)),
+                  );
+                }}
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value={4}>4 semaines</option>
                 <option value={8}>8 semaines</option>
@@ -759,13 +925,13 @@ export default function LoadplanPage() {
             </div>
 
             <div>
-              <div className="font-semibold text-slate-700 mb-1">
+              <div className="mb-1 font-semibold text-slate-700 dark:text-slate-200">
                 Ressource
               </div>
               <select
                 value={selectedResource}
                 onChange={(e) => setSelectedResource(e.target.value)}
-                className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-xs"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value="Tous">Toutes</option>
                 {resources.map((r) => (
@@ -777,7 +943,7 @@ export default function LoadplanPage() {
             </div>
 
             <div>
-              <div className="font-semibold text-slate-700 mb-1">
+              <div className="mb-1 font-semibold text-slate-700 dark:text-slate-200">
                 Rôle / profil
               </div>
               <select
@@ -789,7 +955,7 @@ export default function LoadplanPage() {
                       : (e.target.value as Role),
                   )
                 }
-                className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-xs"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value="Tous">Tous</option>
                 {allRoles.map((role) => (
@@ -801,13 +967,13 @@ export default function LoadplanPage() {
             </div>
 
             <div>
-              <div className="font-semibold text-slate-700 mb-1">
+              <div className="mb-1 font-semibold text-slate-700 dark:text-slate-200">
                 Projet
               </div>
               <select
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
-                className="w-full border border-slate-300 rounded-md px-2 py-1.5 text-xs"
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
               >
                 <option value="Tous">Tous</option>
                 {projects.map((p) => (
@@ -817,7 +983,26 @@ export default function LoadplanPage() {
                 ))}
               </select>
             </div>
-            <div className="mt-2 md:mt-0 flex items-center gap-2 text-xs">
+
+            <div>
+              <div className="mb-1 font-semibold text-slate-700 dark:text-slate-200">
+                Client
+              </div>
+              <select
+                value={selectedClient}
+                onChange={(e) => setSelectedClient(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              >
+                <option value="Tous">Tous</option>
+                {allClients.map((client) => (
+                  <option key={client} value={client}>
+                    {client}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-2 flex items-center gap-2 text-xs md:mt-0">
               <input
                 id="include-holidays"
                 type="checkbox"
@@ -825,188 +1010,291 @@ export default function LoadplanPage() {
                 onChange={(e) => setIncludeHolidays(e.target.checked)}
                 className="h-3 w-3"
               />
-              <label htmlFor="include-holidays" className="text-slate-700">
-                Inclure les jours fériés dans la capacité
+              <label
+                htmlFor="include-holidays"
+                className="text-slate-700 dark:text-slate-200"
+              >
+                Inclure les jours fériés
               </label>
             </div>
           </div>
         </div>
 
-        {/* KPIs 1 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <div className="text-xs text-slate-600">
+        <div className="flex items-center justify-end gap-2 text-xs">
+          <button
+            type="button"
+            onClick={() =>
+              setWeekWindowStart((prev) => Math.max(0, prev - weekWindowSize))
+            }
+            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-700 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            disabled={weekWindowStart === 0}
+          >
+            ◀ Semaines précédentes
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setWeekWindowStart((prev) =>
+                Math.min(
+                  prev + weekWindowSize,
+                  Math.max(0, yearWeeks.length - weekWindowSize),
+                ),
+              )
+            }
+            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-700 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            disabled={weekWindowStart + weekWindowSize >= yearWeeks.length}
+          >
+            Semaines suivantes ▶
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Charge totale sur la période (h)
             </div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900">
+            <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-50">
               {Math.round(globalStats.totalLoad)}
             </div>
-            <div className="mt-1 text-xs text-slate-500">
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Toutes semaines, ressources et projets filtrés.
             </div>
           </div>
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <div className="text-xs text-slate-600">
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Capacité totale disponible (h)
             </div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900">
+            <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-50">
               {Math.round(globalStats.totalCap)}
             </div>
-            <div className="mt-1 text-xs text-slate-500">
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               35h hebdo ajustées des absences / jours fériés.
             </div>
           </div>
-          <div className="bg-white border border-slate-200 rounded-lg p-4">
-            <div className="text-xs text-slate-600">
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Charge moyenne hebdo (ETP)
             </div>
-            <div className="mt-2 text-2xl font-semibold text-emerald-600">
+            <div className="mt-2 text-2xl font-semibold text-emerald-600 dark:text-emerald-300">
               {globalStats.avgLoadETP.toFixed(2)}
             </div>
-            <div className="mt-1 text-xs text-slate-500">
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               1 ETP = {BASE_WEEK_CAPACITY}h.
             </div>
           </div>
         </div>
 
-        {/* KPIs 2 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <div
-            className="bg-white border border-slate-200 rounded-lg p-4"
-            title="Nombre de semaines où la charge totale dépasse la capacité totale"
-          >
-            <div className="text-xs text-slate-600">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Semaines en surcharge
             </div>
-            <div className="mt-2 text-2xl font-semibold text-rose-600">
+            <div className="mt-2 text-2xl font-semibold text-rose-600 dark:text-rose-300">
               {globalStats.overloadWeeks}
             </div>
           </div>
-          <div
-            className="bg-white border border-slate-200 rounded-lg p-4"
-            title="Nombre de semaines où la charge totale est en dessous de la capacité totale"
-          >
-            <div className="text-xs text-slate-600">
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Semaines en sous-charge
             </div>
-            <div className="mt-2 text-2xl font-semibold text-sky-600">
+            <div className="mt-2 text-2xl font-semibold text-sky-600 dark:text-sky-300">
               {globalStats.underWeeks}
             </div>
           </div>
-          <div
-            className="bg-white border border-slate-200 rounded-lg p-4"
-            title="Nombre de ressources filtrées"
-          >
-            <div className="text-xs text-slate-600">Ressources filtrées</div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900">
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
+              Ressources filtrées
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-50">
               {globalStats.nbResources}
             </div>
           </div>
         </div>
 
-        {/* KPIs 3 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div
-            className="bg-white border border-slate-200 rounded-lg p-4"
-            title="Charge totale divisée par la capacité totale sur la période filtrée"
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => setOpenedCard(openedCard === "util" ? null : "util")}
+            className={`rounded-lg border p-4 text-left ${cardTone(avgUtil)}`}
           >
-            <div className="text-xs text-slate-600">
-              Taux d’occupation moyen
-            </div>
-            <div className="mt-2 text-2xl font-semibold text-slate-900">
-              {globalStats.utilization}%
-            </div>
-            <div className="mt-1 text-xs text-slate-500">
+            <div className="text-xs">Taux d’occupation moyen</div>
+            <div className="mt-2 text-2xl font-semibold">{avgUtil}%</div>
+            <div className="mt-1 text-xs opacity-80">
               Charge totale / capacité totale sur la période.
             </div>
-          </div>
-          <div
-            className="bg-white border border-slate-200 rounded-lg p-4"
-            title="Nombre de ressources dont la charge moyenne est ≥ 95% de leur capacité"
+            {openedCard === "util" && (
+              <div className="mt-3 text-xs opacity-90">
+                {filteredResources.length > 0
+                  ? filteredResources.map((r) => r.name).join(", ")
+                  : "Aucune ressource filtrée."}
+              </div>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOpenedCard(openedCard === "over" ? null : "over")}
+            className="rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-slate-700 dark:bg-slate-900"
           >
-            <div className="text-xs text-slate-600">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Ressources ≥ 95% de charge
             </div>
-            <div className="mt-2 text-2xl font-semibold text-rose-600">
+            <div className="mt-2 text-2xl font-semibold text-rose-600 dark:text-rose-300">
               {globalStats.resourcesOver95}
             </div>
-            <div className="mt-1 text-xs text-slate-500">
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Profils proches de la saturation continue.
             </div>
-          </div>
-          <div
-            className="bg-white border border-slate-200 rounded-lg p-4"
-            title="Nombre de ressources dont la charge moyenne est < 50% de leur capacité"
+            {openedCard === "over" && (
+              <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
+                {globalStats.overList.length
+                  ? globalStats.overList.join(", ")
+                  : "Aucune ressource au-dessus de 95% en moyenne."}
+              </div>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOpenedCard(openedCard === "under" ? null : "under")}
+            className="rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-slate-700 dark:bg-slate-900"
           >
-            <div className="text-xs text-slate-600">
+            <div className="text-xs text-slate-600 dark:text-slate-300">
               Ressources &lt; 50% de charge
             </div>
-            <div className="mt-2 text-2xl font-semibold text-sky-600">
+            <div className="mt-2 text-2xl font-semibold text-sky-600 dark:text-sky-300">
               {globalStats.resourcesUnder50}
             </div>
-            <div className="mt-1 text-xs text-slate-500">
-              Profils sous-utilisés, potentiels renforts sur d’autres projets.
+            <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Profils sous-utilisés.
             </div>
-          </div>
+            {openedCard === "under" && (
+              <div className="mt-3 text-xs text-slate-600 dark:text-slate-300">
+                {globalStats.underList.length
+                  ? globalStats.underList.join(", ")
+                  : "Aucune ressource en-dessous de 50% en moyenne."}
+              </div>
+            )}
+          </button>
         </div>
 
-        {/* Graphiques principaux */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-slate-900">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 Charge vs Capacité (ETP)
               </h2>
+              <div className="flex items-center gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWeekWindowStart((prev) =>
+                      Math.max(0, prev - weekWindowSize),
+                    )
+                  }
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  disabled={weekWindowStart === 0}
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWeekWindowStart((prev) =>
+                      Math.min(
+                        prev + weekWindowSize,
+                        Math.max(0, yearWeeks.length - weekWindowSize),
+                      ),
+                    )
+                  }
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  disabled={weekWindowStart + weekWindowSize >= yearWeeks.length}
+                >
+                  ▶
+                </button>
+              </div>
             </div>
-            <div className="mt-2 rounded-xl border border-slate-100 bg-white p-4">
+            <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
               <ChargeVsCapacityChart data={chartData} />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <h2 className="text-sm font-semibold text-slate-900 mb-3">
-              Taux d’occupation par ressource
-            </h2>
-            <p className="text-[11px] text-slate-500 mb-2">
-              Pourcentage moyen de charge sur la période filtrée, par
-              collaborateur.
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                Taux d’occupation par ressource
+              </h2>
+              <div className="flex items-center gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWeekWindowStart((prev) =>
+                      Math.max(0, prev - weekWindowSize),
+                    )
+                  }
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  disabled={weekWindowStart === 0}
+                >
+                  ◀
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setWeekWindowStart((prev) =>
+                      Math.min(
+                        prev + weekWindowSize,
+                        Math.max(0, yearWeeks.length - weekWindowSize),
+                      ),
+                    )
+                  }
+                  className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                  disabled={weekWindowStart + weekWindowSize >= yearWeeks.length}
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+            <p className="mb-2 text-[11px] text-slate-500 dark:text-slate-400">
+              Pourcentage moyen de charge sur la période filtrée, par collaborateur.
             </p>
-            <ResourceUtilizationChart data={utilizationByResource} />
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950">
+              <ResourceUtilizationChart data={utilizationByResource} />
+            </div>
           </div>
         </div>
 
-        {/* Alertes et recommandations */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <h2 className="text-sm font-semibold text-slate-900 mb-3">
+        <div
+          id="alerts-section"
+          className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        >
+          <h2 className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-50">
             Alertes & recommandations
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            {/* Sous-charges */}
+          <div className="grid grid-cols-1 gap-4 text-xs md:grid-cols-2">
             <div>
-              <h3 className="text-xs font-semibold text-slate-800 mb-2">
+              <h3 className="mb-2 text-xs font-semibold text-slate-800 dark:text-slate-100">
                 Sous-charges
               </h3>
-              <ul className="space-y-3 max-h-64 overflow-y-auto pr-1">
+              <ul className="max-h-64 space-y-3 overflow-y-auto pr-1">
                 {alertsByType.underloads.length === 0 && (
-                  <li className="text-slate-500">
+                  <li className="text-slate-500 dark:text-slate-400">
                     Aucune sous-charge marquée sur la période.
                   </li>
                 )}
                 {alertsByType.underloads.map((a, index) => (
                   <li
                     key={index}
-                    className={`border rounded-md p-3 ${alertColor(a.level)}`}
+                    className={`rounded-md border p-3 ${alertColor(a.level)}`}
                   >
                     <div className="flex items-start gap-2">
-                      <span
-                        className="mt-0.5 text-lg"
-                        title="Sous-charge significative sur plusieurs semaines"
-                      >
-                        🔔
-                      </span>
+                      <span className="mt-0.5 text-lg">🔔</span>
                       <div className="space-y-1">
-                        <p className="font-semibold text-slate-900 text-sm">
-                          {a.resourceName}
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                          {a.resourceName} · {a.role}
                         </p>
                         <p>
                           <span className="font-medium">Semaines :</span>{" "}
@@ -1027,33 +1315,26 @@ export default function LoadplanPage() {
               </ul>
             </div>
 
-            {/* Surcharges */}
             <div>
-              <h3 className="text-xs font-semibold text-slate-800 mb-2">
+              <h3 className="mb-2 text-xs font-semibold text-slate-800 dark:text-slate-100">
                 Surcharges
               </h3>
-              <ul className="space-y-3 max-h-64 overflow-y-auto pr-1">
+              <ul className="max-h-64 space-y-3 overflow-y-auto pr-1">
                 {alertsByType.overloads.length === 0 && (
-                  <li className="text-slate-500">
+                  <li className="text-slate-500 dark:text-slate-400">
                     Aucune surcharge détectée sur la période.
                   </li>
                 )}
                 {alertsByType.overloads.map((a, index) => (
                   <li
                     key={index}
-                    className={`border rounded-md p-3 ${alertColor(a.level)}`}
+                    className={`rounded-md border p-3 ${alertColor(a.level)}`}
                   >
                     <div className="flex items-start gap-2">
-                      <span
-                        className="mt-0.5 text-lg"
-                        title="Surcharge persistante, risque de saturation"
-                      >
-                        ⚠️
-                      </span>
-
+                      <span className="mt-0.5 text-lg">⚠️</span>
                       <div className="space-y-1">
-                        <p className="font-semibold text-slate-900 text-sm">
-                          {a.resourceName}
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
+                          {a.resourceName} · {a.role}
                         </p>
                         <p>
                           <span className="font-medium">Semaines :</span>{" "}
@@ -1076,50 +1357,68 @@ export default function LoadplanPage() {
           </div>
         </div>
 
-        {/* Tableau charge */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-slate-900">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
               Charge réelle par semaine (h) et par projet
             </h2>
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() =>
+                  setWeekWindowStart((prev) => Math.max(0, prev - weekWindowSize))
+                }
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                disabled={weekWindowStart === 0}
+              >
+                ◀
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setWeekWindowStart((prev) =>
+                    Math.min(
+                      prev + weekWindowSize,
+                      Math.max(0, yearWeeks.length - weekWindowSize),
+                    ),
+                  )
+                }
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                disabled={weekWindowStart + weekWindowSize >= yearWeeks.length}
+              >
+                ▶
+              </button>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs">
-              <thead className="bg-slate-100 text-slate-600">
+
+          <div className="overflow-x-auto overflow-y-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+            <table className="min-w-full bg-white text-xs dark:bg-slate-950">
+              <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">
-                    N° projet
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">
-                    Intitulé
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">
-                    Collaborateur
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">Rôles</th>
+                  <th className="px-3 py-2 text-left font-medium">N° projet</th>
+                  <th className="px-3 py-2 text-left font-medium">Intitulé</th>
+                  <th className="px-3 py-2 text-left font-medium">Collaborateur</th>
+                  <th className="px-3 py-2 text-left font-medium">Rôle</th>
                   {visibleWeeks.map((w) => (
                     <th
                       key={w}
-                      className="px-3 py-2 text-right font-medium whitespace-nowrap"
+                      className="whitespace-nowrap px-3 py-2 text-right font-medium"
                     >
                       {weekLabel(w)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {projects
-                  .filter(
-                    (p) =>
-                      selectedProject === "Tous" || p.id === selectedProject,
-                  )
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filteredProjects
                   .flatMap((p) =>
-                    filteredResources.map((r) => {
+                    resourceRoleRows.map((row) => {
                       const hasLoad = visibleWeeks.some((w) =>
                         filteredLoads.some(
                           (l) =>
                             l.projectId === p.id &&
-                            l.resourceId === r.id &&
+                            l.resourceId === row.resourceId &&
+                            l.role === row.role &&
                             l.weekId === w,
                         ),
                       );
@@ -1127,25 +1426,25 @@ export default function LoadplanPage() {
 
                       return (
                         <tr
-                          key={`${p.id}-${r.id}`}
-                          className="hover:bg-slate-50"
+                          key={`${p.id}-${row.resourceId}-${row.role}`}
+                          className="bg-white hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900"
                         >
-                          <td className="px-3 py-2 whitespace-nowrap">
+                          <td className="whitespace-nowrap px-3 py-2">
                             <Link
                               href={`/projects/${p.projectId}`}
-                              className="text-indigo-600 hover:underline"
+                              className="text-indigo-600 hover:underline dark:text-indigo-300"
                             >
                               {p.number}
                             </Link>
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap">
+                          <td className="whitespace-nowrap px-3 py-2 text-slate-900 dark:text-slate-50">
                             {p.label}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap">
-                            {r.name}
+                          <td className="whitespace-nowrap px-3 py-2 text-slate-900 dark:text-slate-50">
+                            {row.resourceName}
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap">
-                            {r.roles.join(", ")}
+                          <td className="whitespace-nowrap px-3 py-2 text-slate-700 dark:text-slate-200">
+                            {row.role}
                           </td>
                           {visibleWeeks.map((w) => {
                             const isCurrent = w === currentWeekId;
@@ -1153,7 +1452,8 @@ export default function LoadplanPage() {
                               .filter(
                                 (l) =>
                                   l.projectId === p.id &&
-                                  l.resourceId === r.id &&
+                                  l.resourceId === row.resourceId &&
+                                  l.role === row.role &&
                                   l.weekId === w,
                               )
                               .reduce((sum, l) => sum + l.hours, 0);
@@ -1161,15 +1461,19 @@ export default function LoadplanPage() {
                             return (
                               <td
                                 key={w}
-                                className={`px-3 py-2 whitespace-nowrap text-right ${
-                                  isCurrent ? "bg-amber-50" : ""
+                                className={`whitespace-nowrap px-3 py-2 text-right ${
+                                  isCurrent
+                                    ? "bg-amber-50 dark:bg-amber-900/30"
+                                    : ""
                                 }`}
                               >
                                 {h === 0 ? (
-                                  "-"
+                                  <span className="text-slate-400 dark:text-slate-500">
+                                    -
+                                  </span>
                                 ) : (
                                   <span
-                                    className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${badgeClass(
+                                    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeClass(
                                       h,
                                     )}`}
                                   >
@@ -1182,66 +1486,99 @@ export default function LoadplanPage() {
                         </tr>
                       );
                     }),
-                  )}
+                  )
+                  .filter(Boolean)
+                  .slice(0, 300)}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Tableau capacité */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-slate-900">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
               Capacité disponible par semaine (h)
             </h2>
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() =>
+                  setWeekWindowStart((prev) => Math.max(0, prev - weekWindowSize))
+                }
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                disabled={weekWindowStart === 0}
+              >
+                ◀
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setWeekWindowStart((prev) =>
+                    Math.min(
+                      prev + weekWindowSize,
+                      Math.max(0, yearWeeks.length - weekWindowSize),
+                    ),
+                  )
+                }
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                disabled={weekWindowStart + weekWindowSize >= yearWeeks.length}
+              >
+                ▶
+              </button>
+            </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs">
-              <thead className="bg-slate-100 text-slate-600">
+
+          <div className="overflow-x-auto overflow-y-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+            <table className="min-w-full bg-white text-xs dark:bg-slate-950">
+              <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">
-                    Collaborateur
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">Rôles</th>
+                  <th className="px-3 py-2 text-left font-medium">Collaborateur</th>
+                  <th className="px-3 py-2 text-left font-medium">Rôle</th>
                   {visibleWeeks.map((w) => (
                     <th
                       key={w}
-                      className="px-3 py-2 text-right font-medium whitespace-nowrap"
+                      className="whitespace-nowrap px-3 py-2 text-right font-medium"
                     >
                       {weekLabel(w)}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredResources.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50">
-                    <td className="px-3 py-2 whitespace-nowrap">{r.name}</td>
-                    <td className="px-3 py-2 whitespace-nowrap">
-                      {r.roles.join(", ")}
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {resourceRoleRows.slice(0, 300).map((row) => (
+                  <tr
+                    key={`${row.resourceId}-${row.role}`}
+                    className="bg-white hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900"
+                  >
+                    <td className="whitespace-nowrap px-3 py-2 text-slate-900 dark:text-slate-50">
+                      {row.resourceName}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-slate-700 dark:text-slate-200">
+                      {row.role}
                     </td>
                     {visibleWeeks.map((w) => {
-                      const key = `${r.id}|${w}`;
                       const cap =
-                        capacityByResWeek.get(key) ?? BASE_WEEK_CAPACITY;
+                        capacityByResRoleWeek.get(
+                          `${row.resourceId}|${row.role}|${w}`,
+                        ) ?? 0;
                       const isCurrent = w === currentWeekId;
                       return (
                         <td
                           key={w}
-                          className={`px-3 py-2 whitespace-nowrap text-right ${
-                            isCurrent ? "bg-amber-50" : ""
+                          className={`whitespace-nowrap px-3 py-2 text-right ${
+                            isCurrent
+                              ? "bg-amber-50 dark:bg-amber-900/30"
+                              : ""
                           }`}
                         >
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${capacityBadgeClass(
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${capacityBadgeClass(
                               cap,
                             )}`}
                           >
                             <span>{cap}h</span>
                             {cap === 0 && (
-                              <span className="uppercase tracking-wide">
-                                OFF
-                              </span>
+                              <span className="uppercase tracking-wide">OFF</span>
                             )}
                           </span>
                         </td>
@@ -1254,31 +1591,57 @@ export default function LoadplanPage() {
           </div>
         </div>
 
-        {/* Tableau congés / absences */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4 mt-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="mb-3 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-slate-900">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                 Suivi des congés et absences
               </h2>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Semaines avec absences déclarées pour les ressources filtrées.
               </p>
             </div>
-            <Link
-              href="/loadplan/holidays"
-              className="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white"
-            >
-              Saisie congés / absences
-            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setWeekWindowStart((prev) => Math.max(0, prev - weekWindowSize))
+                }
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                disabled={weekWindowStart === 0}
+              >
+                ◀
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setWeekWindowStart((prev) =>
+                    Math.min(
+                      prev + weekWindowSize,
+                      Math.max(0, yearWeeks.length - weekWindowSize),
+                    ),
+                  )
+                }
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                disabled={weekWindowStart + weekWindowSize >= yearWeeks.length}
+              >
+                ▶
+              </button>
+              <Link
+                href="/loadplan/holidays"
+                className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs text-white dark:bg-indigo-500"
+              >
+                Saisie congés / absences
+              </Link>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-2 text-[11px]">
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+          <div className="mb-2 flex flex-wrap gap-2 text-[11px]">
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
               <span>🙋</span>
               <span>{filteredAbsences.length} absence(s) déclarée(s)</span>
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
               <span>📚</span>
               <span>
                 {formationStats.resourcesCount} personne(s) en formation,{" "}
@@ -1287,55 +1650,44 @@ export default function LoadplanPage() {
             </span>
           </div>
 
-          <div className="overflow-x-auto mt-3">
-            <table className="min-w-full text-xs">
-              <thead className="bg-slate-100 text-slate-600">
+          <div className="overflow-x-auto overflow-y-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+            <table className="min-w-full bg-white text-xs dark:bg-slate-950">
+              <thead className="sticky top-0 z-10 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium">
-                    Semaine
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">
-                    Collaborateur
-                  </th>
-                  <th className="px-3 py-2 text-left font-medium">
-                    Type
-                  </th>
-                  <th className="px-3 py-2 text-right font-medium">
-                    Jours
-                  </th>
+                  <th className="px-3 py-2 text-left font-medium">Semaine</th>
+                  <th className="px-3 py-2 text-left font-medium">Collaborateur</th>
+                  <th className="px-3 py-2 text-left font-medium">Type</th>
+                  <th className="px-3 py-2 text-right font-medium">Jours</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredAbsences.length === 0 ? (
-                  <tr>
+                  <tr className="bg-white dark:bg-slate-950">
                     <td
                       colSpan={4}
-                      className="px-3 py-4 text-center text-slate-500"
+                      className="px-3 py-4 text-center text-slate-500 dark:text-slate-400"
                     >
-                      Aucune absence sur la période et les filtres
-                      sélectionnés.
+                      Aucune absence sur la période et les filtres sélectionnés.
                     </td>
                   </tr>
                 ) : (
-                  filteredAbsences.map((a, index) => {
-                    const res = resources.find(
-                      (r) => r.id === a.resourceId,
-                    );
+                  filteredAbsences.slice(0, 100).map((a, index) => {
+                    const res = resources.find((r) => r.id === a.resourceId);
                     return (
                       <tr
                         key={`abs-${index}`}
-                        className=" hover:bg-slate-50"
+                        className="bg-white hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-900"
                       >
-                        <td className="px-3 py-2 whitespace-nowrap">
+                        <td className="whitespace-nowrap px-3 py-2 text-slate-900 dark:text-slate-50">
                           {weekLabel(a.weekId)}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap">
+                        <td className="whitespace-nowrap px-3 py-2 text-slate-900 dark:text-slate-50">
                           {res?.name ?? a.resourceId}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-amber-700">
-                          Absence
+                        <td className="whitespace-nowrap px-3 py-2 text-amber-700 dark:text-amber-300">
+                          {a.type}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-right">
+                        <td className="whitespace-nowrap px-3 py-2 text-right text-slate-900 dark:text-slate-50">
                           {a.daysOff}
                         </td>
                       </tr>
@@ -1348,5 +1700,25 @@ export default function LoadplanPage() {
         </div>
       </section>
     </AppShell>
+  );
+}
+
+export default function LoadplanPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell
+          activeSection="loadplan"
+          pageTitle="Plan de charge"
+          pageSubtitle="Charge réelle vs capacité disponible par ressource."
+        >
+          <div className="p-6 text-sm text-slate-500 dark:text-slate-300">
+            Chargement du plan de charge…
+          </div>
+        </AppShell>
+      }
+    >
+      <LoadplanPageInner />
+    </Suspense>
   );
 }
