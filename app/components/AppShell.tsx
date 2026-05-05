@@ -29,7 +29,7 @@ type SessionUser = {
   id: number;
   email: string;
   name: string | null;
-  role: "ADMIN" | "USER";
+  role: "ADMIN" | "FULL" | "LIMITED";
 };
 
 const navItems: {
@@ -431,19 +431,24 @@ export default function AppShell({
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+      {/* Topbar */}
       <header
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center border-b px-3 md:px-5"
         style={{
-          background: "var(--topbar)",
+          background:
+            theme === "dark"
+              ? "rgba(30, 41, 59, 0.96)" // slate-800 presque plein
+              : "rgba(248, 250, 252, 0.96)",
           borderColor: "var(--border)",
-          backdropFilter: "blur(12px)",
+          backdropFilter: "blur(14px)",
         }}
       >
         <div className="flex w-full items-center gap-3">
+          {/* Mobile menu button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-600 md:hidden dark:border-slate-700 dark:text-slate-300"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-600 md:hidden dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
             title="Ouvrir le menu"
           >
             <svg
@@ -457,6 +462,7 @@ export default function AppShell({
             </svg>
           </button>
 
+          {/* Logo + titre */}
           <div className="flex min-w-[170px] shrink-0 items-center gap-3">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
               P
@@ -465,16 +471,17 @@ export default function AppShell({
               <div className="truncate text-sm font-bold text-slate-900 dark:text-white">
                 Projelys
               </div>
-              <div className="truncate text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="truncate text-[11px] text-slate-500 dark:text-slate-200">
                 Pilotage portefeuille
               </div>
             </div>
           </div>
 
+          {/* Barre de recherche desktop */}
           <div className="hidden flex-1 justify-center xl:flex">
-            <div className="flex w-full max-w-[440px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-4 py-2 dark:border-slate-700">
+            <div className="flex w-full max-w-[440px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-4 py-2 dark:border-slate-600 dark:bg-slate-700">
               <svg
-                className="mr-2 h-4 w-4 shrink-0 text-slate-400"
+                className="mr-2 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-200"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -486,28 +493,30 @@ export default function AppShell({
               <input
                 type="text"
                 placeholder="Recherche globale..."
-                className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100"
+                className="w-full bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-300"
               />
             </div>
           </div>
 
+          {/* Actions à droite */}
           <div className="ml-auto flex min-w-0 items-center gap-2 md:gap-3">
-            <div className="hidden lg:flex items-center whitespace-nowrap text-[13px] font-bold text-slate-600 dark:text-slate-300">
+            <div className="hidden items-center whitespace-nowrap text-[13px] font-bold text-slate-600 dark:text-slate-100 lg:flex">
               {todayLabel}
               {currentProjectId ? (
-                <span className="ml-2 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                <span className="ml-2 text-[11px] font-medium text-slate-400 dark:text-slate-300">
                   #{currentProjectId}
                 </span>
               ) : null}
             </div>
 
+            {/* Langue */}
             <div className="relative hidden sm:block">
               <select
                 value={currentLang}
                 onChange={(e) =>
                   setCurrentLang(e.target.value === "en" ? "en" : "fr")
                 }
-                className="appearance-none rounded-full border border-slate-200 bg-[var(--surface-muted)] py-2 pl-3 pr-8 text-[11px] font-medium text-slate-500 outline-none dark:border-slate-700 dark:text-slate-400"
+                className="appearance-none rounded-full border border-slate-200 bg-[var(--surface-muted)] py-2 pl-3 pr-8 text-[11px] font-medium text-slate-500 outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
               >
                 {languageOptions.map((lang) => (
                   <option key={lang.code} value={lang.code}>
@@ -515,17 +524,18 @@ export default function AppShell({
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 dark:text-slate-200">
                 ▼
               </span>
             </div>
 
+            {/* Theme toggle */}
             <button
               type="button"
               onClick={() =>
                 setTheme((prev) => (prev === "light" ? "dark" : "light"))
               }
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-[var(--surface-soft)]"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
               title={
                 theme === "light"
                   ? "Passer en mode sombre"
@@ -545,7 +555,7 @@ export default function AppShell({
                 </svg>
               ) : (
                 <svg
-                  className="h-4 w-4 text-slate-300"
+                  className="h-4 w-4 text-slate-50"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -556,44 +566,62 @@ export default function AppShell({
               )}
             </button>
 
+            {/* Cloche notifications */}
             <button
               type="button"
-              className="hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-500 dark:border-slate-700 dark:text-slate-300"
+              className="hidden h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white sm:inline-flex"
               title="Notifications"
             >
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path d="M10 21h4" />
-                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              </svg>
+              <span className="relative inline-flex">
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path d="M10 21h4" />
+                  <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                </svg>
+              </span>
             </button>
 
+            {/* Connexion / profil / abonnement */}
             {!loadingSession && !sessionUser && (
-              <Link
-                href="/login"
-                className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-[var(--surface-soft)]"
-              >
-                Connexion
-              </Link>
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                >
+                  Connexion
+                </Link>
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white">
+                  MB
+                </div>
+              </>
             )}
 
             {sessionUser && (
               <>
+                {/* Abonnement pour tous les utilisateurs connectés */}
+                <Link
+                  href="/subscription"
+                  className="hidden md:inline-flex h-9 items-center justify-center rounded-full border border-sky-500/30 bg-sky-600 px-3 text-[11px] font-medium text-white transition hover:bg-sky-500 dark:border-sky-400/30 dark:bg-sky-500 dark:hover:bg-sky-400"
+                  title="Gérer mon abonnement"
+                >
+                  Abonnement
+                </Link>
+
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="inline-flex h-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-red-950/20"
+                  className="inline-flex h-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-red-950/40"
                   title="Se déconnecter"
                 >
                   Déconnexion
                 </button>
 
-                <div className="hidden md:inline-flex max-w-[140px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 py-1 text-[11px] text-slate-600 dark:border-slate-700 dark:text-slate-200">
+                <div className="hidden max-w-[160px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 py-1 text-[11px] text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:inline-flex">
                   <span className="mr-2 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
                     {initials}
                   </span>
@@ -601,30 +629,23 @@ export default function AppShell({
                     {sessionUser.name || sessionUser.email}
                   </span>
                 </div>
+
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:hidden">
+                  {initials}
+                </div>
               </>
-            )}
-
-            {!sessionUser && (
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-200">
-                MB
-              </div>
-            )}
-
-            {sessionUser && (
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-200 md:hidden">
-                {initials}
-              </div>
             )}
           </div>
         </div>
       </header>
 
+      {/* Sidebar desktop */}
       <aside
         className={`fixed left-0 z-40 hidden ${sidebarWidthClass} md:flex flex-col transition-all duration-300`}
         style={{
           top: `${topbarHeight}px`,
           bottom: 0,
-          background: "var(--sidebar)",
+          background: theme === "dark" ? "rgba(15,23,42,1)" : "var(--sidebar)",
           borderRight: `1px solid var(--border)`,
         }}
       >
@@ -675,43 +696,46 @@ export default function AppShell({
           className="border-t px-2 py-3"
           style={{ borderColor: "var(--border)" }}
         >
-          <Link
-            href="/admin"
-            title={sidebarCollapsed ? "Administration" : undefined}
-            className={[
-              "flex items-center text-[var(--sidebar-muted)] transition hover:text-[var(--sidebar-foreground)]",
-              sidebarCollapsed
-                ? "justify-center rounded-xl py-2.5 hover:bg-[var(--surface-muted)]"
-                : "gap-3 rounded-xl px-3 py-2.5 hover:bg-[var(--surface-muted)]",
-            ].join(" ")}
-          >
-            <span className="inline-flex h-8 w-8 items-center justify-center">
-              <svg
-                className="h-[18px] w-[18px]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.9"
-              >
-                <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
-                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
-              </svg>
-            </span>
+          {sessionUser?.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              title={sidebarCollapsed ? "Administration" : undefined}
+              className={[
+                "flex items-center text-[var(--sidebar-muted)] transition hover:text-[var(--sidebar-foreground)]",
+                sidebarCollapsed
+                  ? "justify-center rounded-xl py-2.5 hover:bg-[var(--surface-muted)]"
+                  : "gap-3 rounded-xl px-3 py-2.5 hover:bg-[var(--surface-muted)]",
+              ].join(" ")}
+            >
+              <span className="inline-flex h-8 w-8 items-center justify-center">
+                <svg
+                  className="h-[18px] w-[18px]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                >
+                  <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                  <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
+                </svg>
+              </span>
 
-            {!sidebarCollapsed && (
-              <div className="min-w-0">
-                <div className="truncate text-[13px] font-medium">
-                  Administration
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="truncate text-[13px] font-medium">
+                    Administration
+                  </div>
+                  <div className="truncate text-[10px] text-[var(--sidebar-muted)]">
+                    Comptes et accès
+                  </div>
                 </div>
-                <div className="truncate text-[10px] text-[var(--sidebar-muted)]">
-                  Comptes et accès
-                </div>
-              </div>
-            )}
-          </Link>
+              )}
+            </Link>
+          )}
         </div>
       </aside>
 
+      {/* Menu mobile */}
       {mobileMenuOpen && (
         <>
           <div
@@ -720,7 +744,10 @@ export default function AppShell({
           />
           <div
             className="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[320px] border-r bg-[var(--sidebar)] md:hidden"
-            style={{ borderColor: "var(--border)", paddingTop: `${topbarHeight}px` }}
+            style={{
+              borderColor: "var(--border)",
+              paddingTop: `${topbarHeight}px`,
+            }}
           >
             <div className="flex items-center justify-between px-4 py-3">
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
@@ -747,36 +774,39 @@ export default function AppShell({
 
             <div
               className="border-t px-3 py-3"
-              style={{ borderColor: "var(--border)" }}
+              style={{ borderColor: "var(--border) " }}
             >
-              <Link
-                href="/admin"
-                className="flex items-center gap-3 rounded-xl px-3 py-3 text-[var(--sidebar-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--sidebar-foreground)]"
-              >
-                <span className="inline-flex h-8 w-8 items-center justify-center">
-                  <svg
-                    className="h-[18px] w-[18px]"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.9"
-                  >
-                    <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
-                    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
-                  </svg>
-                </span>
-                <div>
-                  <div className="text-[13px] font-medium">Administration</div>
-                  <div className="text-[10px] text-[var(--sidebar-muted)]">
-                    Comptes et accès
+              {sessionUser?.role === "ADMIN" && (
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-[var(--sidebar-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--sidebar-foreground)]"
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center">
+                    <svg
+                      className="h-[18px] w-[18px]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.9"
+                    >
+                      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div className="text-[13px] font-medium">Administration</div>
+                    <div className="text-[10px] text-[var(--sidebar-muted)]">
+                      Comptes et accès
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              )}
             </div>
           </div>
         </>
       )}
 
+      {/* Contenu principal */}
       <main
         className={`transition-all duration-300 ${contentPaddingClass}`}
         style={{
@@ -786,11 +816,11 @@ export default function AppShell({
         <section className="min-h-[calc(100vh-64px)] bg-[var(--background)] px-4 pb-8 md:px-5">
           {pageTitle && (
             <div className="mb-6">
-              <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
+              <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
                 {pageTitle}
               </h1>
               {pageSubtitle ? (
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
                   {pageSubtitle}
                 </p>
               ) : null}

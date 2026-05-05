@@ -66,18 +66,36 @@ function getFrenchPublicHolidays(year: number): Date[] {
   const pentecostMonday = addDays(easter, 50);
 
   return [
-    new Date(Date.UTC(year, 0, 1)),   // 1er janvier
-    easterMonday,                     // Lundi de Pâques
-    new Date(Date.UTC(year, 4, 1)),   // 1er mai
-    new Date(Date.UTC(year, 4, 8)),   // 8 mai
-    ascension,                        // Ascension
-    pentecostMonday,                  // Lundi de Pentecôte
-    new Date(Date.UTC(year, 6, 14)),  // 14 juillet
-    new Date(Date.UTC(year, 7, 15)),  // 15 août
-    new Date(Date.UTC(year, 10, 1)),  // Toussaint
-    new Date(Date.UTC(year, 10, 11)), // 11 novembre
-    new Date(Date.UTC(year, 11, 25)), // Noël
+    new Date(Date.UTC(year, 0, 1)),
+    easterMonday,
+    new Date(Date.UTC(year, 4, 1)),
+    new Date(Date.UTC(year, 4, 8)),
+    ascension,
+    pentecostMonday,
+    new Date(Date.UTC(year, 6, 14)),
+    new Date(Date.UTC(year, 7, 15)),
+    new Date(Date.UTC(year, 10, 1)),
+    new Date(Date.UTC(year, 10, 11)),
+    new Date(Date.UTC(year, 11, 25)),
   ];
+}
+
+function isSameUtcDay(d1: Date, d2: Date) {
+  return (
+    d1.getUTCFullYear() === d2.getUTCFullYear() &&
+    d1.getUTCMonth() === d2.getUTCMonth() &&
+    d1.getUTCDate() === d2.getUTCDate()
+  );
+}
+
+function isWeekend(date: Date) {
+  const day = date.getUTCDay();
+  return day === 0 || day === 6;
+}
+
+function isFrenchPublicHoliday(date: Date) {
+  const holidays = getFrenchPublicHolidays(date.getUTCFullYear());
+  return holidays.some((h) => isSameUtcDay(h, date));
 }
 
 // ----------------- Types réponse -----------------
@@ -91,14 +109,15 @@ type LoadplanApiProject = {
 };
 
 type LoadplanApiResource = {
-  id: string; // res-<name>
+  id: string;
   name: string;
   roles: string[];
 };
 
 type LoadplanApiLoad = {
-  projectId: string; // p-<id>
-  resourceId: string; // res-<name>
+  projectId: string;
+  resourceId: string;
+  role: string;
   weekId: string;
   hours: number;
 };
@@ -112,7 +131,7 @@ type LoadplanApiAbsence = {
   resourceId: string;
   weekId: string;
   daysOff: number;
-  type: string; // ex: "Congés payés", "Formation", ...
+  type: string;
 };
 
 type LoadplanApiResponse = {
@@ -131,19 +150,26 @@ export async function GET(req: NextRequest) {
   const yearParam = searchParams.get("year");
   const projectIdParam = searchParams.get("projectId");
   const resourceNameParam = searchParams.get("resourceName");
+  const clientNameParam = searchParams.get("clientName");
 
   const year =
     yearParam && yearParam !== "0" ? Number(yearParam) : undefined;
 
-  // 1) Projets + tâches
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: "desc" },
     include: { tasks: true },
   });
 
-  const filteredProjects = projectIdParam
-    ? projects.filter((p) => p.id === Number(projectIdParam))
-    : projects;
+  const filteredProjects = projects.filter((p) => {
+    if (projectIdParam && p.id !== Number(projectIdParam)) return false;
+    if (
+      clientNameParam &&
+      (p.clientName ?? "").trim() !== clientNameParam.trim()
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   const allTasks = filteredProjects.flatMap((p) => p.tasks);
 
@@ -151,8 +177,12 @@ export async function GET(req: NextRequest) {
     if (!t.startDate || !t.endDate) return false;
     if (!t.assigneeName) return false;
 
-    if (resourceNameParam && t.assigneeName !== resourceNameParam)
+    if (
+      resourceNameParam &&
+      t.assigneeName.trim() !== resourceNameParam.trim()
+    ) {
       return false;
+    }
 
     if (!year) return true;
 
@@ -164,7 +194,6 @@ export async function GET(req: NextRequest) {
     return sYear <= year && eYear >= year;
   });
 
-  // 2) Ressources : base Resource + rôles venant des tâches
   const dbResources = await prisma.resource.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
@@ -172,21 +201,20 @@ export async function GET(req: NextRequest) {
 
   const resourceMap = new Map<string, LoadplanApiResource>();
 
-  // ressources de la table Resource
   for (const r of dbResources) {
     const name = r.name.trim();
     const resId = `res-${name}`;
     resourceMap.set(resId, {
       id: resId,
       name,
-      roles: r.role ? [r.role] : [],
+      roles: r.role ? [r.role.trim()] : [],
     });
   }
 
-  // compléments à partir des tâches
   for (const t of tasksFiltered) {
     const name = t.assigneeName!.trim();
     const resId = `res-${name}`;
+
     if (!resourceMap.has(resId)) {
       resourceMap.set(resId, {
         id: resId,
@@ -194,13 +222,21 @@ export async function GET(req: NextRequest) {
         roles: [],
       });
     }
+
     const res = resourceMap.get(resId)!;
-    if (t.role && !res.roles.includes(t.role)) {
-      res.roles.push(t.role);
+    const taskRole = t.role?.trim();
+
+    if (taskRole && !res.roles.includes(taskRole)) {
+      res.roles.push(taskRole);
     }
   }
 
-  // 3) Charges par projet / ressource / semaine
+  for (const res of resourceMap.values()) {
+    res.roles = Array.from(new Set(res.roles.filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b, "fr"),
+    );
+  }
+
   const loadMap = new Map<string, LoadplanApiLoad>();
 
   for (const task of tasksFiltered) {
@@ -217,48 +253,57 @@ export async function GET(req: NextRequest) {
     const resName = task.assigneeName!.trim();
     const resId = `res-${resName}`;
     const projectKey = `p-${task.projectId}`;
+    const role = task.role?.trim() || "Sans rôle";
 
     for (const w of weeks) {
-      const key = `${projectKey}|${resId}|${w}`;
+      if (year && Number(w.split("-")[0]) !== year) continue;
+
+      const key = `${projectKey}|${resId}|${role}|${w}`;
       const existing = loadMap.get(key);
-      const hours = hoursPerWeek;
 
       if (existing) {
-        existing.hours += hours;
+        existing.hours += hoursPerWeek;
       } else {
         loadMap.set(key, {
           projectId: projectKey,
           resourceId: resId,
+          role,
           weekId: w,
-          hours,
+          hours: hoursPerWeek,
         });
       }
     }
   }
 
-  const loads = Array.from(loadMap.values()).map((l) => ({
-    ...l,
-    hours: Math.round(l.hours * 10) / 10,
-  }));
+  const loads = Array.from(loadMap.values())
+    .map((l) => ({
+      ...l,
+      hours: Math.round(l.hours * 10) / 10,
+    }))
+    .sort((a, b) => {
+      if (a.projectId !== b.projectId) return a.projectId.localeCompare(b.projectId);
+      if (a.resourceId !== b.resourceId) return a.resourceId.localeCompare(b.resourceId);
+      if (a.role !== b.role) return a.role.localeCompare(b.role, "fr");
+      return a.weekId.localeCompare(b.weekId);
+    });
 
   const weekIdsFromLoads = loads.map((l) => l.weekId);
 
-    // 4) Jours fériés + absences (avec Resource)
   const holidays: LoadplanApiHoliday[] = [];
   const weekIdsFromHolidays: string[] = [];
 
-  // on ajoute les jours fériés pour l'année sélectionnée
-  const yearsToUse = year ? [year] : Array.from(
-    new Set([
-      ...weekIdsFromLoads.map((w) => Number(w.split("-")[0])),
-    ]),
-  );
+  const yearsToUse = year
+    ? [year]
+    : Array.from(new Set(weekIdsFromLoads.map((w) => Number(w.split("-")[0]))));
 
   for (const y of yearsToUse) {
     const publicHolidays = getFrenchPublicHolidays(y);
     for (const d of publicHolidays) {
+      if (isWeekend(d)) continue;
+
       const weekId = weekIdFromDate(d);
       weekIdsFromHolidays.push(weekId);
+
       const existing = holidays.find((h) => h.weekId === weekId);
       if (existing) {
         existing.daysOff += 1;
@@ -279,84 +324,123 @@ export async function GET(req: NextRequest) {
   for (const a of absencesRaw) {
     if (!a.resource) continue;
 
+    const resourceName = a.resource.name.trim();
+
+    if (resourceNameParam && resourceName !== resourceNameParam.trim()) {
+      continue;
+    }
+
     const start = new Date(a.startDate);
     const end = new Date(a.endDate);
     if (end < start) continue;
 
+    if (year) {
+      const sYear = Number(weekIdFromDate(start).split("-")[0]);
+      const eYear = Number(weekIdFromDate(end).split("-")[0]);
+      if (!(sYear <= year && eYear >= year)) continue;
+    }
+
     const totalDays = a.daysCount ?? 0;
     if (totalDays <= 0) continue;
 
-    const totalDates =
-      Math.floor(
-        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-      ) + 1;
-    const daysPerDate = totalDates > 0 ? totalDays / totalDates : 0;
-
+    const workingDates: Date[] = [];
     const cur = new Date(start);
+
     while (cur <= end) {
-      const weekId = weekIdFromDate(cur);
-      weekIdsFromAbsences.push(weekId);
-
-      const resourceId = `res-${a.resource.name.trim()}`;
-
-      const existing = absences.find(
-        (x) => x.resourceId === resourceId && x.weekId === weekId,
+      const utcDate = new Date(
+        Date.UTC(cur.getFullYear(), cur.getMonth(), cur.getDate()),
       );
-      if (existing) {
-        existing.daysOff += daysPerDate;
-      } else {
-        absences.push({
-          resourceId,
-          weekId,
-          daysOff: daysPerDate,
-          type: a.type,
-        });
+
+      if (!isWeekend(utcDate) && !isFrenchPublicHoliday(utcDate)) {
+        workingDates.push(utcDate);
       }
 
       cur.setDate(cur.getDate() + 1);
     }
 
-    const resId = `res-${a.resource.name.trim()}`;
+    if (workingDates.length === 0) continue;
+
+    const daysPerDate = totalDays / workingDates.length;
+
+    for (const workDate of workingDates) {
+      const weekId = weekIdFromDate(workDate);
+
+      if (!year || Number(weekId.split("-")[0]) === year) {
+        weekIdsFromAbsences.push(weekId);
+
+        const resourceId = `res-${resourceName}`;
+        const existing = absences.find(
+          (x) => x.resourceId === resourceId && x.weekId === weekId,
+        );
+
+        if (existing) {
+          existing.daysOff += daysPerDate;
+        } else {
+          absences.push({
+            resourceId,
+            weekId,
+            daysOff: daysPerDate,
+            type: a.type,
+          });
+        }
+      }
+    }
+
+    const resId = `res-${resourceName}`;
     if (!resourceMap.has(resId)) {
       resourceMap.set(resId, {
         id: resId,
-        name: a.resource.name.trim(),
-        roles: a.resource.role ? [a.resource.role] : [],
+        name: resourceName,
+        roles: a.resource.role ? [a.resource.role.trim()] : [],
       });
     }
   }
 
+  const resources = Array.from(resourceMap.values())
+    .filter((r) => {
+      if (resourceNameParam) return r.name === resourceNameParam.trim();
 
-
-  const resources = Array.from(resourceMap.values());
+      const hasLoad = loads.some((l) => l.resourceId === r.id);
+      const hasAbsence = absences.some((a) => a.resourceId === r.id);
+      return hasLoad || hasAbsence;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
 
   const allWeekIds = Array.from(
-  new Set([
-    ...weekIdsFromLoads,
-    ...weekIdsFromAbsences,
-    ...weekIdsFromHolidays,
-  ]),
-  ).sort();
+    new Set([
+      ...weekIdsFromLoads,
+      ...weekIdsFromAbsences,
+      ...weekIdsFromHolidays,
+    ]),
+  ).sort((a, b) => a.localeCompare(b));
 
-
-
-  // 5) Projets pour le front
-  const projectsForFront: LoadplanApiProject[] = filteredProjects.map(
-    (p) => ({
-      id: `p-${p.id}`,
-      projectId: p.id,
-      number: p.projectNumber ?? `P-${p.id}`,
-      label: p.titleProject ?? p.projectNumber ?? `Projet ${p.id}`,
-      clientName: p.clientName ?? "",
-    }),
-  );
+  const projectsForFront: LoadplanApiProject[] = filteredProjects.map((p) => ({
+    id: `p-${p.id}`,
+    projectId: p.id,
+    number: p.projectNumber ?? `P-${p.id}`,
+    label: p.titleProject ?? p.projectNumber ?? `Projet ${p.id}`,
+    clientName: p.clientName ?? "",
+  }));
 
   const response: LoadplanApiResponse = {
     projects: projectsForFront,
     resources,
     loads,
-    holidays,
-    absences,
+    holidays: holidays
+      .map((h) => ({
+        ...h,
+        daysOff: Math.round(h.daysOff * 10) / 10,
+      }))
+      .sort((a, b) => a.weekId.localeCompare(b.weekId)),
+    absences: absences
+      .map((a) => ({
+        ...a,
+        daysOff: Math.round(a.daysOff * 10) / 10,
+      }))
+      .sort((a, b) => {
+        if (a.weekId !== b.weekId) return a.weekId.localeCompare(b.weekId);
+        return a.resourceId.localeCompare(b.resourceId);
+      }),
     allWeekIds,
   };
 

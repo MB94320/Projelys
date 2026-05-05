@@ -443,7 +443,7 @@ export default function GlobalRisksClient({ risks }: GlobalRisksClientProps) {
   return (
     <>
       {/* Bandeau haut */}
-      <div className="mb-4 flex items-center justify_between text-xs">
+      <div className="mb-4 flex items-center justify-between text-xs">
         <div className="flex items-center gap-3">
           <Link
             href="/projects"
@@ -452,7 +452,23 @@ export default function GlobalRisksClient({ risks }: GlobalRisksClientProps) {
             ← Retour au portefeuille
           </Link>
         </div>
+        
+      
+        <div className="flex items-center gap-2">
+          <Link
+            href="/Tutoriel/projelys-risks-tutorial.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          >
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[11px] font-bold text-white dark:bg-indigo-500">
+              ?
+            </span>
+            <span>Tutoriel</span>
+          </Link>
+        </div>
       </div>
+      
 
       {/* Filtres rapides */}
       <div className="mb-3 flex flex-wrap items-center gap-3 text-[11px]">

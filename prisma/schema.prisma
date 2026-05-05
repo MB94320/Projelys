@@ -43,19 +43,19 @@ model Project {
   opportunityCount Int? @default(0)
 
   // --- KPIs livrables / NC / audits stockés sur le projet ---
-  deliverablesCount        Int   @default(0)
-  deliveredCount           Int   @default(0)
-  deliverablesOtdRate      Float @default(0)
-  deliverablesDodRate      Float @default(0)
-  deliverablesOqdRate      Float @default(0)
+  deliverablesCount   Int   @default(0)
+  deliveredCount      Int   @default(0)
+  deliverablesOtdRate Float @default(0)
+  deliverablesDodRate Float @default(0)
+  deliverablesOqdRate Float @default(0)
 
   nonConformitiesCount     Int   @default(0)
   openNonConformitiesCount Int   @default(0)
   criticalNcRate           Float @default(0)
   avgNcClosureDelayDays    Float @default(0)
 
-  previousAuditRate        Float @default(0)
-  currentAuditRate         Float @default(0)
+  previousAuditRate Float @default(0)
+  currentAuditRate  Float @default(0)
 
   // --- Performance opérationnelle / page Performance ---
   customerSatisfaction Float @default(0)
@@ -267,10 +267,10 @@ model NonConformity {
   preventiveAction String?
   comments         String?
   fncUrl           String?
-  eightDProgress   Int       @default(0)
+  eightDProgress   Int             @default(0)
   eightDComment    String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
   createdBy        Int?
   qualityActions   QualityAction[]
 
@@ -394,26 +394,26 @@ model ProjectQualityChecklistItem {
 }
 
 model Audit {
-  id                    Int        @id @default(autoincrement())
-  ref                   String     @unique
+  id  Int    @id @default(autoincrement())
+  ref String @unique
 
-  projectId             Int
-  project               Project    @relation(fields: [projectId], references: [id])
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
 
-  evaluationDate        DateTime
-  lastEvaluationDate    DateTime?
-  globalConformityRate  Float
-  previousGlobalRate    Float?
+  evaluationDate       DateTime
+  lastEvaluationDate   DateTime?
+  globalConformityRate Float
+  previousGlobalRate   Float?
 
-  qualityFollowUp       String?
-  outsourcing           String?
-  xshore                String?
+  qualityFollowUp String?
+  outsourcing     String?
+  xshore          String?
 
-  createdAt             DateTime   @default(now())
-  updatedAt             DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   themes                AuditTheme[]
-  ncFromAuditCount      Int        @default(0)
+  ncFromAuditCount      Int          @default(0)
   avgActionClosureDelay Int?
 }
 
@@ -434,9 +434,9 @@ model AuditTheme {
 }
 
 model AuditQuestion {
-  id      Int         @id @default(autoincrement())
+  id      Int        @id @default(autoincrement())
   themeId Int
-  theme   AuditTheme  @relation(fields: [themeId], references: [id])
+  theme   AuditTheme @relation(fields: [themeId], references: [id])
 
   code    Int
   text    String
@@ -494,31 +494,75 @@ model CustomerSatisfactionHistory {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  email        String    @unique
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
   name         String?
   passwordHash String
-  role         UserRole  @default(USER)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  role         UserRole @default(FULL)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  sessions     Session[]
+  sessions      Session[]
+  subscriptions Subscription[]
 }
 
 model Session {
-  id           Int      @id @default(autoincrement())
-  token        String   @unique
-  userId       Int
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([expiresAt])
 }
 
+model Subscription {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  plan         SubscriptionPlan
+  billingCycle BillingCycle
+  status       SubscriptionStatus @default(PENDING)
+
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+
+  stripeCustomerId     String?
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([stripeCustomerId])
+}
+
 enum UserRole {
   ADMIN
-  USER
+  FULL
+  LIMITED
+}
+
+enum SubscriptionPlan {
+  LIMITED
+  FULL
+}
+
+enum BillingCycle {
+  TRIAL
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  CANCELED
+  EXPIRED
 }

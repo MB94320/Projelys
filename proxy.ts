@@ -18,15 +18,18 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const sessionToken = req.cookies.get("projelys_session")?.value;
+  const sessionCookie = req.cookies.get("projelys_session");
+  const sessionToken = sessionCookie?.value || "";
 
-  if (!sessionToken && !isPublicPath) {
+  const hasSession = sessionToken.trim().length > 0;
+
+  if (!hasSession && !isPublicPath) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("next", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (sessionToken && pathname === "/login") {
+  if (hasSession && pathname === "/login") {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
