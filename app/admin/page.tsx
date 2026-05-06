@@ -61,72 +61,107 @@ export default async function AdminPage() {
       pageSubtitle="Gestion de votre compte administrateur, des utilisateurs et des abonnements."
     >
       <div className="max-w-6xl space-y-6">
-        {/* Profil admin */}
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-            Profil administrateur
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-            Informations de base associées à votre compte.
-          </p>
+        {/* Bandeau d'action rapide */}
+        <div className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm dark:bg-slate-800 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm text-slate-600 dark:text-slate-200">
+              Accéder aux réglages de sécurité de votre propre compte.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/settings/security"
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800"
+            >
+              Sécurité du compte (utilisateur)
+            </Link>
+          </div>
+        </div>
 
-          <dl className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
-              <dt className="text-slate-500 dark:text-slate-200">
-                Nom affiché
-              </dt>
-              <dd className="font-medium text-slate-900 dark:text-white">
-                {user.name || "Non renseigné"}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
-              <dt className="text-slate-500 dark:text-slate-200">Email</dt>
-              <dd className="font-medium text-slate-900 dark:text-white">
-                {user.email}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
-              <dt className="text-slate-500 dark:text-slate-200">Rôle</dt>
-              <dd className="font-medium text-emerald-600 dark:text-emerald-300">
-                {user.role}
-              </dd>
-            </div>
-          </dl>
-        </section>
+        {/* Profil admin + Sécurité admin côte à côte */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {/* Profil admin */}
+          <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              Profil administrateur
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
+              Informations de base associées à votre compte administrateur.
+            </p>
 
-        {/* Sécurité */}
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-            Sécurité
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-            Modifier votre mot de passe administrateur.
-          </p>
-          <SecurityForm />
-        </section>
+            <dl className="mt-4 space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
+                <dt className="text-slate-500 dark:text-slate-200">
+                  Nom affiché
+                </dt>
+                <dd className="font-medium text-slate-900 dark:text-white">
+                  {user.name || "Non renseigné"}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
+                <dt className="text-slate-500 dark:text-slate-200">Email</dt>
+                <dd className="font-medium text-slate-900 dark:text-white">
+                  {user.email}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
+                <dt className="text-slate-500 dark:text-slate-200">Rôle</dt>
+                <dd className="font-medium text-emerald-600 dark:text-emerald-300">
+                  {user.role}
+                </dd>
+              </div>
+            </dl>
+          </section>
 
-        {/* Utilisateurs + abonnement */}
+          {/* Sécurité admin */}
+          <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              Sécurité (administrateur)
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
+              Modifier le mot de passe de votre compte administrateur.
+            </p>
+            <div className="mt-4">
+              <SecurityForm />
+            </div>
+          </section>
+        </div>
+
+        {/* Utilisateurs + abonnement dans un bloc séparé */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-                Utilisateurs
+                Utilisateurs & abonnements
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-                Créer, supprimer, activer, désactiver et préparer la gestion des
-                accès.
+                Gérer les comptes utilisateurs, les accès et votre abonnement.
               </p>
             </div>
 
-            <Link
-              href="/admin/subscription"
-              className="inline-flex items-center justify-center rounded-xl border border-sky-500/40 bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 dark:border-sky-400/40 dark:bg-sky-500 dark:hover:bg-sky-400"
-            >
-              Abonnement
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/admin/subscription"
+                className="inline-flex items-center justify-center rounded-xl border border-sky-500/40 bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 dark:border-sky-400/40 dark:bg-sky-500 dark:hover:bg-sky-400"
+              >
+                Abonnement
+              </Link>
+              {/* Bouton pour faire défiler vers la liste des utilisateurs */}
+              <a
+                href="#users-admin-section"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800"
+              >
+                Gérer les utilisateurs (voir la liste)
+              </a>
+            </div>
           </div>
 
-          <UsersAdminSection initialUsers={users} />
+          <div
+            id="users-admin-section"
+            className="mt-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
+          >
+            <UsersAdminSection initialUsers={users} />
+          </div>
         </section>
       </div>
     </AppShell>

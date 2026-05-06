@@ -340,18 +340,20 @@ export default function AppShell({
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch {
-    } finally {
-      setSessionUser(null);
-      router.push("/login");
-      router.refresh();
-    }
-  };
+  try {
+    await fetch("/api/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("Logout error", error);
+  } finally {
+    setSessionUser(null);
+    router.replace("/login");
+    router.refresh();
+  }
+};
 
   const currentProjectId = useMemo(() => {
     const match = pathname.match(/^\/projects\/(\d+)/);

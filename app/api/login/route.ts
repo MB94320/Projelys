@@ -1,55 +1,68 @@
-import { NextResponse } from "next/server";
-import {
-  loginWithCredentials,
-  SESSION_COOKIE_NAME,
-} from "@/app/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/app/lib/prisma";
+import { setSessionCookie, verifyPasswordHash } from "@/app/lib/auth";
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const email = String(body?.email ?? "").trim();
-    const password = String(body?.password ?? "");
+    const body = await request.json();
+    const email = String(body?.email || "").trim().toLowerCase();
+    const password = String(body?.password || "");
 
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email et mot de passe requis." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const result = await loginWithCredentials(email, password);
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    if (!result) {
+    if (!user || !user.passwordHash) {
       return NextResponse.json(
         { error: "Identifiants invalides." },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    const response = NextResponse.json({
+    const isValid = verifyPasswordHash(password, user.passwordHash);
+
+    if (!isValid) {
+      return NextResponse.json(
+        { error: "Identifiants invalides." },
+        { status: 401 },
+      );
+    }
+
+    if (user.isActive === false) {
+      return NextResponse.json(
+        { error: "Compte désactivé." },
+        { status: 403 },
+      );
+    }
+
+    await setSessionCookie({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role as "ADMIN" | "FULL" | "LIMITED",
+    });
+
+    return NextResponse.json({
       ok: true,
       user: {
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        role: result.user.role,
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
       },
     });
-
-    response.cookies.set(SESSION_COOKIE_NAME, result.token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      expires: result.expiresAt,
-      path: "/",
-    });
-
-    return response;
   } catch (error) {
-    console.error(error);
+    console.error("POST /api/login error", error);
     return NextResponse.json(
-      { error: "Erreur interne de connexion." },
-      { status: 500 }
+      { error: "Erreur serveur lors de la connexion." },
+      { status: 500 },
     );
   }
 }

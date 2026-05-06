@@ -1,41 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sessionCookieName, verifySignedSession } from "@/app/lib/auth";
 
-const PUBLIC_PATHS = ["/login", "/api/login"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/reset-password",
+  "/auth/forgot-password",
+];
 
-export function proxy(req: NextRequest) {
-  const { pathname, search } = req.nextUrl;
-
-  const isPublicPath = PUBLIC_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`)
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
+}
 
-  if (
+function isIgnoredPath(pathname: string) {
+  return (
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.startsWith("/api/logout") ||
-    pathname.startsWith("/api/session")
-  ) {
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/images") ||
+    pathname.startsWith("/public") ||
+    pathname.includes(".")
+  );
+}
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (isIgnoredPath(pathname) || pathname.startsWith("/api")) {
     return NextResponse.next();
   }
 
-  const sessionCookie = req.cookies.get("projelys_session");
-  const sessionToken = sessionCookie?.value || "";
+  const token = request.cookies.get(sessionCookieName)?.value;
+  const user = verifySignedSession(token);
 
-  const hasSession = sessionToken.trim().length > 0;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    if (!user) {
+      const url = new URL("/login", request.url);
+      url.searchParams.set("next", pathname);
+      return NextResponse.redirect(url);
+    }
 
-  if (!hasSession && !isPublicPath) {
-    const loginUrl = new URL("/login", req.url);
-    loginUrl.searchParams.set("next", `${pathname}${search}`);
-    return NextResponse.redirect(loginUrl);
+    if (user.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    return NextResponse.next();
   }
 
-  if (hasSession && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (!isPublicPath(pathname) && !user) {
+    const loginUrl = new URL("/login", request.url);
+    if (pathname !== "/") {
+      loginUrl.searchParams.set("next", pathname);
+    }
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/((?!.*\\.).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -35,7 +35,7 @@ export default function LoginPageClient() {
         throw new Error(data?.error || "Connexion impossible.");
       }
 
-      router.push(nextUrl);
+      router.replace(nextUrl);
       router.refresh();
     } catch (err: any) {
       setError(err?.message || "Connexion impossible.");

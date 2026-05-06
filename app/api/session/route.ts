@@ -1,26 +1,36 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/app/lib/auth";
+import { getSessionUser } from "@/app/lib/auth";
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
+    const user = await getSessionUser();
 
-    return NextResponse.json({
-      authenticated: !!user,
-      user: user
-        ? {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-          }
-        : null,
-    });
-  } catch (error) {
-    console.error(error);
     return NextResponse.json(
-      { authenticated: false, user: null },
-      { status: 200 }
+      {
+        authenticated: Boolean(user),
+        user: user ?? null,
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
+  } catch (error) {
+    console.error("GET /api/session error", error);
+
+    return NextResponse.json(
+      {
+        authenticated: false,
+        user: null,
+      },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
     );
   }
 }

@@ -1,25 +1,24 @@
 import { NextResponse } from "next/server";
-import { logout, SESSION_COOKIE_NAME } from "@/app/lib/auth";
+import { clearSessionCookie } from "@/app/lib/auth";
 
 export async function POST() {
   try {
-    await logout();
+    await clearSessionCookie();
 
-    const response = NextResponse.json({ ok: true });
-    response.cookies.set(SESSION_COOKIE_NAME, "", {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      expires: new Date(0),
-      path: "/",
-    });
-
-    return response;
-  } catch (error) {
-    console.error(error);
     return NextResponse.json(
-      { error: "Erreur interne de déconnexion." },
-      { status: 500 }
+      { ok: true, message: "Déconnexion effectuée." },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
+  } catch (error) {
+    console.error("POST /api/logout error", error);
+    return NextResponse.json(
+      { error: "Erreur serveur lors de la déconnexion." },
+      { status: 500 },
     );
   }
 }
