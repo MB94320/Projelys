@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -44,14 +45,14 @@ export default function LoginPageClient() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--background)] text-[var(--foreground)] flex items-center justify-center px-4">
+    <main className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4 text-[var(--foreground)]">
       <div className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-sm">
         <div className="mb-6 text-center">
           <div className="text-2xl font-bold text-slate-900 dark:text-white">
             Projelys
           </div>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Connexion administrateur
+            Connexion à votre espace
           </p>
         </div>
 
@@ -71,9 +72,18 @@ export default function LoginPageClient() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-200">
-              Mot de passe
-            </label>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200">
+                Mot de passe
+              </label>
+              <Link
+                href="/auth/reset-password"
+                className="text-xs text-indigo-600 hover:underline dark:text-indigo-300"
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
+
             <div className="flex items-center rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]">
               <input
                 type={showPassword ? "text" : "password"}
@@ -106,16 +116,6 @@ export default function LoginPageClient() {
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>
-
-          <div className="mt-3 flex justify-between text-xs">
-            <button
-              type="button"
-              onClick={() => router.push("/auth/forgot-password")}
-              className="text-indigo-600 hover:underline dark:text-indigo-300"
-            >
-              Mot de passe oublié ?
-            </button>
-          </div>
         </form>
       </div>
     </main>
