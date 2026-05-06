@@ -106,6 +106,16 @@ export default function LoginPageClient() {
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>
+
+          <div className="mt-3 flex justify-between text-xs">
+            <button
+              type="button"
+              onClick={() => router.push("/auth/forgot-password")}
+              className="text-indigo-600 hover:underline dark:text-indigo-300"
+            >
+              Mot de passe oublié ?
+            </button>
+          </div>
         </form>
       </div>
     </main>

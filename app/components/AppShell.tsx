@@ -437,7 +437,7 @@ export default function AppShell({
         style={{
           background:
             theme === "dark"
-              ? "rgba(30, 41, 59, 0.96)" // slate-800 presque plein
+              ? "rgba(30, 41, 59, 0.96)"
               : "rgba(248, 250, 252, 0.96)",
           borderColor: "var(--border)",
           backdropFilter: "blur(14px)",
@@ -612,6 +612,17 @@ export default function AppShell({
                   Abonnement
                 </Link>
 
+                {/* Lien admin visible uniquement pour les admins */}
+                {sessionUser.role === "ADMIN" && (
+                  <Link
+                    href="/admin"
+                    className="hidden md:inline-flex h-9 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500 px-3 text-[11px] font-medium text-white transition hover:bg-amber-400 dark:border-amber-400/40 dark:bg-amber-500 dark:hover:bg-amber-400"
+                    title="Administration"
+                  >
+                    Admin
+                  </Link>
+                )}
+
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -621,6 +632,7 @@ export default function AppShell({
                   Déconnexion
                 </button>
 
+                {/* Badge nom + initiales desktop */}
                 <div className="hidden max-w-[160px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 py-1 text-[11px] text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:inline-flex">
                   <span className="mr-2 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
                     {initials}
@@ -630,6 +642,7 @@ export default function AppShell({
                   </span>
                 </div>
 
+                {/* Avatar simple mobile */}
                 <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:hidden">
                   {initials}
                 </div>
