@@ -228,25 +228,6 @@ const navItems: {
       </svg>
     ),
   },
-    {
-    key: "subscription",
-    label: "Abonnement",
-    shortLabel: "Abonnement",
-    href: "/subscription",
-    icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
-        <path d="M4 7h16" />
-        <rect x="4" y="7" width="16" height="11" rx="2" />
-        <path d="M10 11h4" />
-      </svg>
-    ),
-  },
 ];
 
 const languageOptions = [
@@ -633,16 +614,7 @@ export default function AppShell({
             )}
 
             {sessionUser && (
-              <>
-                {/* Abonnement pour tous les utilisateurs connectés */}
-                <Link
-                  href="/subscription"
-                  className="hidden md:inline-flex h-9 items-center justify-center rounded-full border border-sky-500/30 bg-sky-600 px-3 text-[11px] font-medium text-white transition hover:bg-sky-500 dark:border-sky-400/30 dark:bg-sky-500 dark:hover:bg-sky-400"
-                  title="Gérer mon abonnement"
-                >
-                  Abonnement
-                </Link>
-
+              <>                
                 {/* Lien admin visible uniquement pour les admins */}
                 {sessionUser.role === "ADMIN" && (
                   <Link
@@ -740,6 +712,53 @@ export default function AppShell({
           className="border-t px-2 py-3"
           style={{ borderColor: "var(--border)" }}
         >
+                    {sessionUser && (
+            <Link
+              href="/subscription"
+              title={sidebarCollapsed ? "Abonnement" : undefined}
+              className={[
+                "mb-2 flex items-center transition",
+                sidebarCollapsed
+                  ? "justify-center rounded-xl py-2.5"
+                  : "gap-3 rounded-xl px-3 py-2.5",
+                activeSection === "subscription"
+                  ? "bg-sky-600 text-white shadow-sm"
+                  : "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-300 dark:hover:bg-sky-500/25",
+              ].join(" ")}
+            >
+              <span className="inline-flex h-8 w-8 items-center justify-center">
+                <svg
+                  className="h-[18px] w-[18px]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.9"
+                >
+                  <path d="M4 7h16" />
+                  <rect x="4" y="7" width="16" height="11" rx="2" />
+                  <path d="M10 11h4" />
+                </svg>
+              </span>
+
+              {!sidebarCollapsed && (
+                <div className="min-w-0">
+                  <div className="truncate text-[13px] font-semibold">
+                    Abonnement
+                  </div>
+                  <div
+                    className={[
+                      "truncate text-[10px]",
+                      activeSection === "subscription"
+                        ? "text-white/80"
+                        : "text-sky-600 dark:text-sky-300/80",
+                    ].join(" ")}
+                  >
+                    Offre et facturation
+                  </div>
+                </div>
+              )}
+            </Link>
+          )}
           {sessionUser?.role === "ADMIN" && (
             <Link
               href="/admin"
@@ -820,6 +839,44 @@ export default function AppShell({
               className="border-t px-3 py-3"
               style={{ borderColor: "var(--border) " }}
             >
+                            {sessionUser && (
+                <Link
+                  href="/subscription"
+                  className={[
+                    "mb-2 flex items-center gap-3 rounded-xl px-3 py-3 transition",
+                    activeSection === "subscription"
+                      ? "bg-sky-600 text-white shadow-sm"
+                      : "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-300 dark:hover:bg-sky-500/25",
+                  ].join(" ")}
+                >
+                  <span className="inline-flex h-8 w-8 items-center justify-center">
+                    <svg
+                      className="h-[18px] w-[18px]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.9"
+                    >
+                      <path d="M4 7h16" />
+                      <rect x="4" y="7" width="16" height="11" rx="2" />
+                      <path d="M10 11h4" />
+                    </svg>
+                  </span>
+                  <div>
+                    <div className="text-[13px] font-semibold">Abonnement</div>
+                    <div
+                      className={[
+                        "text-[10px]",
+                        activeSection === "subscription"
+                          ? "text-white/80"
+                          : "text-sky-600 dark:text-sky-300/80",
+                      ].join(" ")}
+                    >
+                      Offre et facturation
+                    </div>
+                  </div>
+                </Link>
+              )}
               {sessionUser?.role === "ADMIN" && (
                 <Link
                   href="/admin"

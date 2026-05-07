@@ -611,7 +611,7 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
         </div>
         <div className="flex items-center gap-2">
             <Link
-              href="/Tutoriel/projelys-quality-hub-tutorial.html"
+              href="/Tutoriel/projelys-portfolio-tutorial.html"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
