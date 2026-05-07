@@ -15,7 +15,8 @@ type SectionKey =
   | "risk"
   | "finance"
   | "actions"
-  | "quality";
+  | "quality"
+  | "subscription";
 
 type AppShellProps = {
   activeSection: SectionKey;
@@ -224,6 +225,25 @@ const navItems: {
         strokeWidth="1.9"
       >
         <path d="M12 3l2.8 5.6L21 9.5l-4.5 4.3 1 6.2L12 17l-5.5 3 1-6.2L3 9.5l6.2-.9L12 3z" />
+      </svg>
+    ),
+  },
+    {
+    key: "subscription",
+    label: "Abonnement",
+    shortLabel: "Abonnement",
+    href: "/subscription",
+    icon: (
+      <svg
+        className="h-[18px] w-[18px]"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.9"
+      >
+        <path d="M4 7h16" />
+        <rect x="4" y="7" width="16" height="11" rx="2" />
+        <path d="M10 11h4" />
       </svg>
     ),
   },
