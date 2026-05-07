@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const priceId = String(body?.priceId || "");
+    const plan = String(body?.plan || "");
 
     if (!priceId) {
       return NextResponse.json({ error: "priceId requis." }, { status: 400 });
@@ -62,16 +63,20 @@ export async function POST(req: NextRequest) {
       allow_promotion_codes: true,
       metadata: {
         userId: String(dbUser.id),
+        selectedPlan: plan,
       },
       subscription_data: {
         metadata: {
           userId: String(dbUser.id),
+          selectedPlan: plan,
         },
       },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
+    console.error("POST /api/stripe/checkout error", error);
+
     return NextResponse.json(
       {
         error:

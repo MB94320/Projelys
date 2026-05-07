@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projelys – Tutorial Non-Conformités Projets</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
+  :root{
+    --navy:#0F1B2D;--indigo:#3B4CCA;--indigo-light:#6371D9;--teal:#0A9396;--teal-light:#94D2BD;
+    --amber:#E9C46A;--rose:#E63946;--sky:#0EA5E9;--emerald:#10B981;
+    --slate-400:#94A3B8;--white:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#0A0F1A;color:var(--white);min-height:100vh;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,15,26,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--teal-light);}
+  .nav-logo span{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:1rem;}
+  .lang-btn{background:none;border:1.5px solid rgba(255,255,255,.2);border-radius:6px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;padding:.3rem .9rem;cursor:pointer;transition:all .2s;}
+  .lang-btn:hover,.lang-btn.active{background:var(--teal);border-color:var(--teal);}
+  .slide-counter{font-size:.75rem;color:var(--slate-400);}
+  .app{padding-top:56px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+  .slides-viewport{width:100%;max-width:1060px;padding:2rem 1rem;}
+  .slide{width:960px;max-width:100%;background:var(--navy);border-radius:12px;overflow:hidden;margin:0 auto 2.5rem;box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);position:relative;display:none;}
+  .slide.active{display:block;}
+  .slide.all-visible{display:block!important;}
+  .slide-inner{padding:2.5rem 3rem;min-height:380px;position:relative;}
+  .slide-num{position:absolute;top:1.2rem;right:1.5rem;font-size:.65rem;font-weight:600;letter-spacing:1.5px;color:rgba(255,255,255,.25);font-family:'DM Mono',monospace;}
+  .tag{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.25rem .7rem;border-radius:4px;margin-bottom:.8rem;}
+  .tag-teal{background:rgba(10,147,150,.2);color:var(--teal-light);border:1px solid rgba(10,147,150,.4);}
+  .tag-indigo{background:rgba(59,76,202,.2);color:#A5B4FC;border:1px solid rgba(59,76,202,.4);}
+  .tag-amber{background:rgba(233,196,106,.15);color:var(--amber);border:1px solid rgba(233,196,106,.3);}
+  .tag-rose{background:rgba(230,57,70,.15);color:#FCA5A5;border:1px solid rgba(230,57,70,.3);}
+  .tag-emerald{background:rgba(16,185,129,.15);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
+  .tag-sky{background:rgba(14,165,233,.15);color:#7DD3FC;border:1px solid rgba(14,165,233,.3);}
+  .tag-violet{background:rgba(139,92,246,.15);color:#C4B5FD;border:1px solid rgba(139,92,246,.3);}
+  h1.slide-title{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;line-height:1.1;color:var(--white);margin-bottom:.5rem;}
+  h2.slide-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;line-height:1.2;color:var(--white);margin-bottom:1rem;}
+  .subtitle{font-size:1rem;color:var(--slate-400);line-height:1.6;max-width:580px;}
+  .lead{font-size:.95rem;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:1rem;}
+  .note{font-size:.78rem;color:var(--slate-400);line-height:1.6;}
+  .cols{display:grid;gap:1.5rem;}
+  .cols-2{grid-template-columns:1fr 1fr;}
+  .cols-3{grid-template-columns:1fr 1fr 1fr;}
+  .cols-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  .cols-auto{grid-template-columns:1.2fr 1fr;}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1.2rem 1.4rem;}
+  .card-teal{border-left:3px solid var(--teal);}
+  .card-indigo{border-left:3px solid var(--indigo-light);}
+  .card-amber{border-left:3px solid var(--amber);}
+  .card-rose{border-left:3px solid var(--rose);}
+  .card-emerald{border-left:3px solid var(--emerald);}
+  .card-sky{border-left:3px solid var(--sky);}
+  .card-violet{border-left:3px solid #8B5CF6;}
+  .card h3{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem;}
+  .card p,.card li{font-size:.82rem;color:rgba(255,255,255,.72);line-height:1.65;}
+  .card ul{padding-left:1rem;}
+  .card li{margin-bottom:.25rem;}
+  .steps{display:flex;flex-direction:column;gap:.6rem;}
+  .step{display:flex;align-items:flex-start;gap:1rem;}
+  .step-num{min-width:28px;height:28px;border-radius:50%;background:var(--indigo);color:var(--white);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .step-body{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.6;}
+  .step-body strong{color:var(--white);}
+  .formula{background:rgba(10,147,150,.1);border:1px solid rgba(10,147,150,.3);border-radius:8px;padding:1rem 1.4rem;font-family:'DM Mono',monospace;font-size:.80rem;color:var(--teal-light);margin:.8rem 0;line-height:1.8;}
+  .mini-table{width:100%;border-collapse:collapse;font-size:.75rem;}
+  .mini-table th{background:rgba(255,255,255,.08);padding:.4rem .7rem;text-align:left;font-weight:600;color:var(--slate-400);text-transform:uppercase;letter-spacing:.8px;}
+  .mini-table td{padding:.4rem .7rem;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.75);}
+  .mini-table tr:last-child td{border-bottom:none;}
+  .badge{font-size:.7rem;font-weight:600;padding:.2rem .7rem;border-radius:999px;font-family:'DM Mono',monospace;display:inline-block;}
+  .badge-green{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
+  .badge-red{background:rgba(230,57,70,.2);color:#FCA5A5;border:1px solid rgba(230,57,70,.3);}
+  .badge-amber{background:rgba(233,196,106,.2);color:var(--amber);border:1px solid rgba(233,196,106,.3);}
+  .badge-sky{background:rgba(14,165,233,.2);color:#7DD3FC;border:1px solid rgba(14,165,233,.3);}
+  .badge-slate{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
+  .badge-indigo{background:rgba(59,76,202,.25);color:#A5B4FC;border:1px solid rgba(59,76,202,.3);}
+  .nav-slide{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;background:rgba(255,255,255,.03);border-radius:10px;margin-bottom:2rem;}
+  .nav-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--white);border-radius:7px;padding:.5rem 1.4rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;transition:all .2s;}
+  .nav-btn:hover{background:var(--teal);border-color:var(--teal);}
+  .nav-btn:disabled{opacity:.3;cursor:not-allowed;}
+  .slide-dots{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:320px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .2s;border:none;padding:0;}
+  .dot.active{background:var(--teal);width:20px;border-radius:4px;}
+  .slide-hero{background:linear-gradient(135deg,#0F1B2D 0%,#1a2744 50%,#0d2a3a 100%);position:relative;overflow:hidden;}
+  .hero-glow{position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(233,196,106,.15) 0%,transparent 70%);pointer-events:none;}
+  .hero-glow2{position:absolute;bottom:-60px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(230,57,70,.1) 0%,transparent 70%);pointer-events:none;}
+  hr.slide-hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0;}
+  .view-all-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--slate-400);border-radius:7px;padding:.4rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;transition:all .2s;}
+  .view-all-btn:hover{background:rgba(255,255,255,.1);color:var(--white);}
+  .roadmap{display:flex;flex-direction:column;gap:0;position:relative;}
+  .roadmap-item{display:flex;align-items:flex-start;gap:1.2rem;padding:.7rem 0;position:relative;}
+  .roadmap-line{position:absolute;left:12px;top:28px;bottom:-8px;width:2px;background:rgba(255,255,255,.08);}
+  .roadmap-icon{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;z-index:1;}
+  .roadmap-item:last-child .roadmap-line{display:none;}
+  .kpi-mock{border-radius:8px;padding:.8rem 1rem;}
+  .kpi-mock .num{font-size:1.5rem;font-weight:700;font-family:'DM Mono',monospace;margin:.2rem 0;}
+  .kpi-mock .label{font-size:.6rem;text-transform:uppercase;letter-spacing:.8px;opacity:.7;}
+  .alert-bloc{border-radius:8px;padding:.8rem 1rem;font-size:.75rem;}
+  .alert-green{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);}
+  .alert-amber{background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.2);}
+  .alert-indigo{background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);}
+  .alert-bloc .atitle{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem;}
+  /* chart mockup bars */
+  .bar-row{display:flex;align-items:center;gap:.6rem;margin:.3rem 0;}
+  .bar-track{flex:1;background:rgba(255,255,255,.06);border-radius:3px;height:16px;overflow:hidden;position:relative;}
+  .bar-fill-sev{height:100%;border-radius:3px;}
+  .bar-val{font-size:.65rem;color:rgba(255,255,255,.5);width:28px;text-align:right;font-family:'DM Mono',monospace;}
+  .bar-lbl{font-size:.68rem;color:var(--slate-400);width:60px;}
+  @media(max-width:700px){.slide-inner{padding:1.5rem;}.cols-2,.cols-3,.cols-4,.cols-auto{grid-template-columns:1fr;}}
+  @media print{nav,.nav-slide{display:none;}.app{padding-top:0;}.slide{display:block!important;page-break-after:always;box-shadow:none;margin-bottom:0;border-radius:0;}body{background:white;}}
+  body.lang-en [data-fr]{display:none;}
+  body.lang-fr [data-en]{display:none;}
+  body.lang-en [data-en]{display:revert;}
+  body.lang-fr [data-fr]{display:revert;}
+</style>
+</head>
+<body class="lang-fr">
+<nav>
+  <div class="nav-logo">Projel<span>ys</span> · Tutorial</div>
+  <div class="nav-controls">
+    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="view-all-btn" onclick="toggleAll()"><span data-fr>Tout voir</span><span data-en>View all</span></button>
+    <span class="slide-counter" id="counter">1 / 12</span>
+  </div>
+</nav>
+<div class="app"><div class="slides-viewport">
+
+<div class="nav-slide">
+  <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>◀</button>
+  <div class="slide-dots" id="dotsContainer"></div>
+  <button class="nav-btn" id="nextBtn" onclick="nextSlide()">▶</button>
+</div>
+
+<!-- ══ S1 COVER ══ -->
+<div class="slide slide-hero active" id="slide-1">
+  <div class="hero-glow"></div><div class="hero-glow2"></div>
+  <div class="slide-inner">
+    <div class="slide-num">01 / 12</div>
+    <div style="max-width:640px;padding-top:1rem;">
+      <div class="tag tag-amber" data-fr>Guide Utilisateur</div><div class="tag tag-amber" data-en>User Guide</div>
+      <h1 class="slide-title" data-fr>Non-<br><span style="color:var(--amber)">Conformités</span></h1>
+      <h1 class="slide-title" data-en>Non-<br><span style="color:var(--amber)">Conformities</span></h1>
+      <p class="subtitle" style="margin-top:.8rem" data-fr>Vue consolidée de toutes les non-conformités du portefeuille — KPIs, sévérité, délai de clôture, histogrammes interactifs, alertes automatiques et création de NC.</p>
+      <p class="subtitle" style="margin-top:.8rem" data-en>Consolidated view of all portfolio non-conformities — KPIs, severity, closure delay, interactive histograms, automatic alerts and NC creation.</p>
+    </div>
+    <div style="display:flex;gap:1.5rem;margin-top:2.5rem;flex-wrap:wrap;">
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:var(--amber)">12</div><span data-fr>slides</span><span data-en>slides</span></div>
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:var(--teal-light)">FR / EN</div><span data-fr>bilingue</span><span data-en>bilingual</span></div>
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:#6EE7B7">ISO 9001</div><span data-fr>Qualité</span><span data-en>Quality</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2 SOMMAIRE ══ -->
+<div class="slide" id="slide-2">
+  <div class="slide-inner">
+    <div class="slide-num">02 / 12</div>
+    <div class="tag tag-indigo" data-fr>Sommaire</div><div class="tag tag-indigo" data-en>Table of Contents</div>
+    <h2 class="slide-title" data-fr>Ce que vous allez apprendre</h2>
+    <h2 class="slide-title" data-en>What you'll learn</h2>
+    <div class="cols cols-2" style="margin-top:1.2rem;gap:.8rem;">
+      <div class="roadmap">
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.2);color:var(--amber);">01</div><div class="step-body"><strong data-fr>Contexte & navigation</strong><strong data-en>Context & navigation</strong><br><span data-fr>URL, modules qualité, accès</span><span data-en>URL, quality modules, access</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(59,76,202,.2);color:#A5B4FC;">02</div><div class="step-body"><strong data-fr>Filtres & recherche</strong><strong data-en>Filters & search</strong><br><span data-fr>5 filtres + 2 filtres graphiques</span><span data-en>5 filters + 2 chart filters</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(230,57,70,.15);color:#FCA5A5;">03</div><div class="step-body"><strong data-fr>Les 4 KPIs globaux</strong><strong data-en>The 4 global KPIs</strong><br><span data-fr>Ouvertes, totales, critiques, délai</span><span data-en>Open, total, critical, delay</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.15);color:var(--amber);">04</div><div class="step-body"><strong data-fr>Calcul des KPIs</strong><strong data-en>KPI calculations</strong><br><span data-fr>Formules, définitions, seuils</span><span data-en>Formulas, definitions, thresholds</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(14,165,233,.15);color:#7DD3FC;">05</div><div class="step-body"><strong data-fr>Alertes automatiques</strong><strong data-en>Automatic alerts</strong><br><span data-fr>Points forts, vigilance, recommandations</span><span data-en>Strengths, watch points, recommendations</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(139,92,246,.15);color:#C4B5FD;">06</div><div class="step-body"><strong data-fr>Histogramme sévérité</strong><strong data-en>Severity histogram</strong><br><span data-fr>Mineure, Majeure, Critique</span><span data-en>Minor, Major, Critical</span></div></div>
+      </div>
+      <div class="roadmap">
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(10,147,150,.2);color:var(--teal-light);">07</div><div class="step-body"><strong data-fr>Histogramme mensuel</strong><strong data-en>Monthly histogram</strong><br><span data-fr>NC par mois, filtre interactif</span><span data-en>NC by month, interactive filter</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(16,185,129,.15);color:#6EE7B7;">08</div><div class="step-body"><strong data-fr>Tableau projets</strong><strong data-en>Projects table</strong><br><span data-fr>NC totales, ouvertes, liens croisés</span><span data-en>Total NC, open, cross-links</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(59,76,202,.2);color:#A5B4FC;">09</div><div class="step-body"><strong data-fr>Créer une NC</strong><strong data-en>Create a NC</strong><br><span data-fr>Panneau latéral, champs, référence auto</span><span data-en>Side panel, fields, auto reference</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.15);color:var(--amber);">10</div><div class="step-body"><strong data-fr>Sévérité & statuts</strong><strong data-en>Severity & statuses</strong><br><span data-fr>Niveaux, codes couleur, cycle de vie</span><span data-en>Levels, color codes, lifecycle</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(16,185,129,.15);color:#6EE7B7;">11</div><div class="step-body"><strong data-fr>Export & bonnes pratiques</strong><strong data-en>Export & best practices</strong><br><span data-fr>CSV, 8D, conseils qualité</span><span data-en>CSV, 8D, quality tips</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3 CONTEXTE ══ -->
+<div class="slide" id="slide-3">
+  <div class="slide-inner">
+    <div class="slide-num">03 / 12</div>
+    <div class="tag tag-amber" data-fr>Contexte</div><div class="tag tag-amber" data-en>Context</div>
+    <h2 class="slide-title" data-fr>Contexte & navigation qualité</h2>
+    <h2 class="slide-title" data-en>Context & quality navigation</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>La page <strong>Non-conformités Projets</strong> est la vue qualité ISO 9001 centralisée de toutes les NC du portefeuille. Elle permet d'identifier rapidement les projets les plus exposés et de déclencher des actions correctives.</p>
+        <p class="lead" data-en>The <strong>Project Non-Conformities</strong> page is the centralized ISO 9001 quality view of all portfolio NCs. It allows quickly identifying the most exposed projects and triggering corrective actions.</p>
+        <div class="card card-amber" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--amber)" data-fr>🔗 URL de la page</h3><h3 style="color:var(--amber)" data-en>🔗 Page URL</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">/quality/non-conformities-projects</div>
+          <p data-fr>Accessible depuis le menu <strong>Qualité ISO 9001</strong> → Non-conformités.</p>
+          <p data-en>Accessible from the <strong>Quality ISO 9001</strong> menu → Non-conformities.</p>
+        </div>
+        <div class="card card-indigo">
+          <h3 style="color:#A5B4FC" data-fr>🧭 Modules qualité liés</h3><h3 style="color:#A5B4FC" data-en>🧭 Related quality modules</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="font-size:.6rem">←</div><div class="step-body" data-fr><strong>/quality</strong> → Tableau de bord Qualité ISO 9001</div><div class="step-body" data-en><strong>/quality</strong> → ISO 9001 Quality dashboard</div></div>
+            <div class="step"><div class="step-num" style="font-size:.6rem">📦</div><div class="step-body" data-fr><strong>/quality/deliverables-projects</strong> → Livrables vue projets</div><div class="step-body" data-en><strong>/quality/deliverables-projects</strong> → Deliverables project view</div></div>
+            <div class="step"><div class="step-num" style="font-size:.6rem">📋</div><div class="step-body" data-fr><strong>/quality/audits-projects</strong> → Audits vue projets</div><div class="step-body" data-en><strong>/quality/audits-projects</strong> → Audits project view</div></div>
+            <div class="step"><div class="step-num" style="font-size:.6rem">🔍</div><div class="step-body" data-fr><strong>/projects/[id]/quality/non-conformities</strong> → NC d'un projet</div><div class="step-body" data-en><strong>/projects/[id]/quality/non-conformities</strong> → Project NCs</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>📡 Sources de données</h3><h3 style="color:#6EE7B7" data-en>📡 Data sources</h3>
+          <ul style="margin-top:.4rem;">
+            <li data-fr><strong>GET /api/quality/non-conformities-global</strong> → toutes les NC + KPIs + barres sévérité + barres mensuelles + synthèse projets</li>
+            <li data-en><strong>GET /api/quality/non-conformities-global</strong> → all NCs + KPIs + severity bars + monthly bars + project summary</li>
+            <li data-fr><strong>GET /api/projects</strong> → liste des projets pour le formulaire de création</li>
+            <li data-en><strong>GET /api/projects</strong> → project list for creation form</li>
+          </ul>
+        </div>
+        <div class="card card-rose">
+          <h3 style="color:#FCA5A5" data-fr>🎯 Définition d'une NC</h3><h3 style="color:#FCA5A5" data-en>🎯 NC definition</h3>
+          <p data-fr>Une non-conformité est un <strong>écart entre ce qui est attendu (exigence) et ce qui est réalisé</strong>. Elle peut concerner un produit, un process, un document ou un service, et doit être traitée selon la démarche 8D ou équivalent.</p>
+          <p data-en>A non-conformity is a <strong>gap between what is expected (requirement) and what is achieved</strong>. It can relate to a product, process, document or service, and must be treated using the 8D approach or equivalent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S4 FILTRES ══ -->
+<div class="slide" id="slide-4">
+  <div class="slide-inner">
+    <div class="slide-num">04 / 12</div>
+    <div class="tag tag-indigo" data-fr>Filtres</div><div class="tag tag-indigo" data-en>Filters</div>
+    <h2 class="slide-title" data-fr>Filtres — 5 filtres barre + 2 filtres graphiques</h2>
+    <h2 class="slide-title" data-en>Filters — 5 bar filters + 2 chart filters</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Tous les filtres s'appliquent simultanément aux <strong>KPIs, alertes, histogrammes et tableau projets</strong>. La liste de filtres ne contient que les projets ayant au moins une NC.</p>
+        <p class="lead" data-en>All filters apply simultaneously to <strong>KPIs, alerts, histograms and project table</strong>. The filter list only contains projects with at least one NC.</p>
+        <table class="mini-table" style="margin-top:.8rem;">
+          <thead><tr><th data-fr>Filtre</th><th data-en>Filter</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>Recherche libre</td><td data-en>Free search</td><td data-fr>N° projet, client, description, responsable, origine, sévérité</td><td data-en>Project #, client, description, owner, origin, severity</td></tr>
+            <tr><td>Client</td><td>Client</td><td data-fr>Nom du client</td><td data-en>Client name</td></tr>
+            <tr><td data-fr>N° projet</td><td data-en>Project #</td><td data-fr>Sélection d'un projet spécifique</td><td data-en>Select a specific project</td></tr>
+            <tr><td data-fr>Chef de projet</td><td data-en>Project manager</td><td data-fr>Filtrer par responsable de projet</td><td data-en>Filter by project manager</td></tr>
+            <tr><td data-fr>Statut NC</td><td data-en>NC status</td><td data-fr>Ouvert / En cours / Clôturé / Annulé</td><td data-en>Open / In progress / Closed / Cancelled</td></tr>
+            <tr><td data-fr>Sévérité</td><td data-en>Severity</td><td data-fr>Mineure / Majeure / Critique</td><td data-en>Minor / Major / Critical</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-violet" style="margin-bottom:.8rem;">
+          <h3 style="color:#C4B5FD" data-fr>🖱️ Filtres graphiques interactifs</h3><h3 style="color:#C4B5FD" data-en>🖱️ Interactive chart filters</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:rgba(230,57,70,.5)">S</div><div class="step-body" data-fr><strong>Filtre sévérité</strong> : clic sur une barre (Mineure / Majeure / Critique) → filtre toute la page sur cette sévérité</div><div class="step-body" data-en><strong>Severity filter</strong>: click a bar (Minor / Major / Critical) → filters the whole page on that severity</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(10,147,150,.5)">M</div><div class="step-body" data-fr><strong>Filtre mois</strong> : clic sur une barre mensuelle → filtre toute la page sur les NC détectées ce mois</div><div class="step-body" data-en><strong>Month filter</strong>: click a monthly bar → filters the whole page on NCs detected that month</div></div>
+          </div>
+          <p class="note" style="margin-top:.5rem;" data-fr>Les deux filtres graphiques sont cumulables avec les 5 filtres de la barre. Cliquer à nouveau = désélectionner. Bouton "Réinitialiser" disponible sous chaque histogramme.</p>
+          <p class="note" style="margin-top:.5rem;" data-en>Both chart filters stack with the 5 bar filters. Click again = deselect. "Reset" button available below each histogram.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Cumul des filtres</h3><h3 style="color:var(--slate-400)" data-en>💡 Filter stacking</h3>
+          <p data-fr>Exemple : "NC Critiques du projet X détectées en mars" = filtre Projet + clic Critique (histogramme sévérité) + clic mars (histogramme mensuel).</p>
+          <p data-en>Example: "Critical NCs from project X detected in March" = Project filter + click Critical (severity chart) + click March (monthly chart).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S5 KPIs ══ -->
+<div class="slide" id="slide-5">
+  <div class="slide-inner">
+    <div class="slide-num">05 / 12</div>
+    <div class="tag tag-rose" data-fr>KPIs globaux</div><div class="tag tag-rose" data-en>Global KPIs</div>
+    <h2 class="slide-title" data-fr>Les 4 KPIs de synthèse</h2>
+    <h2 class="slide-title" data-en>The 4 summary KPIs</h2>
+    <div class="cols cols-4" style="margin-top:.8rem;gap:.8rem;">
+      <div class="kpi-mock" style="background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);">
+        <div class="label" style="color:#A5B4FC" data-fr>NC ouvertes</div><div class="label" style="color:#A5B4FC" data-en>Open NCs</div>
+        <div class="num" style="color:#A5B4FC">7</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Statut ≠ Clôturé</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>Status ≠ Closed</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(148,163,184,.06);border:1px solid rgba(148,163,184,.15);">
+        <div class="label" style="color:var(--slate-400)" data-fr>NC totales</div><div class="label" style="color:var(--slate-400)" data-en>Total NCs</div>
+        <div class="num" style="color:rgba(255,255,255,.8)">18</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Après filtres actifs</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>After active filters</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.2);">
+        <div class="label" style="color:var(--amber)" data-fr>% NC critiques</div><div class="label" style="color:var(--amber)" data-en>% Critical NCs</div>
+        <div class="num" style="color:var(--amber)">27.8%</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Majeures + Critiques</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>Major + Critical</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);">
+        <div class="label" style="color:#FCA5A5" data-fr>Délai moyen clôture</div><div class="label" style="color:#FCA5A5" data-en>Avg closure delay</div>
+        <div class="num" style="color:#FCA5A5">8.4 j</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Sur NC clôturées</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>On closed NCs</div>
+      </div>
+    </div>
+    <hr class="slide-hr" style="margin-top:1rem;">
+    <div class="cols cols-2" style="gap:1rem;margin-top:.8rem;">
+      <div class="card card-indigo">
+        <h3 style="color:#A5B4FC" data-fr>📦 NC ouvertes vs totales</h3><h3 style="color:#A5B4FC" data-en>📦 Open vs total NCs</h3>
+        <p data-fr><strong>Ouvertes</strong> = toutes les NC dont le statut est différent de "Clôturé" (Ouvert, En cours, Annulé inclus).<br><strong>Totales</strong> = nb de NC après application de tous les filtres actifs.</p>
+        <p data-en><strong>Open</strong> = all NCs with status other than "Closed" (Open, In progress, Cancelled included).<br><strong>Total</strong> = NC count after applying all active filters.</p>
+      </div>
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)" data-fr>📐 Formule % NC critiques</h3><h3 style="color:var(--amber)" data-en>📐 % Critical NCs formula</h3>
+        <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+          <span data-fr>critiques = NC sévérité "Majeure" OU "Critique"</span>
+          <span data-en>critical = NCs with severity "Major" OR "Critical"</span><br>
+          % critiques = (critiques / total) × 100
+        </div>
+        <p class="note" data-fr>Seuils alertes : vert ≤ 10% · orange ≤ 30% · rouge &gt; 30%</p>
+        <p class="note" data-en>Alert thresholds: green ≤ 10% · orange ≤ 30% · red &gt; 30%</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S6 DÉLAI CLÔTURE ══ -->
+<div class="slide" id="slide-6">
+  <div class="slide-inner">
+    <div class="slide-num">06 / 12</div>
+    <div class="tag tag-rose" data-fr>Délai de clôture</div><div class="tag tag-rose" data-en>Closure delay</div>
+    <h2 class="slide-title" data-fr>Calcul du délai moyen de clôture</h2>
+    <h2 class="slide-title" data-en>Average closure delay calculation</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Le délai moyen de clôture mesure le <strong>temps moyen écoulé entre la date de détection et la date de clôture</strong> d'une NC. Il est calculé uniquement sur les NC disposant des deux dates.</p>
+        <p class="lead" data-en>The average closure delay measures the <strong>average time elapsed between detection date and closure date</strong> of a NC. It is calculated only on NCs with both dates.</p>
+        <div class="card card-rose" style="margin-bottom:.8rem;">
+          <h3 style="color:#FCA5A5" data-fr>📐 Formule</h3><h3 style="color:#FCA5A5" data-en>📐 Formula</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+            <span data-fr>Délai (j) = (closedDate – detectedOn) / ms_par_jour</span>
+            <span data-en>Delay (d) = (closedDate – detectedOn) / ms_per_day</span><br><br>
+            <span data-fr>Délai moyen = Σ(délais) / nb_NC_clôturées</span>
+            <span data-en>Avg delay = Σ(delays) / nb_closed_NCs</span>
+          </div>
+          <p class="note" data-fr>Si aucune NC n'est clôturée → délai moyen = 0. Les NC sans closedDate ou sans detectedOn sont exclues du calcul.</p>
+          <p class="note" data-en>If no NC is closed → average delay = 0. NCs without closedDate or detectedOn are excluded from the calculation.</p>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber)" data-fr>🎨 Seuils couleur délai</h3><h3 style="color:var(--amber)" data-en>🎨 Delay color thresholds</h3>
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.4rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green" data-fr>≤ 5 j</span><span class="badge badge-green" data-en>≤ 5 d</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — excellent traitement</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — excellent handling</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber" data-fr>5–15 j</span><span class="badge badge-amber" data-en>5–15 d</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — modéré, à surveiller</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — moderate, monitor</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red" data-fr>&gt; 15 j</span><span class="badge badge-red" data-en>&gt; 15 d</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — délai excessif</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — excessive delay</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-sky" style="margin-bottom:.8rem;">
+          <h3 style="color:#7DD3FC" data-fr>🎯 Objectifs de traitement NC</h3><h3 style="color:#7DD3FC" data-en>🎯 NC treatment objectives</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Sévérité</th><th data-en>Severity</th><th data-fr>Délai cible</th><th data-en>Target delay</th></tr></thead>
+            <tbody>
+              <tr><td data-fr>Mineure</td><td data-en>Minor</td><td data-fr>≤ 15 jours</td><td data-en>≤ 15 days</td></tr>
+              <tr><td data-fr>Majeure</td><td data-en>Major</td><td data-fr>≤ 10 jours</td><td data-en>≤ 10 days</td></tr>
+              <tr><td data-fr>Critique</td><td data-en>Critical</td><td data-fr>≤ 5 jours</td><td data-en>≤ 5 days</td></tr>
+            </tbody>
+          </table>
+          <p class="note" style="margin-top:.5rem;" data-fr>Ces délais sont indicatifs — ils peuvent être adaptés selon les exigences contractuelles du projet.</p>
+          <p class="note" style="margin-top:.5rem;" data-en>These delays are indicative — they can be adapted per project contractual requirements.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Interprétation</h3><h3 style="color:var(--slate-400)" data-en>💡 Interpretation</h3>
+          <p data-fr>Un délai moyen élevé peut indiquer : manque de ressources sur les plans d'actions, NC sous-priorisées, causes racines non identifiées. Croiser avec le % NC critiques pour prioriser.</p>
+          <p data-en>A high average delay may indicate: lack of resources on action plans, under-prioritized NCs, unidentified root causes. Cross with % critical NCs to prioritize.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S7 ALERTES ══ -->
+<div class="slide" id="slide-7">
+  <div class="slide-inner">
+    <div class="slide-num">07 / 12</div>
+    <div class="tag tag-sky" data-fr>Alertes automatiques</div><div class="tag tag-sky" data-en>Automatic alerts</div>
+    <h2 class="slide-title" data-fr>Alertes & recommandations automatiques</h2>
+    <h2 class="slide-title" data-en>Automatic alerts & recommendations</h2>
+    <p class="lead" data-fr>Projelys analyse les 3 KPIs clés et génère automatiquement un diagnostic en 3 blocs, mis à jour à chaque changement de filtre.</p>
+    <p class="lead" data-en>Projelys analyzes the 3 key KPIs and automatically generates a 3-block diagnosis, updated with each filter change.</p>
+    <div class="cols cols-3" style="margin-top:.8rem;gap:.8rem;">
+      <div class="alert-bloc alert-green">
+        <div class="atitle" style="color:#6EE7B7" data-fr>✅ Points forts — logique</div>
+        <div class="atitle" style="color:#6EE7B7" data-en>✅ Strengths — logic</div>
+        <ul style="list-style:disc;padding-left:1rem;font-size:.75rem;color:rgba(255,255,255,.7);">
+          <li data-fr>NC ouvertes = 0 → "Aucune NC ouverte"</li><li data-en>Open NCs = 0 → "No open NCs"</li>
+          <li data-fr>NC ouvertes ≤ 3 → "Volume maîtrisé"</li><li data-en>Open NCs ≤ 3 → "Controlled volume"</li>
+          <li data-fr>% critiques ≤ 10% → "Faible proportion"</li><li data-en>% critical ≤ 10% → "Low proportion"</li>
+          <li data-fr>Délai ≤ 5 j → "Clôture rapide"</li><li data-en>Delay ≤ 5 d → "Fast closure"</li>
+        </ul>
+      </div>
+      <div class="alert-bloc alert-amber">
+        <div class="atitle" style="color:var(--amber)" data-fr>⚠️ Points de vigilance — logique</div>
+        <div class="atitle" style="color:var(--amber)" data-en>⚠️ Watch points — logic</div>
+        <ul style="list-style:disc;padding-left:1rem;font-size:.75rem;color:rgba(255,255,255,.7);">
+          <li data-fr>NC ouvertes &gt; 3 → "Volume élevé"</li><li data-en>Open NCs &gt; 3 → "High volume"</li>
+          <li data-fr>% critiques 10–30% → "Part significative"</li><li data-en>% critical 10–30% → "Significant share"</li>
+          <li data-fr>Délai 5–15 j → "Délai modéré"</li><li data-en>Delay 5–15 d → "Moderate delay"</li>
+        </ul>
+      </div>
+      <div class="alert-bloc alert-indigo">
+        <div class="atitle" style="color:#A5B4FC" data-fr>📝 Recommandations — logique</div>
+        <div class="atitle" style="color:#A5B4FC" data-en>📝 Recommendations — logic</div>
+        <ul style="list-style:disc;padding-left:1rem;font-size:.75rem;color:rgba(255,255,255,.7);">
+          <li data-fr>&gt; 3 NC ouvertes → point de revue qualité</li><li data-en>&gt; 3 open NCs → quality review meeting</li>
+          <li data-fr>&gt; 30% critiques → plan causes racines</li><li data-en>&gt; 30% critical → root cause plan</li>
+          <li data-fr>&gt; 15 j délai → échéances 8D + rappels</li><li data-en>&gt; 15 d delay → 8D deadlines + reminders</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <h3 style="color:var(--slate-400)" data-fr>📅 Période analysée</h3><h3 style="color:var(--slate-400)" data-en>📅 Analyzed period</h3>
+      <p data-fr>Le titre de la section indique <strong>"Analyse sur la période filtrée (toute la période)"</strong> ou le mois sélectionné si un filtre graphique mensuel est actif. Les 3 blocs se recalculent instantanément à chaque changement de filtre ou de clic graphique.</p>
+      <p data-en>The section title shows <strong>"Analysis for the filtered period (entire period)"</strong> or the selected month if a monthly chart filter is active. The 3 blocks instantly recalculate with each filter change or chart click.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S8 HISTOGRAMMES ══ -->
+<div class="slide" id="slide-8">
+  <div class="slide-inner">
+    <div class="slide-num">08 / 12</div>
+    <div class="tag tag-violet" data-fr>Histogrammes</div><div class="tag tag-violet" data-en>Histograms</div>
+    <h2 class="slide-title" data-fr>Les 2 histogrammes interactifs</h2>
+    <h2 class="slide-title" data-en>The 2 interactive histograms</h2>
+    <div class="cols cols-2" style="margin-top:.8rem;gap:1.5rem;align-items:start;">
+      <div>
+        <div class="card card-rose" style="margin-bottom:.8rem;">
+          <h3 style="color:#FCA5A5" data-fr>📊 Répartition par sévérité</h3><h3 style="color:#FCA5A5" data-en>📊 Distribution by severity</h3>
+          <p data-fr>3 barres fixes : Mineure · Majeure · Critique. Les hauteurs sont proportionnelles au nombre de NC dans chaque catégorie.</p>
+          <p data-en>3 fixed bars: Minor · Major · Critical. Heights are proportional to the NC count in each category.</p>
+          <div style="margin-top:.6rem;">
+            <div class="bar-row"><span class="bar-lbl" data-fr>Mineure</span><span class="bar-lbl" data-en>Minor</span><div class="bar-track"><div class="bar-fill-sev" style="width:55%;background:#6EE7B7;"></div></div><span class="bar-val">6</span></div>
+            <div class="bar-row"><span class="bar-lbl" data-fr>Majeure</span><span class="bar-lbl" data-en>Major</span><div class="bar-track"><div class="bar-fill-sev" style="width:35%;background:var(--amber);"></div></div><span class="bar-val">4</span></div>
+            <div class="bar-row"><span class="bar-lbl" data-fr>Critique</span><span class="bar-lbl" data-en>Critical</span><div class="bar-track"><div class="bar-fill-sev" style="width:18%;background:#FCA5A5;"></div></div><span class="bar-val">2</span></div>
+          </div>
+          <p class="note" style="margin-top:.5rem;" data-fr>➤ Clic sur une barre → filtre toute la page sur cette sévérité. Barre active = contour indigo.</p>
+          <p class="note" style="margin-top:.5rem;" data-en>➤ Click a bar → filters the entire page on that severity. Active bar = indigo outline.</p>
+        </div>
+      </div>
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>📈 NC détectées par mois</h3><h3 style="color:var(--teal-light)" data-en>📈 NCs detected by month</h3>
+          <p data-fr>Barres groupées par mois (format AAAA-MM), basées sur la <code style="font-family:monospace">detectedOn</code> de chaque NC. Recalculé à chaque changement de filtre.</p>
+          <p data-en>Bars grouped by month (YYYY-MM format), based on each NC's <code style="font-family:monospace">detectedOn</code>. Recalculated with each filter change.</p>
+          <div style="margin-top:.6rem;">
+            <div class="bar-row"><span class="bar-lbl">2025-01</span><div class="bar-track"><div class="bar-fill-sev" style="width:30%;background:var(--indigo-light);"></div></div><span class="bar-val">3</span></div>
+            <div class="bar-row"><span class="bar-lbl">2025-02</span><div class="bar-track"><div class="bar-fill-sev" style="width:50%;background:var(--indigo-light);"></div></div><span class="bar-val">5</span></div>
+            <div class="bar-row"><span class="bar-lbl">2025-03</span><div class="bar-track"><div class="bar-fill-sev" style="width:100%;background:var(--indigo-light);"></div></div><span class="bar-val">10</span></div>
+          </div>
+          <p class="note" style="margin-top:.5rem;" data-fr>➤ Clic sur une barre mensuelle → filtre toute la page sur les NC de ce mois. Format clé interne : AAAA-MM.</p>
+          <p class="note" style="margin-top:.5rem;" data-en>➤ Click a monthly bar → filters the entire page on NCs from that month. Internal key format: YYYY-MM.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Vides = pas de données</h3><h3 style="color:var(--slate-400)" data-en>💡 Empty = no data</h3>
+          <p data-fr>Si aucune NC avec les filtres actifs, l'histogramme affiche "Aucune donnée avec les filtres actuels." Les mois sans NC n'apparaissent pas dans les barres mensuelles.</p>
+          <p data-en>If no NCs with active filters, the histogram shows "No data with current filters." Months without NCs do not appear in the monthly bars.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S9 TABLEAU PROJETS ══ -->
+<div class="slide" id="slide-9">
+  <div class="slide-inner">
+    <div class="slide-num">09 / 12</div>
+    <div class="tag tag-teal" data-fr>Tableau projets</div><div class="tag tag-teal" data-en>Projects table</div>
+    <h2 class="slide-title" data-fr>Tableau projets — Synthèse NC</h2>
+    <h2 class="slide-title" data-en>Projects table — NC summary</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Le tableau agrège les NC <strong>par projet</strong> à partir des données filtrées. Il est trié par N° projet (ordre alphanumérique).</p>
+        <p class="lead" data-en>The table aggregates NCs <strong>per project</strong> from filtered data. It is sorted by project number (alphanumeric order).</p>
+        <table class="mini-table" style="margin-top:.6rem;">
+          <thead><tr><th data-fr>Colonne</th><th data-en>Column</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>N° projet</td><td data-en>Project #</td><td data-fr>Lien cliquable → fiche projet</td><td data-en>Clickable link → project sheet</td></tr>
+            <tr><td data-fr>Intitulé</td><td data-en>Title</td><td data-fr>Nom du projet</td><td data-en>Project name</td></tr>
+            <tr><td>Client</td><td>Client</td><td data-fr>Nom du client</td><td data-en>Client name</td></tr>
+            <tr><td data-fr>Chef de projet</td><td data-en>PM</td><td data-fr>Nom du responsable</td><td data-en>Manager name</td></tr>
+            <tr><td>Statut</td><td>Status</td><td data-fr>Badge coloré du statut projet</td><td data-en>Colored project status badge</td></tr>
+            <tr><td data-fr>NC totales</td><td data-en>Total NCs</td><td data-fr>Nb de NC après filtres pour ce projet</td><td data-en>NC count after filters for this project</td></tr>
+            <tr><td data-fr>NC ouvertes</td><td data-en>Open NCs</td><td data-fr>Statut ≠ Clôturé pour ce projet</td><td data-en>Status ≠ Closed for this project</td></tr>
+            <tr><td data-fr>Actions</td><td data-en>Actions</td><td data-fr>3 liens : Livrables · NC · Audits</td><td data-en>3 links: Deliverables · NC · Audits</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>🔗 Liens depuis le tableau</h3><h3 style="color:var(--teal-light)" data-en>🔗 Links from the table</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:var(--indigo);font-size:.65rem">Liv</div><div class="step-body" data-fr><strong>Livrables</strong> → /projects/[id]/quality/deliverables</div><div class="step-body" data-en><strong>Deliverables</strong> → /projects/[id]/quality/deliverables</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(233,196,106,.4);font-size:.65rem">NC</div><div class="step-body" data-fr><strong>Non-conformités</strong> → /projects/[id]/quality/non-conformities</div><div class="step-body" data-en><strong>Non-conformities</strong> → /projects/[id]/quality/non-conformities</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(16,185,129,.3);font-size:.65rem">Au</div><div class="step-body" data-fr><strong>Audits</strong> → /projects/[id]/quality/audit</div><div class="step-body" data-en><strong>Audits</strong> → /projects/[id]/quality/audit</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>📊 Recalcul dynamique</h3><h3 style="color:var(--slate-400)" data-en>📊 Dynamic recalculation</h3>
+          <p data-fr>NC totales et ouvertes sont <strong>recalculées côté client</strong> à partir des NC filtrées. Modifier un filtre ou cliquer une barre graphique met à jour instantanément le tableau.</p>
+          <p data-en>Total and open NCs are <strong>recalculated client-side</strong> from filtered NCs. Changing a filter or clicking a chart bar instantly updates the table.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S10 CRÉER UNE NC ══ -->
+<div class="slide" id="slide-10">
+  <div class="slide-inner">
+    <div class="slide-num">10 / 12</div>
+    <div class="tag tag-emerald" data-fr>Créer une NC</div><div class="tag tag-emerald" data-en>Create a NC</div>
+    <h2 class="slide-title" data-fr>Créer une NC depuis la vue globale</h2>
+    <h2 class="slide-title" data-en>Create a NC from the global view</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Le bouton <strong>"Nouvelle non-conformité"</strong> ouvre un panneau latéral droit avec un formulaire en 3 sections.</p>
+        <p class="lead" data-en>The <strong>"New non-conformity"</strong> button opens a right side panel with a 3-section form.</p>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>📋 Section 1 — Identification</h3><h3 style="color:#6EE7B7" data-en>📋 Section 1 — Identification</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Champ</th><th data-en>Field</th><th data-fr>Requis</th><th data-en>Required</th></tr></thead>
+            <tbody>
+              <tr><td data-fr>Projet *</td><td data-en>Project *</td><td data-fr>Oui — tous les projets du portefeuille</td><td data-en>Yes — all portfolio projects</td></tr>
+              <tr><td data-fr>Référence chrono</td><td data-en>Chrono reference</td><td data-fr>Non — auto-générée (lecture seule)</td><td data-en>No — auto-generated (read-only)</td></tr>
+              <tr><td data-fr>Responsable / pilote NC</td><td data-en>Owner / 8D pilot</td><td data-fr>Non — texte libre</td><td data-en>No — free text</td></tr>
+              <tr><td>Origine</td><td>Origin</td><td data-fr>Non — 6 origines</td><td data-en>No — 6 origins</td></tr>
+              <tr><td data-fr>Type de NC</td><td data-en>NC type</td><td data-fr>Non — 7 types</td><td data-en>No — 7 types</td></tr>
+              <tr><td data-fr>Sévérité</td><td data-en>Severity</td><td data-fr>Non — Mineure / Majeure / Critique</td><td data-en>No — Minor / Major / Critical</td></tr>
+              <tr><td>Statut</td><td>Status</td><td data-fr>Non — défaut : Ouvert</td><td data-en>No — default: Open</td></tr>
+              <tr><td data-fr>Date détection</td><td data-en>Detection date</td><td data-fr>Non — date du constat</td><td data-en>No — date of finding</td></tr>
+              <tr><td data-fr>Échéance traitement</td><td data-en>Treatment deadline</td><td data-fr>Non — date cible de clôture</td><td data-en>No — target closure date</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card card-indigo" style="margin-bottom:.8rem;">
+          <h3 style="color:#A5B4FC" data-fr>📋 Sections 2 & 3 — Description & Commentaires</h3><h3 style="color:#A5B4FC" data-en>📋 Sections 2 & 3 — Description & Comments</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:var(--rose)">*</div><div class="step-body" data-fr><strong>Description</strong> (obligatoire) : objet de la NC, contexte, exigences impactées, conséquences potentielles.</div><div class="step-body" data-en><strong>Description</strong> (required): NC subject, context, impacted requirements, potential consequences.</div></div>
+            <div class="step"><div class="step-num">📝</div><div class="step-body" data-fr><strong>Commentaires</strong> (facultatif) : notes internes, informations de suivi, décisions prises.</div><div class="step-body" data-en><strong>Comments</strong> (optional): internal notes, follow-up information, decisions made.</div></div>
+          </div>
+        </div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>🏷 Référence automatique</h3><h3 style="color:var(--teal-light)" data-en>🏷 Auto reference</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+            <span data-fr>Format : NC_[AAAA]_[NNN]</span>
+            <span data-en>Format: NC_[YYYY]_[NNN]</span><br>
+            <span data-fr>Exemple : NC_2025_018</span>
+            <span data-en>Example: NC_2025_018</span>
+          </div>
+          <p data-fr>Calculée automatiquement depuis les références existantes. Champ grisé non éditable. L'indice s'incrémente à partir du dernier numéro pour l'année en cours.</p>
+          <p data-en>Auto-calculated from existing references. Grayed non-editable field. Index increments from the last number for the current year.</p>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber)" data-fr>🔌 API de création</h3><h3 style="color:var(--amber)" data-en>🔌 Creation API</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">POST /api/projects/[id]/quality?type=non-conformities</div>
+          <p data-fr>Après succès : rechargement complet des données via <code style="font-family:monospace">loadData()</code>. La NC créée apparaît dans tous les indicateurs.</p>
+          <p data-en>On success: full data reload via <code style="font-family:monospace">loadData()</code>. The created NC appears in all indicators.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S11 SÉVÉRITÉ & STATUTS ══ -->
+<div class="slide" id="slide-11">
+  <div class="slide-inner">
+    <div class="slide-num">11 / 12</div>
+    <div class="tag tag-amber" data-fr>Sévérité & Statuts</div><div class="tag tag-amber" data-en>Severity & Statuses</div>
+    <h2 class="slide-title" data-fr>Sévérité, statuts & référentiels</h2>
+    <h2 class="slide-title" data-en>Severity, statuses & reference data</h2>
+    <div class="cols cols-2" style="margin-top:.8rem;gap:1.5rem;align-items:start;">
+      <div>
+        <div class="card card-rose" style="margin-bottom:.8rem;">
+          <h3 style="color:#FCA5A5" data-fr>🔴 Niveaux de sévérité</h3><h3 style="color:#FCA5A5" data-en>🔴 Severity levels</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Niveau</th><th data-en>Level</th><th data-fr>Description</th><th data-en>Description</th><th data-fr>Couleur barre</th><th data-en>Bar color</th></tr></thead>
+            <tbody>
+              <tr><td data-fr>Mineure</td><td data-en>Minor</td><td data-fr>Écart limité, peu d'impact</td><td data-en>Limited gap, low impact</td><td style="color:#6EE7B7" data-fr>Vert</td><td style="color:#6EE7B7" data-en>Green</td></tr>
+              <tr><td data-fr>Majeure</td><td data-en>Major</td><td data-fr>Écart significatif, impact client</td><td data-en>Significant gap, client impact</td><td style="color:var(--amber)" data-fr>Ambré</td><td style="color:var(--amber)" data-en>Amber</td></tr>
+              <tr><td data-fr>Critique</td><td data-en>Critical</td><td data-fr>Risque fort, action immédiate</td><td data-en>High risk, immediate action</td><td style="color:#FCA5A5" data-fr>Rose</td><td style="color:#FCA5A5" data-en>Rose</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber)" data-fr>📍 Cycle de vie d'une NC</h3><h3 style="color:var(--amber)" data-en>📍 NC lifecycle</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:var(--indigo)">1</div><div class="step-body" data-fr><strong>Ouvert</strong> — NC détectée, non traitée</div><div class="step-body" data-en><strong>Open</strong> — NC detected, untreated</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(233,196,106,.5)">2</div><div class="step-body" data-fr><strong>En cours</strong> — traitement 8D engagé</div><div class="step-body" data-en><strong>In progress</strong> — 8D treatment underway</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(16,185,129,.5)">3</div><div class="step-body" data-fr><strong>Clôturé</strong> — actions validées, NC résolue</div><div class="step-body" data-en><strong>Closed</strong> — actions validated, NC resolved</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(255,255,255,.1)">✕</div><div class="step-body" data-fr><strong>Annulé</strong> — NC invalidée après analyse</div><div class="step-body" data-en><strong>Cancelled</strong> — NC invalidated after analysis</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-violet" style="margin-bottom:.8rem;">
+          <h3 style="color:#C4B5FD" data-fr>📂 Types de NC (7)</h3><h3 style="color:#C4B5FD" data-en>📂 NC types (7)</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem;">
+            <span class="badge badge-slate">Process</span>
+            <span class="badge badge-slate" data-fr>Produit</span><span class="badge badge-slate" data-en>Product</span>
+            <span class="badge badge-slate">Client</span>
+            <span class="badge badge-slate" data-fr>Fournisseur</span><span class="badge badge-slate" data-en>Supplier</span>
+            <span class="badge badge-slate" data-fr>Système</span><span class="badge badge-slate" data-en>System</span>
+            <span class="badge badge-slate" data-fr>Sécurité</span><span class="badge badge-slate" data-en>Security</span>
+            <span class="badge badge-slate" data-fr>Documentation</span><span class="badge badge-slate" data-en>Documentation</span>
+          </div>
+        </div>
+        <div class="card card-sky">
+          <h3 style="color:#7DD3FC" data-fr>🌐 Origines de détection (6)</h3><h3 style="color:#7DD3FC" data-en>🌐 Detection origins (6)</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem;">
+            <span class="badge badge-sky">Audit</span>
+            <span class="badge badge-sky" data-fr>Livrable</span><span class="badge badge-sky" data-en>Deliverable</span>
+            <span class="badge badge-sky" data-fr>Réclamation client</span><span class="badge badge-sky" data-en>Client complaint</span>
+            <span class="badge badge-sky" data-fr>Contrôle interne</span><span class="badge badge-sky" data-en>Internal control</span>
+            <span class="badge badge-sky" data-fr>Auto-contrôle</span><span class="badge badge-sky" data-en>Self-check</span>
+            <span class="badge badge-sky" data-fr>Revue de projet</span><span class="badge badge-sky" data-en>Project review</span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:.8rem;">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Clôture = closedDate requise</h3><h3 style="color:var(--slate-400)" data-en>💡 Closure = closedDate required</h3>
+          <p data-fr>Le calcul du délai moyen de clôture ne fonctionne que si <code style="font-family:monospace">closedDate</code> est renseignée. Toujours renseigner cette date lors du passage au statut "Clôturé".</p>
+          <p data-en>The average closure delay calculation only works if <code style="font-family:monospace">closedDate</code> is set. Always fill this date when switching to "Closed" status.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S12 EXPORT & BONNES PRATIQUES ══ -->
+<div class="slide" id="slide-12">
+  <div class="slide-inner slide-hero" style="background:linear-gradient(135deg,#0F1B2D 0%,#1a1808 50%,#1a0f00 100%);">
+    <div class="slide-num">12 / 12</div>
+    <div class="tag tag-amber" data-fr>Export & Bonnes pratiques</div><div class="tag tag-amber" data-en>Export & Best practices</div>
+    <h2 class="slide-title" data-fr>Export & bonnes pratiques qualité</h2>
+    <h2 class="slide-title" data-en>Export & quality best practices</h2>
+    <div class="cols cols-3" style="margin-top:.8rem;gap:.8rem;">
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)">📥 <span data-fr>Export Excel (CSV)</span><span data-en>Excel export (CSV)</span></h3>
+        <p data-fr>Exporte toutes les NC <strong>filtrées</strong> en CSV. Colonnes : Ref, Projet, Intitulé, Client, Chef, Type, Origine, Sévérité, Responsable, Date détection, Échéance, Date clôture, Statut, Description.</p>
+        <p data-en>Exports all <strong>filtered</strong> NCs as CSV. Columns: Ref, Project, Title, Client, PM, Type, Origin, Severity, Owner, Detection date, Deadline, Closure date, Status, Description.</p>
+      </div>
+      <div class="card card-rose">
+        <h3 style="color:#FCA5A5">🔴 <span data-fr>Traiter les NC critiques en 1er</span><span data-en>Treat critical NCs first</span></h3>
+        <p data-fr>Filtrer Sévérité:Critique + Statut:Ouvert pour isoler les NC urgentes. Chaque NC critique doit avoir un pilote 8D identifié et une échéance de traitement dans les 5 jours.</p>
+        <p data-en>Filter Severity:Critical + Status:Open to isolate urgent NCs. Each critical NC must have an identified 8D pilot and a treatment deadline within 5 days.</p>
+      </div>
+      <div class="card card-emerald">
+        <h3 style="color:#6EE7B7">📅 <span data-fr>Renseigner closedDate</span><span data-en>Fill closedDate</span></h3>
+        <p data-fr>Sans <code style="font-family:monospace">closedDate</code>, le délai moyen de clôture ne peut pas être calculé. Systématiser la saisie de cette date lors du passage à "Clôturé".</p>
+        <p data-en>Without <code style="font-family:monospace">closedDate</code>, the average closure delay cannot be calculated. Systematize entering this date when switching to "Closed".</p>
+      </div>
+      <div class="card card-sky">
+        <h3 style="color:#7DD3FC">📊 <span data-fr>Revue mensuelle</span><span data-en>Monthly review</span></h3>
+        <p data-fr>Cliquer sur le mois courant dans l'histogramme mensuel pour cibler les NC du mois. Si % critiques &gt; 30%, déclencher une revue qualité avec analyse des causes racines.</p>
+        <p data-en>Click the current month in the monthly histogram to target this month's NCs. If % critical &gt; 30%, trigger a quality review with root cause analysis.</p>
+      </div>
+      <div class="card card-indigo">
+        <h3 style="color:#A5B4FC">🔗 <span data-fr>Navigation croisée</span><span data-en>Cross-navigation</span></h3>
+        <p data-fr>Les 3 boutons du tableau (Livrables / NC / Audits) permettent de naviguer rapidement entre les modules qualité d'un projet sans repasser par le menu.</p>
+        <p data-en>The 3 table buttons (Deliverables / NC / Audits) allow quick navigation between a project's quality modules without going back through the menu.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--slate-400)">🔗 <span data-fr>Pages liées</span><span data-en>Related pages</span></h3>
+        <p data-fr>/quality → tableau de bord ISO 9001 · /quality/deliverables-projects → Livrables · /quality/audits-projects → Audits · /actions → plan d'actions · /performance → scores projets</p>
+        <p data-en>/quality → ISO 9001 dashboard · /quality/deliverables-projects → Deliverables · /quality/audits-projects → Audits · /actions → action plan · /performance → project scores</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-slide" style="margin-top:.5rem;">
+  <button class="nav-btn" onclick="prevSlide()" id="prevBtn2">◀</button>
+  <div style="font-size:.78rem;color:var(--slate-400);" data-fr>Utilisez ◀ ▶ ou cliquez les points</div>
+  <div style="font-size:.78rem;color:var(--slate-400);" data-en>Use ◀ ▶ or click the dots</div>
+  <button class="nav-btn" onclick="nextSlide()" id="nextBtn2">▶</button>
+</div>
+
+</div></div>
+<script>
+const TOTAL=12;let current=1,allVisible=false;
+function buildDots(){const c=document.getElementById('dotsContainer');c.innerHTML='';for(let i=1;i<=TOTAL;i++){const d=document.createElement('button');d.className='dot'+(i===current?' active':'');d.onclick=()=>goTo(i);c.appendChild(d);}}
+function goTo(n){if(allVisible)return;document.getElementById('slide-'+current)?.classList.remove('active');current=Math.max(1,Math.min(TOTAL,n));document.getElementById('slide-'+current)?.classList.add('active');document.getElementById('counter').textContent=current+' / '+TOTAL;document.getElementById('prevBtn').disabled=current===1;document.getElementById('nextBtn').disabled=current===TOTAL;const p2=document.getElementById('prevBtn2');const n2=document.getElementById('nextBtn2');if(p2)p2.disabled=current===1;if(n2)n2.disabled=current===TOTAL;buildDots();window.scrollTo({top:56,behavior:'smooth'});}
+function prevSlide(){goTo(current-1);}
+function nextSlide(){goTo(current+1);}
+function toggleAll(){allVisible=!allVisible;document.querySelectorAll('.slide').forEach(s=>{if(allVisible)s.classList.add('all-visible');else s.classList.remove('all-visible');});if(!allVisible)goTo(current);const btn=document.querySelector('.view-all-btn');btn.style.background=allVisible?'rgba(10,147,150,.2)':'';btn.style.borderColor=allVisible?'var(--teal)':'';btn.style.color=allVisible?'var(--teal-light)':'';}
+function setLang(lang){document.body.className='lang-'+lang;document.getElementById('btn-fr').classList.toggle('active',lang==='fr');document.getElementById('btn-en').classList.toggle('active',lang==='en');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nextSlide();if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevSlide();});
+buildDots();goTo(1);
+</script>
+</body></html>

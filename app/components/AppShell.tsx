@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
@@ -465,19 +466,27 @@ export default function AppShell({
           </button>
 
           {/* Logo + titre */}
-          <div className="flex min-w-[170px] shrink-0 items-center gap-3">
-            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
-              P
-            </span>
+          <Link href="/" className="flex min-w-[210px] shrink-0 items-center gap-3">
+            <div className="flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+              <Image
+                src="/PROJELYS.png"
+                alt="Projelys"
+                width={50}
+                height={50}
+                className="h-[50px] w-[50px] object-contain"
+                priority
+              />
+            </div>
+
             <div className="min-w-0">
-              <div className="truncate text-sm font-bold text-slate-900 dark:text-white">
+              <div className="truncate text-sm font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">
                 Projelys
               </div>
               <div className="truncate text-[11px] text-slate-500 dark:text-slate-200">
-                Pilotage portefeuille
+                Project Portfolio & Performance Control
               </div>
             </div>
-          </div>
+          </Link>
 
           {/* Barre de recherche desktop */}
           <div className="hidden flex-1 justify-center xl:flex">

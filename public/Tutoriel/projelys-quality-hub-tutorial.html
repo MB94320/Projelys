@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projelys – Tutorial Qualité ISO 9001</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
+  :root{
+    --navy:#0F1B2D;--indigo:#3B4CCA;--indigo-light:#6371D9;--teal:#0A9396;--teal-light:#94D2BD;
+    --amber:#E9C46A;--rose:#E63946;--sky:#0EA5E9;--emerald:#10B981;
+    --slate-400:#94A3B8;--white:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#0A0F1A;color:var(--white);min-height:100vh;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,15,26,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--teal-light);}
+  .nav-logo span{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:1rem;}
+  .lang-btn{background:none;border:1.5px solid rgba(255,255,255,.2);border-radius:6px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;padding:.3rem .9rem;cursor:pointer;transition:all .2s;}
+  .lang-btn:hover,.lang-btn.active{background:var(--teal);border-color:var(--teal);}
+  .slide-counter{font-size:.75rem;color:var(--slate-400);}
+  .app{padding-top:56px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+  .slides-viewport{width:100%;max-width:1060px;padding:2rem 1rem;}
+  .slide{width:960px;max-width:100%;background:var(--navy);border-radius:12px;overflow:hidden;margin:0 auto 2.5rem;box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);position:relative;display:none;}
+  .slide.active{display:block;}
+  .slide.all-visible{display:block!important;}
+  .slide-inner{padding:2.5rem 3rem;min-height:380px;position:relative;}
+  .slide-num{position:absolute;top:1.2rem;right:1.5rem;font-size:.65rem;font-weight:600;letter-spacing:1.5px;color:rgba(255,255,255,.25);font-family:'DM Mono',monospace;}
+  .tag{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.25rem .7rem;border-radius:4px;margin-bottom:.8rem;}
+  .tag-teal{background:rgba(10,147,150,.2);color:var(--teal-light);border:1px solid rgba(10,147,150,.4);}
+  .tag-indigo{background:rgba(59,76,202,.2);color:#A5B4FC;border:1px solid rgba(59,76,202,.4);}
+  .tag-amber{background:rgba(233,196,106,.15);color:var(--amber);border:1px solid rgba(233,196,106,.3);}
+  .tag-rose{background:rgba(230,57,70,.15);color:#FCA5A5;border:1px solid rgba(230,57,70,.3);}
+  .tag-emerald{background:rgba(16,185,129,.15);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
+  .tag-sky{background:rgba(14,165,233,.15);color:#7DD3FC;border:1px solid rgba(14,165,233,.3);}
+  h1.slide-title{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;line-height:1.1;color:var(--white);margin-bottom:.5rem;}
+  h2.slide-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;line-height:1.2;color:var(--white);margin-bottom:1rem;}
+  .subtitle{font-size:1rem;color:var(--slate-400);line-height:1.6;max-width:580px;}
+  .lead{font-size:.95rem;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:1rem;}
+  .note{font-size:.78rem;color:var(--slate-400);line-height:1.6;}
+  .cols{display:grid;gap:1.5rem;}
+  .cols-2{grid-template-columns:1fr 1fr;}
+  .cols-3{grid-template-columns:1fr 1fr 1fr;}
+  .cols-4{grid-template-columns:1fr 1fr 1fr 1fr;}
+  .cols-auto{grid-template-columns:1.2fr 1fr;}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1.2rem 1.4rem;}
+  .card-teal{border-left:3px solid var(--teal);}
+  .card-indigo{border-left:3px solid var(--indigo-light);}
+  .card-amber{border-left:3px solid var(--amber);}
+  .card-rose{border-left:3px solid var(--rose);}
+  .card-emerald{border-left:3px solid var(--emerald);}
+  .card-sky{border-left:3px solid var(--sky);}
+  .card-violet{border-left:3px solid #8B5CF6;}
+  .card h3{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem;}
+  .card p,.card li{font-size:.82rem;color:rgba(255,255,255,.72);line-height:1.65;}
+  .card ul{padding-left:1rem;}
+  .card li{margin-bottom:.25rem;}
+  .steps{display:flex;flex-direction:column;gap:.6rem;}
+  .step{display:flex;align-items:flex-start;gap:1rem;}
+  .step-num{min-width:28px;height:28px;border-radius:50%;background:var(--indigo);color:var(--white);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .step-body{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.6;}
+  .step-body strong{color:var(--white);}
+  .formula{background:rgba(10,147,150,.1);border:1px solid rgba(10,147,150,.3);border-radius:8px;padding:1rem 1.4rem;font-family:'DM Mono',monospace;font-size:.80rem;color:var(--teal-light);margin:.8rem 0;line-height:1.8;}
+  .mini-table{width:100%;border-collapse:collapse;font-size:.75rem;}
+  .mini-table th{background:rgba(255,255,255,.08);padding:.4rem .7rem;text-align:left;font-weight:600;color:var(--slate-400);text-transform:uppercase;letter-spacing:.8px;}
+  .mini-table td{padding:.4rem .7rem;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.75);}
+  .mini-table tr:last-child td{border-bottom:none;}
+  .badge{font-size:.7rem;font-weight:600;padding:.2rem .7rem;border-radius:999px;font-family:'DM Mono',monospace;display:inline-block;}
+  .badge-green{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
+  .badge-red{background:rgba(230,57,70,.2);color:#FCA5A5;border:1px solid rgba(230,57,70,.3);}
+  .badge-amber{background:rgba(233,196,106,.2);color:var(--amber);border:1px solid rgba(233,196,106,.3);}
+  .badge-sky{background:rgba(14,165,233,.2);color:#7DD3FC;border:1px solid rgba(14,165,233,.3);}
+  .badge-slate{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
+  .badge-indigo{background:rgba(59,76,202,.25);color:#A5B4FC;border:1px solid rgba(59,76,202,.3);}
+  .nav-slide{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;background:rgba(255,255,255,.03);border-radius:10px;margin-bottom:2rem;}
+  .nav-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--white);border-radius:7px;padding:.5rem 1.4rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;transition:all .2s;}
+  .nav-btn:hover{background:var(--teal);border-color:var(--teal);}
+  .nav-btn:disabled{opacity:.3;cursor:not-allowed;}
+  .slide-dots{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:320px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .2s;border:none;padding:0;}
+  .dot.active{background:var(--teal);width:20px;border-radius:4px;}
+  .slide-hero{background:linear-gradient(135deg,#0F1B2D 0%,#1a2744 50%,#0d2a3a 100%);position:relative;overflow:hidden;}
+  .hero-glow{position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.15) 0%,transparent 70%);pointer-events:none;}
+  .hero-glow2{position:absolute;bottom:-60px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(233,196,106,.1) 0%,transparent 70%);pointer-events:none;}
+  hr.slide-hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0;}
+  .view-all-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--slate-400);border-radius:7px;padding:.4rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;transition:all .2s;}
+  .view-all-btn:hover{background:rgba(255,255,255,.1);color:var(--white);}
+  .roadmap{display:flex;flex-direction:column;gap:0;position:relative;}
+  .roadmap-item{display:flex;align-items:flex-start;gap:1.2rem;padding:.7rem 0;position:relative;}
+  .roadmap-line{position:absolute;left:12px;top:28px;bottom:-8px;width:2px;background:rgba(255,255,255,.08);}
+  .roadmap-icon{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;z-index:1;}
+  .roadmap-item:last-child .roadmap-line{display:none;}
+  /* KPI mockup */
+  .kpi-mock{border-radius:8px;padding:.7rem .9rem;}
+  .kpi-mock .num{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace;margin:.15rem 0;}
+  .kpi-mock .label{font-size:.58rem;text-transform:uppercase;letter-spacing:.8px;opacity:.65;}
+  /* Alert cols */
+  .alert-col{border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:.8rem 1rem;font-size:.73rem;}
+  .alert-col .acol-title{font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:.5rem;text-align:center;}
+  .mini-section{margin-top:.4rem;}
+  .ms-title{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.2rem;}
+  .ms-item{font-size:.7rem;color:rgba(255,255,255,.65);padding:.1rem 0 .1rem .6rem;border-left:2px solid rgba(255,255,255,.1);}
+  /* hbar */
+  .hbar-row{display:flex;align-items:center;gap:.5rem;margin:.2rem 0;}
+  .hbar-label{font-size:.65rem;color:var(--slate-400);width:80px;text-align:right;flex-shrink:0;}
+  .hbar-track{flex:1;background:rgba(255,255,255,.06);border-radius:3px;height:10px;overflow:hidden;}
+  .hbar-fill{height:100%;border-radius:3px;}
+  .hbar-val{font-size:.65rem;color:rgba(255,255,255,.6);width:34px;text-align:right;font-family:'DM Mono',monospace;}
+  @media(max-width:700px){.slide-inner{padding:1.5rem;}.cols-2,.cols-3,.cols-4,.cols-auto{grid-template-columns:1fr;}}
+  @media print{nav,.nav-slide{display:none;}.app{padding-top:0;}.slide{display:block!important;page-break-after:always;box-shadow:none;margin-bottom:0;border-radius:0;}body{background:white;}}
+  body.lang-en [data-fr]{display:none;}
+  body.lang-fr [data-en]{display:none;}
+  body.lang-en [data-en]{display:revert;}
+  body.lang-fr [data-fr]{display:revert;}
+</style>
+</head>
+<body class="lang-fr">
+<nav>
+  <div class="nav-logo">Projel<span>ys</span> · Tutorial</div>
+  <div class="nav-controls">
+    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="view-all-btn" onclick="toggleAll()"><span data-fr>Tout voir</span><span data-en>View all</span></button>
+    <span class="slide-counter" id="counter">1 / 12</span>
+  </div>
+</nav>
+<div class="app"><div class="slides-viewport">
+
+<div class="nav-slide">
+  <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>◀</button>
+  <div class="slide-dots" id="dotsContainer"></div>
+  <button class="nav-btn" id="nextBtn" onclick="nextSlide()">▶</button>
+</div>
+
+<!-- ══ S1 COVER ══ -->
+<div class="slide slide-hero active" id="slide-1">
+  <div class="hero-glow"></div><div class="hero-glow2"></div>
+  <div class="slide-inner">
+    <div class="slide-num">01 / 12</div>
+    <div style="max-width:640px;padding-top:1rem;">
+      <div class="tag tag-emerald" data-fr>Guide Utilisateur</div><div class="tag tag-emerald" data-en>User Guide</div>
+      <h1 class="slide-title" data-fr>Qualité<br><span style="color:#6EE7B7">ISO 9001</span></h1>
+      <h1 class="slide-title" data-en>Quality<br><span style="color:#6EE7B7">ISO 9001</span></h1>
+      <p class="subtitle" style="margin-top:.8rem" data-fr>Tableau de bord consolidé — livrables, non-conformités et audits de l'ensemble du portefeuille. KPIs pondérés, alertes automatiques par projet et navigation vers les modules qualité détaillés.</p>
+      <p class="subtitle" style="margin-top:.8rem" data-en>Consolidated dashboard — deliverables, non-conformities and audits across the entire portfolio. Weighted KPIs, automatic per-project alerts and navigation to detailed quality modules.</p>
+    </div>
+    <div style="display:flex;gap:1.5rem;margin-top:2.5rem;flex-wrap:wrap;">
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:#6EE7B7">12</div><span data-fr>slides</span><span data-en>slides</span></div>
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:var(--amber)">FR / EN</div><span data-fr>bilingue</span><span data-en>bilingual</span></div>
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:#7DD3FC">8</div><span data-fr>KPIs</span><span data-en>KPIs</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2 SOMMAIRE ══ -->
+<div class="slide" id="slide-2">
+  <div class="slide-inner">
+    <div class="slide-num">02 / 12</div>
+    <div class="tag tag-indigo" data-fr>Sommaire</div><div class="tag tag-indigo" data-en>Table of Contents</div>
+    <h2 class="slide-title" data-fr>Ce que vous allez apprendre</h2>
+    <h2 class="slide-title" data-en>What you'll learn</h2>
+    <div class="cols cols-2" style="margin-top:1.2rem;gap:.8rem;">
+      <div class="roadmap">
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(16,185,129,.2);color:#6EE7B7;">01</div><div class="step-body"><strong data-fr>Contexte & architecture</strong><strong data-en>Context & architecture</strong><br><span data-fr>URL, source, modules qualité</span><span data-en>URL, source, quality modules</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(59,76,202,.2);color:#A5B4FC;">02</div><div class="step-body"><strong data-fr>Filtres & recherche</strong><strong data-en>Filters & search</strong><br><span data-fr>4 filtres dynamiques</span><span data-en>4 dynamic filters</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(14,165,233,.15);color:#7DD3FC;">03</div><div class="step-body"><strong data-fr>KPIs livrables (ligne 1)</strong><strong data-en>Deliverable KPIs (row 1)</strong><br><span data-fr>Livrables, OTD, OQD, DoD</span><span data-en>Deliverables, OTD, OQD, DoD</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.15);color:var(--amber);">04</div><div class="step-body"><strong data-fr>KPIs NC & audits (ligne 2)</strong><strong data-en>NC & audit KPIs (row 2)</strong><br><span data-fr>NC ouvertes/fermées, délai, score audit</span><span data-en>Open/closed NCs, delay, audit score</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(230,57,70,.15);color:#FCA5A5;">05</div><div class="step-body"><strong data-fr>Calcul des KPIs pondérés</strong><strong data-en>Weighted KPI calculation</strong><br><span data-fr>Formules OTD/OQD/DoD pondérés</span><span data-en>Weighted OTD/OQD/DoD formulas</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(139,92,246,.15);color:#C4B5FD;">06</div><div class="step-body"><strong data-fr>Alertes automatiques</strong><strong data-en>Automatic alerts</strong><br><span data-fr>3 colonnes : Livrables · NC · Audits</span><span data-en>3 columns: Deliverables · NC · Audits</span></div></div>
+      </div>
+      <div class="roadmap">
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(10,147,150,.2);color:var(--teal-light);">07</div><div class="step-body"><strong data-fr>Logique des alertes livrables</strong><strong data-en>Deliverable alert logic</strong><br><span data-fr>Seuils, messages, par projet</span><span data-en>Thresholds, messages, per project</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.15);color:var(--amber);">08</div><div class="step-body"><strong data-fr>Logique des alertes NC & audits</strong><strong data-en>NC & audit alert logic</strong><br><span data-fr>NC ouvertes, critiques, score audit</span><span data-en>Open NCs, critical, audit score</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(16,185,129,.15);color:#6EE7B7;">09</div><div class="step-body"><strong data-fr>Tableau projets synthèse</strong><strong data-en>Project summary table</strong><br><span data-fr>Toutes les colonnes, badges couleur</span><span data-en>All columns, color badges</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(59,76,202,.2);color:#A5B4FC;">10</div><div class="step-body"><strong data-fr>Badges couleur du tableau</strong><strong data-en>Table color badges</strong><br><span data-fr>OTD, OQD, DoD, NC, audit — seuils</span><span data-en>OTD, OQD, DoD, NC, audit — thresholds</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(230,57,70,.15);color:#FCA5A5;">11</div><div class="step-body"><strong data-fr>Export & bonnes pratiques</strong><strong data-en>Export & best practices</strong><br><span data-fr>CSV, navigation qualité, conseils</span><span data-en>CSV, quality navigation, tips</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3 CONTEXTE ══ -->
+<div class="slide" id="slide-3">
+  <div class="slide-inner">
+    <div class="slide-num">03 / 12</div>
+    <div class="tag tag-emerald" data-fr>Contexte</div><div class="tag tag-emerald" data-en>Context</div>
+    <h2 class="slide-title" data-fr>Contexte & architecture qualité</h2>
+    <h2 class="slide-title" data-en>Context & quality architecture</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>La page <strong>Qualité ISO 9001</strong> est le <em>hub central</em> du module qualité. Elle agrège en un seul écran les 3 dimensions de la qualité projet : livrables, non-conformités et audits — pour l'ensemble du portefeuille.</p>
+        <p class="lead" data-en>The <strong>ISO 9001 Quality</strong> page is the <em>central hub</em> of the quality module. It aggregates in a single screen the 3 dimensions of project quality: deliverables, non-conformities and audits — across the entire portfolio.</p>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>🔗 URL & source API</h3><h3 style="color:#6EE7B7" data-en>🔗 URL & API source</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+            /quality<br>
+            GET /api/quality/overview-extended
+          </div>
+          <p data-fr>Un seul appel API charge toutes les données : KPIs globaux + détail par projet (livrables, NC, audits).</p>
+          <p data-en>A single API call loads all data: global KPIs + per-project detail (deliverables, NCs, audits).</p>
+        </div>
+        <div class="card card-indigo">
+          <h3 style="color:#A5B4FC" data-fr>🧭 Modules qualité détaillés</h3><h3 style="color:#A5B4FC" data-en>🧭 Detailed quality modules</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:rgba(59,76,202,.5);font-size:.6rem">📦</div><div class="step-body" data-fr><strong>/quality/deliverables-projects</strong> → Livrables (OTD, OQD, DoD mensuels)</div><div class="step-body" data-en><strong>/quality/deliverables-projects</strong> → Deliverables (monthly OTD, OQD, DoD)</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(233,196,106,.4);font-size:.6rem">⚠</div><div class="step-body" data-fr><strong>/quality/non-conformities-projects</strong> → NC (sévérité, délai, histogrammes)</div><div class="step-body" data-en><strong>/quality/non-conformities-projects</strong> → NCs (severity, delay, histograms)</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(16,185,129,.4);font-size:.6rem">📋</div><div class="step-body" data-fr><strong>/quality/audits-projects</strong> → Audits (thèmes AVV/Delivery, flèche)</div><div class="step-body" data-en><strong>/quality/audits-projects</strong> → Audits (AVV/Delivery themes, arrow)</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>📊 Structure des données par projet</h3><h3 style="color:var(--teal-light)" data-en>📊 Per-project data structure</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Champ</th><th data-en>Field</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+            <tbody>
+              <tr><td>totalDeliverables</td><td>totalDeliverables</td><td data-fr>Nb de livrables</td><td data-en>Deliverable count</td></tr>
+              <tr><td>otd / oqd</td><td>otd / oqd</td><td data-fr>Taux OTD/OQD (0–100)</td><td data-en>OTD/OQD rate (0–100)</td></tr>
+              <tr><td>dod / dodTotal</td><td>dod / dodTotal</td><td data-fr>Retard moy. / Somme retards</td><td data-en>Avg delay / Sum delays</td></tr>
+              <tr><td>ncOpen / ncTotal / ncCritical</td><td>ncOpen / ncTotal / ncCritical</td><td data-fr>NC ouvertes, totales, critiques</td><td data-en>Open, total, critical NCs</td></tr>
+              <tr><td>avgCloseDelayNc</td><td>avgCloseDelayNc</td><td data-fr>Délai moy. clôture NC</td><td data-en>Avg NC closure delay</td></tr>
+              <tr><td>auditScore</td><td>auditScore</td><td data-fr>Score audit global (0–100 ou null)</td><td data-en>Global audit score (0–100 or null)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S4 FILTRES ══ -->
+<div class="slide" id="slide-4">
+  <div class="slide-inner">
+    <div class="slide-num">04 / 12</div>
+    <div class="tag tag-amber" data-fr>Filtres</div><div class="tag tag-amber" data-en>Filters</div>
+    <h2 class="slide-title" data-fr>Filtres & recherche dynamique</h2>
+    <h2 class="slide-title" data-en>Dynamic filters & search</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Les 4 filtres et la recherche libre s'appliquent simultanément à <strong>tous les éléments de la page</strong> : les 8 KPIs, les 3 colonnes d'alertes et le tableau projets.</p>
+        <p class="lead" data-en>The 4 filters and free search apply simultaneously to <strong>all page elements</strong>: the 8 KPIs, the 3 alert columns and the project table.</p>
+        <table class="mini-table" style="margin-top:.8rem;">
+          <thead><tr><th data-fr>Filtre</th><th data-en>Filter</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>Recherche libre</td><td data-en>Free search</td><td data-fr>Intitulé, N° projet, client, chef, statut</td><td data-en>Title, project #, client, PM, status</td></tr>
+            <tr><td>Client</td><td>Client</td><td data-fr>Nom du client</td><td data-en>Client name</td></tr>
+            <tr><td data-fr>N° projet</td><td data-en>Project #</td><td data-fr>Sélection d'un projet spécifique</td><td data-en>Select a specific project</td></tr>
+            <tr><td data-fr>Chef de projet</td><td data-en>Project manager</td><td data-fr>Filtrer par responsable de projet</td><td data-en>Filter by project manager</td></tr>
+            <tr><td>Statut</td><td>Status</td><td data-fr>Statut du projet (En cours, Terminé…)</td><td data-en>Project status (In progress, Closed…)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-amber" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--amber)" data-fr>⚡ Recalcul instantané</h3><h3 style="color:var(--amber)" data-en>⚡ Instant recalculation</h3>
+          <p data-fr>Chaque modification d'un filtre déclenche le recalcul immédiat de :</p>
+          <p data-en>Each filter change triggers immediate recalculation of:</p>
+          <ul style="margin-top:.4rem;">
+            <li data-fr>Les 8 KPIs (OTD/OQD pondérés, NC, DoD, audit)</li><li data-en>All 8 KPIs (weighted OTD/OQD, NCs, DoD, audit)</li>
+            <li data-fr>Les 3 colonnes d'alertes (livrables, NC, audits)</li><li data-en>The 3 alert columns (deliverables, NCs, audits)</li>
+            <li data-fr>La liste des projets filtrés dans le tableau</li><li data-en>The filtered project list in the table</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Listes de filtres dynamiques</h3><h3 style="color:var(--slate-400)" data-en>💡 Dynamic filter lists</h3>
+          <p data-fr>Les listes déroulantes (client, N° projet, chef, statut) sont construites à partir des <strong>projets ayant des données qualité</strong> — pas de l'ensemble du portefeuille. Elles se mettent à jour au chargement de la page.</p>
+          <p data-en>Dropdown lists (client, project #, PM, status) are built from <strong>projects with quality data</strong> — not the entire portfolio. They update on page load.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S5 KPIs LIGNE 1 ══ -->
+<div class="slide" id="slide-5">
+  <div class="slide-inner">
+    <div class="slide-num">05 / 12</div>
+    <div class="tag tag-indigo" data-fr>KPIs — Ligne 1</div><div class="tag tag-indigo" data-en>KPIs — Row 1</div>
+    <h2 class="slide-title" data-fr>KPIs livrables — 4 indicateurs</h2>
+    <h2 class="slide-title" data-en>Deliverable KPIs — 4 indicators</h2>
+    <div class="cols cols-4" style="margin-top:.8rem;gap:.6rem;">
+      <div class="kpi-mock" style="background:rgba(148,163,184,.06);border:1px solid rgba(148,163,184,.15);">
+        <div class="label" style="color:var(--slate-400)" data-fr>Livrables</div><div class="label" style="color:var(--slate-400)" data-en>Deliverables</div>
+        <div class="num" style="color:rgba(255,255,255,.85)">148</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Total projets filtrés</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Total filtered projects</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);">
+        <div class="label" style="color:#A5B4FC">OTD</div>
+        <div class="num" style="color:#A5B4FC">91.4%</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Pondéré par nb livrables</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Weighted by deliverable count</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);">
+        <div class="label" style="color:#6EE7B7">OQD</div>
+        <div class="num" style="color:#6EE7B7">94.2%</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Pondéré par nb livrables</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Weighted by deliverable count</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.2);">
+        <div class="label" style="color:var(--amber)">DoD</div>
+        <div class="num" style="color:var(--amber)">12.3 j</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Somme retards tous projets</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Sum delays all projects</div>
+      </div>
+    </div>
+    <hr class="slide-hr" style="margin-top:1rem;">
+    <div class="cols cols-3" style="gap:.8rem;margin-top:.8rem;">
+      <div class="card card-indigo">
+        <h3 style="color:#A5B4FC" data-fr>📦 Total livrables</h3><h3 style="color:#A5B4FC" data-en>📦 Total deliverables</h3>
+        <p data-fr>Somme simple des <code style="font-family:monospace">totalDeliverables</code> sur les projets filtrés. Indicateur de volume du portefeuille.</p>
+        <p data-en>Simple sum of <code style="font-family:monospace">totalDeliverables</code> on filtered projects. Portfolio volume indicator.</p>
+      </div>
+      <div class="card card-emerald">
+        <h3 style="color:#6EE7B7" data-fr>📐 OTD & OQD pondérés</h3><h3 style="color:#6EE7B7" data-en>📐 Weighted OTD & OQD</h3>
+        <div class="formula" style="margin-top:.4rem;font-size:.68rem;">
+          OTD = Σ(otd_i × totalDel_i) / Σ(totalDel_i)
+        </div>
+        <p data-fr>Chaque projet contribue proportionnellement à son nombre de livrables. Un projet avec 50 livrables pèse 5× plus qu'un projet avec 10.</p>
+        <p data-en>Each project contributes proportionally to its deliverable count. A project with 50 deliverables weighs 5× more than one with 10.</p>
+      </div>
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)" data-fr>⏱ DoD global</h3><h3 style="color:var(--amber)" data-en>⏱ Global DoD</h3>
+        <div class="formula" style="margin-top:.4rem;font-size:.68rem;">DoD global = Σ(dodTotal_i) sur projets filtrés</div>
+        <p data-fr>Contrairement aux autres KPIs, le DoD global est une <strong>somme</strong> (pas une moyenne) de tous les retards cumulés du portefeuille, en jours.</p>
+        <p data-en>Unlike other KPIs, the global DoD is a <strong>sum</strong> (not an average) of all cumulated delays across the portfolio, in days.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S6 KPIs LIGNE 2 ══ -->
+<div class="slide" id="slide-6">
+  <div class="slide-inner">
+    <div class="slide-num">06 / 12</div>
+    <div class="tag tag-amber" data-fr>KPIs — Ligne 2</div><div class="tag tag-amber" data-en>KPIs — Row 2</div>
+    <h2 class="slide-title" data-fr>KPIs NC & audits — 4 indicateurs</h2>
+    <h2 class="slide-title" data-en>NC & audit KPIs — 4 indicators</h2>
+    <div class="cols cols-4" style="margin-top:.8rem;gap:.6rem;">
+      <div class="kpi-mock" style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);">
+        <div class="label" style="color:#FCA5A5" data-fr>NC ouvertes</div><div class="label" style="color:#FCA5A5" data-en>Open NCs</div>
+        <div class="num" style="color:#FCA5A5">12</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Statut ≠ Clôturé</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Status ≠ Closed</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(148,163,184,.06);border:1px solid rgba(148,163,184,.15);">
+        <div class="label" style="color:var(--slate-400)" data-fr>NC fermées</div><div class="label" style="color:var(--slate-400)" data-en>Closed NCs</div>
+        <div class="num" style="color:rgba(255,255,255,.7)">31</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>ncTotal – ncOpen</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>ncTotal – ncOpen</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.2);">
+        <div class="label" style="color:var(--amber)" data-fr>Délai moy. clôture NC</div><div class="label" style="color:var(--amber)" data-en>Avg NC closure delay</div>
+        <div class="num" style="color:var(--amber)">9.4 j</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Moy. projets avec délai</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Avg projects with delay</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);">
+        <div class="label" style="color:#A5B4FC" data-fr>Score audits global</div><div class="label" style="color:#A5B4FC" data-en>Global audit score</div>
+        <div class="num" style="color:#A5B4FC">78.6%</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-fr>Moy. projets avec audit</div>
+        <div style="font-size:.6rem;color:rgba(255,255,255,.35);margin-top:.2rem;" data-en>Avg projects with audit</div>
+      </div>
+    </div>
+    <hr class="slide-hr" style="margin-top:1rem;">
+    <div class="cols cols-2" style="gap:1rem;margin-top:.8rem;">
+      <div class="card card-rose">
+        <h3 style="color:#FCA5A5" data-fr>📐 Calcul NC ouvertes & fermées</h3><h3 style="color:#FCA5A5" data-en>📐 Open & closed NC calculation</h3>
+        <div class="formula" style="margin-top:.4rem;font-size:.68rem;">
+          ncOpen = Σ(p.ncOpen) projets filtrés<br>
+          ncTotal = Σ(p.ncTotal) projets filtrés<br>
+          ncClosed = ncTotal – ncOpen
+        </div>
+        <p class="note" data-fr>Les NC "Annulées" sont incluses dans ncOpen (statut ≠ "Clôturé").</p>
+        <p class="note" data-en>Cancelled NCs are included in ncOpen (status ≠ "Closed").</p>
+      </div>
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)" data-fr>📐 Calcul délai NC & score audit</h3><h3 style="color:var(--amber)" data-en>📐 NC delay & audit score calculation</h3>
+        <div class="formula" style="margin-top:.4rem;font-size:.68rem;">
+          <span data-fr>Délai moy. = moy(avgCloseDelayNc) pour projets avec délai &gt; 0</span>
+          <span data-en>Avg delay = avg(avgCloseDelayNc) for projects with delay &gt; 0</span><br><br>
+          <span data-fr>Score audit = moy(auditScore) pour projets avec score non null</span>
+          <span data-en>Audit score = avg(auditScore) for projects with non-null score</span>
+        </div>
+        <p class="note" data-fr>Les projets sans délai NC ou sans audit sont exclus de ces moyennes.</p>
+        <p class="note" data-en>Projects without NC delay or without audit are excluded from these averages.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S7 ALERTES ══ -->
+<div class="slide" id="slide-7">
+  <div class="slide-inner">
+    <div class="slide-num">07 / 12</div>
+    <div class="tag tag-sky" data-fr>Alertes automatiques</div><div class="tag tag-sky" data-en>Automatic alerts</div>
+    <h2 class="slide-title" data-fr>Alertes & recommandations — 3 colonnes</h2>
+    <h2 class="slide-title" data-en>Alerts & recommendations — 3 columns</h2>
+    <p class="lead" data-fr>La section alertes génère automatiquement des messages <strong>par projet</strong>, regroupés en 3 colonnes thématiques, chacune avec 3 niveaux.</p>
+    <p class="lead" data-en>The alerts section automatically generates messages <strong>per project</strong>, grouped in 3 thematic columns, each with 3 levels.</p>
+    <div class="cols cols-3" style="margin-top:.8rem;gap:.8rem;">
+      <div class="alert-col">
+        <div class="acol-title" style="color:#A5B4FC" data-fr>📦 Livrables</div>
+        <div class="acol-title" style="color:#A5B4FC" data-en>📦 Deliverables</div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:#6EE7B7" data-fr>✅ Points forts</div>
+          <div class="ms-title" style="color:#6EE7B7" data-en>✅ Strengths</div>
+          <div class="ms-item" data-fr>OTD ≥ 95% ET OQD ≥ 95% ET DoD ≤ 1j → "performance très robuste"</div>
+          <div class="ms-item" data-en>OTD ≥ 95% AND OQD ≥ 95% AND DoD ≤ 1d → "very robust performance"</div>
+        </div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:var(--amber)" data-fr>⚠️ Vigilance</div>
+          <div class="ms-title" style="color:var(--amber)" data-en>⚠️ Watch</div>
+          <div class="ms-item" data-fr>OTD ou OQD entre 80–90% → "légère dégradation"</div>
+          <div class="ms-item" data-en>OTD or OQD between 80–90% → "slight degradation"</div>
+        </div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:#A5B4FC" data-fr>📝 Actions</div>
+          <div class="ms-title" style="color:#A5B4FC" data-en>📝 Actions</div>
+          <div class="ms-item" data-fr>OTD &lt; 80% OU OQD &lt; 80% OU DoD &gt; 5j → plan d'actions</div>
+          <div class="ms-item" data-en>OTD &lt; 80% OR OQD &lt; 80% OR DoD &gt; 5d → action plan</div>
+        </div>
+      </div>
+      <div class="alert-col">
+        <div class="acol-title" style="color:var(--amber)" data-fr>⚠️ Non-conformités</div>
+        <div class="acol-title" style="color:var(--amber)" data-en>⚠️ Non-conformities</div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:#6EE7B7" data-fr>✅ Points forts</div>
+          <div class="ms-title" style="color:#6EE7B7" data-en>✅ Strengths</div>
+          <div class="ms-item" data-fr>NC total = 0 → "aucune NC enregistrée"</div>
+          <div class="ms-item" data-en>Total NCs = 0 → "no NC recorded"</div>
+          <div class="ms-item" data-fr>NC ouvertes = 0 ET délai ≤ 15j → "traitement maîtrisé"</div>
+          <div class="ms-item" data-en>Open NCs = 0 AND delay ≤ 15d → "handling mastered"</div>
+        </div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:var(--amber)" data-fr>⚠️ Vigilance</div>
+          <div class="ms-title" style="color:var(--amber)" data-en>⚠️ Watch</div>
+          <div class="ms-item" data-fr>1–3 NC ouvertes et aucune critique → surveiller les plans d'actions</div>
+          <div class="ms-item" data-en>1–3 open NCs and none critical → monitor action plans</div>
+        </div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:#A5B4FC" data-fr>📝 Actions</div>
+          <div class="ms-title" style="color:#A5B4FC" data-en>📝 Actions</div>
+          <div class="ms-item" data-fr>&gt; 3 NC ouvertes OU NC critique → QRQC / 8D</div>
+          <div class="ms-item" data-en>&gt; 3 open NCs OR critical NC → QRQC / 8D</div>
+        </div>
+      </div>
+      <div class="alert-col">
+        <div class="acol-title" style="color:#6EE7B7" data-fr>📋 Audits</div>
+        <div class="acol-title" style="color:#6EE7B7" data-en>📋 Audits</div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:#6EE7B7" data-fr>✅ Points forts</div>
+          <div class="ms-title" style="color:#6EE7B7" data-en>✅ Strengths</div>
+          <div class="ms-item" data-fr>Score ≥ 90% → "système projet très bien maîtrisé"</div>
+          <div class="ms-item" data-en>Score ≥ 90% → "project system very well controlled"</div>
+        </div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:var(--amber)" data-fr>⚠️ Vigilance</div>
+          <div class="ms-title" style="color:var(--amber)" data-en>⚠️ Watch</div>
+          <div class="ms-item" data-fr>Score 70–89% → "quelques écarts à résorber"</div>
+          <div class="ms-item" data-en>Score 70–89% → "some gaps to address"</div>
+        </div>
+        <div class="mini-section">
+          <div class="ms-title" style="color:#A5B4FC" data-fr>📝 Actions</div>
+          <div class="ms-title" style="color:#A5B4FC" data-en>📝 Actions</div>
+          <div class="ms-item" data-fr>Score &lt; 70% → plan remise à niveau + audit de suivi</div>
+          <div class="ms-item" data-en>Score &lt; 70% → remediation plan + follow-up audit</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:.8rem;">
+      <h3 style="color:var(--slate-400)" data-fr>💡 Limite d'affichage</h3><h3 style="color:var(--slate-400)" data-en>💡 Display limit</h3>
+      <p data-fr>Chaque niveau affiche au maximum <strong>4 messages</strong> par colonne (<code style="font-family:monospace">.slice(0, 4)</code>). Si plus de projets correspondent, les premiers de la liste filtrée sont affichés.</p>
+      <p data-en>Each level displays at most <strong>4 messages</strong> per column (<code style="font-family:monospace">.slice(0, 4)</code>). If more projects match, the first ones in the filtered list are shown.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S8 TABLEAU ══ -->
+<div class="slide" id="slide-8">
+  <div class="slide-inner">
+    <div class="slide-num">08 / 12</div>
+    <div class="tag tag-teal" data-fr>Tableau projets</div><div class="tag tag-teal" data-en>Projects table</div>
+    <h2 class="slide-title" data-fr>Tableau projets — Synthèse qualité</h2>
+    <h2 class="slide-title" data-en>Projects table — Quality summary</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Le tableau affiche une ligne par projet avec <strong>tous les KPIs qualité</strong> en badges colorés. Il est filtré dynamiquement et limité en hauteur (scroll).</p>
+        <p class="lead" data-en>The table displays one row per project with <strong>all quality KPIs</strong> as colored badges. It is dynamically filtered and height-limited (scrollable).</p>
+        <table class="mini-table">
+          <thead><tr><th data-fr>Colonne</th><th data-en>Column</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>N° projet</td><td data-en>Project #</td><td data-fr>Lien → fiche projet</td><td data-en>Link → project sheet</td></tr>
+            <tr><td data-fr>Intitulé</td><td data-en>Title</td><td data-fr>Nom du projet</td><td data-en>Project name</td></tr>
+            <tr><td data-fr>Chef de projet</td><td data-en>PM</td><td data-fr>Responsable</td><td data-en>Manager</td></tr>
+            <tr><td>Statut</td><td>Status</td><td data-fr>Badge statut projet</td><td data-en>Project status badge</td></tr>
+            <tr><td>Livrables</td><td>Deliverables</td><td data-fr>Nb total</td><td data-en>Total count</td></tr>
+            <tr><td>OTD / OQD</td><td>OTD / OQD</td><td data-fr>% badge vert/ambré/rouge</td><td data-en>% green/amber/red badge</td></tr>
+            <tr><td>DoD</td><td>DoD</td><td data-fr>Jours retard moy. (inverse)</td><td data-en>Avg delay days (inverse)</td></tr>
+            <tr><td data-fr>NC projet</td><td data-en>Project NCs</td><td data-fr>Total (crit: N)</td><td data-en>Total (crit: N)</td></tr>
+            <tr><td data-fr>NC ouvertes</td><td data-en>Open NCs</td><td data-fr>Badge vert/ambré/rouge</td><td data-en>Green/amber/red badge</td></tr>
+            <tr><td data-fr>Score audit</td><td data-en>Audit score</td><td data-fr>% ou NA</td><td data-en>% or NA</td></tr>
+            <tr><td>Actions</td><td>Actions</td><td data-fr>3 liens : Livrables · NC · Audit</td><td data-en>3 links: Deliverables · NC · Audit</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>🔗 Liens depuis le tableau</h3><h3 style="color:var(--teal-light)" data-en>🔗 Links from the table</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:var(--indigo);font-size:.65rem">N°</div><div class="step-body" data-fr>Clic N° projet → <strong>/projects/[id]</strong></div><div class="step-body" data-en>Click project # → <strong>/projects/[id]</strong></div></div>
+            <div class="step"><div class="step-num" style="background:rgba(59,76,202,.5);font-size:.65rem">Liv</div><div class="step-body" data-fr><strong>Livrables</strong> → /projects/[id]/quality/deliverables</div><div class="step-body" data-en><strong>Deliverables</strong> → /projects/[id]/quality/deliverables</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(233,196,106,.5);font-size:.65rem">NC</div><div class="step-body" data-fr><strong>NC</strong> → /projects/[id]/quality/non-conformities</div><div class="step-body" data-en><strong>NC</strong> → /projects/[id]/quality/non-conformities</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(16,185,129,.4);font-size:.65rem">Au</div><div class="step-body" data-fr><strong>Audit</strong> → /projects/[id]/quality/audit</div><div class="step-body" data-en><strong>Audit</strong> → /projects/[id]/quality/audit</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>📊 Compteur projets</h3><h3 style="color:var(--slate-400)" data-en>📊 Project counter</h3>
+          <p data-fr>L'en-tête du tableau affiche <strong>X projet(s) affiché(s) / Y au total</strong>, où Y est le nombre total de projets avec données qualité et X est le nombre après filtres.</p>
+          <p data-en>The table header shows <strong>X project(s) displayed / Y total</strong>, where Y is the total projects with quality data and X is the count after filters.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S9 BADGES COULEUR ══ -->
+<div class="slide" id="slide-9">
+  <div class="slide-inner">
+    <div class="slide-num">09 / 12</div>
+    <div class="tag tag-violet" data-fr>Badges couleur</div><div class="tag tag-violet" data-en>Color badges</div>
+    <h2 class="slide-title" data-fr>Codes couleur du tableau — tous les seuils</h2>
+    <h2 class="slide-title" data-en>Table color codes — all thresholds</h2>
+    <div class="cols cols-2" style="margin-top:.8rem;gap:1.5rem;align-items:start;">
+      <div>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>📊 OTD & OQD (badges %)</h3><h3 style="color:#6EE7B7" data-en>📊 OTD & OQD (% badges)</h3>
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.4rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green">≥ 85%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — performant</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — performing</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber">70–84%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — à améliorer</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — to improve</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red">&lt; 70%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — insuffisant</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — insufficient</span></div>
+          </div>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber)" data-fr>⏱ DoD (badges j)</h3><h3 style="color:var(--amber)" data-en>⏱ DoD (d badges)</h3>
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.4rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green" data-fr>≤ 2 j</span><span class="badge badge-green" data-en>≤ 2 d</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — retards négligeables</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — negligible delays</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber" data-fr>2–5 j</span><span class="badge badge-amber" data-en>2–5 d</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — retards modérés</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — moderate delays</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red" data-fr>&gt; 5 j</span><span class="badge badge-red" data-en>&gt; 5 d</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — retards importants</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — significant delays</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-rose" style="margin-bottom:.8rem;">
+          <h3 style="color:#FCA5A5" data-fr>🔴 NC ouvertes & NC totales</h3><h3 style="color:#FCA5A5" data-en>🔴 Open NCs & total NCs</h3>
+          <p data-fr><strong>NC ouvertes</strong> :</p><p data-en><strong>Open NCs</strong>:</p>
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.3rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green">0</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — aucune ouverte</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — none open</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber">1–3</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — quelques ouvertes</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — a few open</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red">&gt; 3</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — volume élevé</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — high volume</span></div>
+          </div>
+          <p style="margin-top:.5rem;" data-fr><strong>NC totales</strong> : vert si 0 critique · ambré si ≤ 2 critiques · rouge si &gt; 2 critiques.</p>
+          <p style="margin-top:.5rem;" data-en><strong>Total NCs</strong>: green if 0 critical · amber if ≤ 2 critical · red if &gt; 2 critical.</p>
+        </div>
+        <div class="card card-indigo">
+          <h3 style="color:#A5B4FC" data-fr>📋 Score audit</h3><h3 style="color:#A5B4FC" data-en>📋 Audit score</h3>
+          <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.4rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green">≥ 85%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — conforme</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — compliant</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber">70–84%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — amélioration requise</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — improvement needed</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red">&lt; 70%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — plan remise à niveau</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — remediation plan needed</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-slate">NA</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Gris — aucun audit renseigné</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Gray — no audit recorded</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S10 STATUT PROJET ══ -->
+<div class="slide" id="slide-10">
+  <div class="slide-inner">
+    <div class="slide-num">10 / 12</div>
+    <div class="tag tag-sky" data-fr>Statut & Variantes</div><div class="tag tag-sky" data-en>Status & Variants</div>
+    <h2 class="slide-title" data-fr>Badge statut projet & variantes KPI</h2>
+    <h2 class="slide-title" data-en>Project status badge & KPI variants</h2>
+    <div class="cols cols-2" style="margin-top:.8rem;gap:1.5rem;align-items:start;">
+      <div>
+        <div class="card card-sky" style="margin-bottom:.8rem;">
+          <h3 style="color:#7DD3FC" data-fr>🏷 Badge statut projet</h3><h3 style="color:#7DD3FC" data-en>🏷 Project status badge</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Statut contient</th><th data-en>Status contains</th><th data-fr>Badge</th><th data-en>Badge</th></tr></thead>
+            <tbody>
+              <tr><td data-fr>"cours"</td><td data-en>"cours"</td><td style="color:var(--amber)" data-fr>Ambré — En cours</td><td style="color:var(--amber)" data-en>Amber — In progress</td></tr>
+              <tr><td data-fr>"termin" / "clos"</td><td data-en>"termin" / "clos"</td><td style="color:#6EE7B7" data-fr>Vert — Terminé</td><td style="color:#6EE7B7" data-en>Green — Closed</td></tr>
+              <tr><td data-fr>"alerte" / "critique"</td><td data-en>"alerte" / "critique"</td><td style="color:#FCA5A5" data-fr>Rose — Critique</td><td style="color:#FCA5A5" data-en>Rose — Critical</td></tr>
+              <tr><td data-fr>Autres</td><td data-en>Other</td><td style="color:#7DD3FC" data-fr>Sky — Neutre</td><td style="color:#7DD3FC" data-en>Sky — Neutral</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card card-indigo">
+          <h3 style="color:#A5B4FC" data-fr>🎨 Couleurs des tuiles KPI</h3><h3 style="color:#A5B4FC" data-en>🎨 KPI tile colors</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Variante</th><th data-en>Variant</th><th data-fr>KPI concerné</th><th data-en>Relevant KPI</th></tr></thead>
+            <tbody>
+              <tr><td>info</td><td>info</td><td data-fr>Livrables, NC fermées</td><td data-en>Deliverables, Closed NCs</td></tr>
+              <tr><td>primary</td><td>primary</td><td data-fr>OTD, Score audit</td><td data-en>OTD, Audit score</td></tr>
+              <tr><td>success</td><td>success</td><td>OQD</td><td>OQD</td></tr>
+              <tr><td>warning</td><td>warning</td><td data-fr>DoD, Délai NC</td><td data-en>DoD, NC delay</td></tr>
+              <tr><td>danger</td><td>danger</td><td data-fr>NC ouvertes</td><td data-en>Open NCs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>💡 Spécificité du DoD tableau</h3><h3 style="color:var(--teal-light)" data-en>💡 Table DoD specificity</h3>
+          <p data-fr>Dans le tableau projets, le badge DoD utilise le champ <code style="font-family:monospace">p.dod</code> (retard <em>moyen</em> du projet), tandis que le KPI global utilise <code style="font-family:monospace">dodTotal</code> (somme cumulée). Ce sont deux valeurs différentes :</p>
+          <p data-en>In the project table, the DoD badge uses the <code style="font-family:monospace">p.dod</code> field (project <em>average</em> delay), while the global KPI uses <code style="font-family:monospace">dodTotal</code> (cumulative sum). These are two different values:</p>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+            <span data-fr>p.dod = retard moyen du projet (jours)</span>
+            <span data-en>p.dod = project average delay (days)</span><br>
+            <span data-fr>p.dodTotal = somme des retards du projet</span>
+            <span data-en>p.dodTotal = sum of project delays</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>⚠️ NC totales — lecture du badge</h3><h3 style="color:var(--slate-400)" data-en>⚠️ Total NCs — badge reading</h3>
+          <p data-fr>Le badge "NC projet" affiche le format <strong>N (crit: C)</strong> où N = total et C = critiques. La couleur est déterminée par le nombre de critiques (pas le total).</p>
+          <p data-en>The "Project NCs" badge displays the format <strong>N (crit: C)</strong> where N = total and C = critical. The color is determined by the number of critical NCs (not the total).</p>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+            <span data-fr>Ex : "14 (crit: 0)" → Vert</span>
+            <span data-en>Ex: "14 (crit: 0)" → Green</span><br>
+            <span data-fr>Ex : "14 (crit: 3)" → Rouge</span>
+            <span data-en>Ex: "14 (crit: 3)" → Red</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S11 EXPORT & NAVIGATION ══ -->
+<div class="slide" id="slide-11">
+  <div class="slide-inner">
+    <div class="slide-num">11 / 12</div>
+    <div class="tag tag-teal" data-fr>Export & Navigation</div><div class="tag tag-teal" data-en>Export & Navigation</div>
+    <h2 class="slide-title" data-fr>Export CSV & navigation vers les modules</h2>
+    <h2 class="slide-title" data-en>CSV export & navigation to modules</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>📥 Export Excel (CSV)</h3><h3 style="color:var(--teal-light)" data-en>📥 Excel export (CSV)</h3>
+          <p data-fr>Exporte <strong>tous les projets</strong> (pas seulement les filtrés) avec toutes leurs métriques qualité.</p>
+          <p data-en>Exports <strong>all projects</strong> (not just filtered ones) with all their quality metrics.</p>
+          <p style="margin-top:.5rem;" data-fr><strong>Colonnes exportées :</strong></p>
+          <p style="margin-top:.5rem;" data-en><strong>Exported columns:</strong></p>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.3rem;font-size:.68rem;color:rgba(255,255,255,.6);">
+            <span>projectId</span><span>projectNumber</span><span>projectTitle</span><span>clientName</span>
+            <span>projectManagerName</span><span>status</span><span>totalDeliverables</span>
+            <span>otd</span><span>oqd</span><span>dod</span><span>dodTotal</span>
+            <span>ncOpen</span><span>ncTotal</span><span>ncCritical</span>
+            <span>avgCloseDelayNc</span><span>auditScore</span>
+          </div>
+          <p class="note" style="margin-top:.5rem;" data-fr>⚠️ L'export utilise <code style="font-family:monospace">data.projects</code> (non filtré), pas <code style="font-family:monospace">filteredProjects</code>.</p>
+          <p class="note" style="margin-top:.5rem;" data-en>⚠️ The export uses <code style="font-family:monospace">data.projects</code> (unfiltered), not <code style="font-family:monospace">filteredProjects</code>.</p>
+        </div>
+        <div class="card card-indigo">
+          <h3 style="color:#A5B4FC" data-fr>🧭 Boutons de navigation globaux</h3><h3 style="color:#A5B4FC" data-en>🧭 Global navigation buttons</h3>
+          <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.4rem;">
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-indigo" data-fr>Livrables (vue projets)</span><span class="badge badge-indigo" data-en>Deliverables (project view)</span><span style="font-size:.7rem;color:var(--slate-400)">/quality/deliverables-projects</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber" data-fr>Non-conformités (vue projets)</span><span class="badge badge-amber" data-en>Non-conformities (project view)</span><span style="font-size:.7rem;color:var(--slate-400)">/quality/non-conformities-projects</span></div>
+            <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green" data-fr>Audits (vue projets)</span><span class="badge badge-green" data-en>Audits (project view)</span><span style="font-size:.7rem;color:var(--slate-400)">/quality/audits-projects</span></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>🔄 Flux de navigation recommandé</h3><h3 style="color:#6EE7B7" data-en>🔄 Recommended navigation flow</h3>
+          <div class="steps" style="margin-top:.5rem;">
+            <div class="step"><div class="step-num">1</div><div class="step-body" data-fr><strong>/quality</strong> → tableau de bord global, identifier les projets en difficulté</div><div class="step-body" data-en><strong>/quality</strong> → global dashboard, identify struggling projects</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body" data-fr>Clic tableau → <strong>/projects/[id]/quality/deliverables</strong> pour analyser les livrables du projet</div><div class="step-body" data-en>Table click → <strong>/projects/[id]/quality/deliverables</strong> to analyze project deliverables</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body" data-fr>Clic NC → <strong>/projects/[id]/quality/non-conformities</strong> pour les plans d'actions 8D</div><div class="step-body" data-en>Click NC → <strong>/projects/[id]/quality/non-conformities</strong> for 8D action plans</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-body" data-fr>Clic Audit → <strong>/projects/[id]/quality/audit</strong> pour les thèmes AVV/Delivery détaillés</div><div class="step-body" data-en>Click Audit → <strong>/projects/[id]/quality/audit</strong> for detailed AVV/Delivery themes</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S12 BONNES PRATIQUES ══ -->
+<div class="slide" id="slide-12">
+  <div class="slide-inner slide-hero" style="background:linear-gradient(135deg,#0F1B2D 0%,#0d1f15 50%,#091a10 100%);">
+    <div class="slide-num">12 / 12</div>
+    <div class="tag tag-emerald" data-fr>Bonnes pratiques</div><div class="tag tag-emerald" data-en>Best practices</div>
+    <h2 class="slide-title" data-fr>Bonnes pratiques — Hub qualité</h2>
+    <h2 class="slide-title" data-en>Best practices — Quality hub</h2>
+    <div class="cols cols-3" style="margin-top:.8rem;gap:.8rem;">
+      <div class="card card-emerald">
+        <h3 style="color:#6EE7B7">🗓 <span data-fr>Revue mensuelle portefeuille</span><span data-en>Monthly portfolio review</span></h3>
+        <p data-fr>Ouvrir /quality en début de mois, appliquer le filtre "Statut: En cours", parcourir les alertes par colonne. Cibler les projets avec badge rouge sur OTD, NC ouvertes &gt; 3 ou score audit &lt; 70%.</p>
+        <p data-en>Open /quality at the start of each month, apply "Status: In progress" filter, browse alerts by column. Target projects with red OTD badge, open NCs &gt; 3 or audit score &lt; 70%.</p>
+      </div>
+      <div class="card card-rose">
+        <h3 style="color:#FCA5A5">⚠️ <span data-fr>Prioriser les NC critiques</span><span data-en>Prioritize critical NCs</span></h3>
+        <p data-fr>Le badge "NC projet" (crit: N) permet d'identifier instantanément les projets avec des NC critiques. Cliquer sur "NC" dans le tableau pour accéder aux détails et lancer un QRQC / 8D.</p>
+        <p data-en>The "Project NCs" badge (crit: N) instantly identifies projects with critical NCs. Click "NC" in the table to access details and launch a QRQC / 8D.</p>
+      </div>
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)">📊 <span data-fr>Utiliser le filtre chef de projet</span><span data-en>Use the PM filter</span></h3>
+        <p data-fr>Le filtre "Chef de projet" permet à chaque manager de consulter uniquement son portefeuille. Idéal pour les revues individuelles hebdomadaires ou les comités de direction.</p>
+        <p data-en>The "Project manager" filter lets each manager view only their portfolio. Ideal for individual weekly reviews or management committees.</p>
+      </div>
+      <div class="card card-sky">
+        <h3 style="color:#7DD3FC">📥 <span data-fr>Export pour les comités</span><span data-en>Export for committees</span></h3>
+        <p data-fr>L'export CSV contient tous les projets (non filtré). Ouvrir dans Excel, ajouter un filtre automatique sur la colonne "status" pour préparer les comités de direction qualité.</p>
+        <p data-en>The CSV export contains all projects (unfiltered). Open in Excel, add an auto-filter on the "status" column to prepare quality management committees.</p>
+      </div>
+      <div class="card card-indigo">
+        <h3 style="color:#A5B4FC">🔗 <span data-fr>Navigation croisée efficace</span><span data-en>Effective cross-navigation</span></h3>
+        <p data-fr>Les 3 boutons Actions (Livrables / NC / Audit) dans chaque ligne du tableau ouvrent directement le module concerné filtré sur ce projet. C'est le chemin le plus rapide vers l'analyse détaillée.</p>
+        <p data-en>The 3 Action buttons (Deliverables / NC / Audit) in each table row directly open the relevant module filtered on that project. It's the fastest path to detailed analysis.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--slate-400)">🔗 <span data-fr>Écosystème qualité</span><span data-en>Quality ecosystem</span></h3>
+        <p data-fr>/quality/deliverables-projects → OTD/OQD/DoD mensuels · /quality/non-conformities-projects → sévérité & délai · /quality/audits-projects → thèmes AVV/Delivery · /performance → score /100 & alertes</p>
+        <p data-en>/quality/deliverables-projects → monthly OTD/OQD/DoD · /quality/non-conformities-projects → severity & delay · /quality/audits-projects → AVV/Delivery themes · /performance → score /100 & alerts</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-slide" style="margin-top:.5rem;">
+  <button class="nav-btn" onclick="prevSlide()" id="prevBtn2">◀</button>
+  <div style="font-size:.78rem;color:var(--slate-400);" data-fr>Utilisez ◀ ▶ ou cliquez les points</div>
+  <div style="font-size:.78rem;color:var(--slate-400);" data-en>Use ◀ ▶ or click the dots</div>
+  <button class="nav-btn" onclick="nextSlide()" id="nextBtn2">▶</button>
+</div>
+
+</div></div>
+<script>
+const TOTAL=12;let current=1,allVisible=false;
+function buildDots(){const c=document.getElementById('dotsContainer');c.innerHTML='';for(let i=1;i<=TOTAL;i++){const d=document.createElement('button');d.className='dot'+(i===current?' active':'');d.onclick=()=>goTo(i);c.appendChild(d);}}
+function goTo(n){if(allVisible)return;document.getElementById('slide-'+current)?.classList.remove('active');current=Math.max(1,Math.min(TOTAL,n));document.getElementById('slide-'+current)?.classList.add('active');document.getElementById('counter').textContent=current+' / '+TOTAL;document.getElementById('prevBtn').disabled=current===1;document.getElementById('nextBtn').disabled=current===TOTAL;const p2=document.getElementById('prevBtn2');const n2=document.getElementById('nextBtn2');if(p2)p2.disabled=current===1;if(n2)n2.disabled=current===TOTAL;buildDots();window.scrollTo({top:56,behavior:'smooth'});}
+function prevSlide(){goTo(current-1);}
+function nextSlide(){goTo(current+1);}
+function toggleAll(){allVisible=!allVisible;document.querySelectorAll('.slide').forEach(s=>{if(allVisible)s.classList.add('all-visible');else s.classList.remove('all-visible');});if(!allVisible)goTo(current);const btn=document.querySelector('.view-all-btn');btn.style.background=allVisible?'rgba(10,147,150,.2)':'';btn.style.borderColor=allVisible?'var(--teal)':'';btn.style.color=allVisible?'var(--teal-light)':'';}
+function setLang(lang){document.body.className='lang-'+lang;document.getElementById('btn-fr').classList.toggle('active',lang==='fr');document.getElementById('btn-en').classList.toggle('active',lang==='en');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nextSlide();if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevSlide();});
+buildDots();goTo(1);
+</script>
+</body></html>

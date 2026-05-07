@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projelys – Tutorial Livrables Projets</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap');
+  :root{
+    --navy:#0F1B2D;--indigo:#3B4CCA;--indigo-light:#6371D9;--teal:#0A9396;--teal-light:#94D2BD;
+    --amber:#E9C46A;--rose:#E63946;--sky:#0EA5E9;--emerald:#10B981;
+    --slate-400:#94A3B8;--slate-600:#475569;--white:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:#0A0F1A;color:var(--white);min-height:100vh;}
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,15,26,0.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;}
+  .nav-logo{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--teal-light);}
+  .nav-logo span{color:var(--amber);}
+  .nav-controls{display:flex;align-items:center;gap:1rem;}
+  .lang-btn{background:none;border:1.5px solid rgba(255,255,255,.2);border-radius:6px;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;padding:.3rem .9rem;cursor:pointer;transition:all .2s;}
+  .lang-btn:hover,.lang-btn.active{background:var(--teal);border-color:var(--teal);}
+  .slide-counter{font-size:.75rem;color:var(--slate-400);}
+  .app{padding-top:56px;display:flex;flex-direction:column;align-items:center;min-height:100vh;}
+  .slides-viewport{width:100%;max-width:1060px;padding:2rem 1rem;}
+  .slide{width:960px;max-width:100%;background:var(--navy);border-radius:12px;overflow:hidden;margin:0 auto 2.5rem;box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);position:relative;display:none;}
+  .slide.active{display:block;}
+  .slide.all-visible{display:block!important;}
+  .slide-inner{padding:2.5rem 3rem;min-height:380px;position:relative;}
+  .slide-num{position:absolute;top:1.2rem;right:1.5rem;font-size:.65rem;font-weight:600;letter-spacing:1.5px;color:rgba(255,255,255,.25);font-family:'DM Mono',monospace;}
+  .tag{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:.25rem .7rem;border-radius:4px;margin-bottom:.8rem;}
+  .tag-teal{background:rgba(10,147,150,.2);color:var(--teal-light);border:1px solid rgba(10,147,150,.4);}
+  .tag-indigo{background:rgba(59,76,202,.2);color:#A5B4FC;border:1px solid rgba(59,76,202,.4);}
+  .tag-amber{background:rgba(233,196,106,.15);color:var(--amber);border:1px solid rgba(233,196,106,.3);}
+  .tag-rose{background:rgba(230,57,70,.15);color:#FCA5A5;border:1px solid rgba(230,57,70,.3);}
+  .tag-emerald{background:rgba(16,185,129,.15);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
+  .tag-sky{background:rgba(14,165,233,.15);color:#7DD3FC;border:1px solid rgba(14,165,233,.3);}
+  .tag-violet{background:rgba(139,92,246,.15);color:#C4B5FD;border:1px solid rgba(139,92,246,.3);}
+  h1.slide-title{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;line-height:1.1;color:var(--white);margin-bottom:.5rem;}
+  h2.slide-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;line-height:1.2;color:var(--white);margin-bottom:1rem;}
+  .subtitle{font-size:1rem;color:var(--slate-400);line-height:1.6;max-width:580px;}
+  .lead{font-size:.95rem;color:rgba(255,255,255,.8);line-height:1.7;margin-bottom:1rem;}
+  .note{font-size:.78rem;color:var(--slate-400);line-height:1.6;}
+  .cols{display:grid;gap:1.5rem;}
+  .cols-2{grid-template-columns:1fr 1fr;}
+  .cols-3{grid-template-columns:1fr 1fr 1fr;}
+  .cols-5{grid-template-columns:repeat(5,1fr);}
+  .cols-auto{grid-template-columns:1.2fr 1fr;}
+  .card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:1.2rem 1.4rem;}
+  .card-teal{border-left:3px solid var(--teal);}
+  .card-indigo{border-left:3px solid var(--indigo-light);}
+  .card-amber{border-left:3px solid var(--amber);}
+  .card-rose{border-left:3px solid var(--rose);}
+  .card-emerald{border-left:3px solid var(--emerald);}
+  .card-sky{border-left:3px solid var(--sky);}
+  .card-violet{border-left:3px solid #8B5CF6;}
+  .card h3{font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem;}
+  .card p,.card li{font-size:.82rem;color:rgba(255,255,255,.72);line-height:1.65;}
+  .card ul{padding-left:1rem;}
+  .card li{margin-bottom:.25rem;}
+  .steps{display:flex;flex-direction:column;gap:.6rem;}
+  .step{display:flex;align-items:flex-start;gap:1rem;}
+  .step-num{min-width:28px;height:28px;border-radius:50%;background:var(--indigo);color:var(--white);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .step-body{font-size:.82rem;color:rgba(255,255,255,.8);line-height:1.6;}
+  .step-body strong{color:var(--white);}
+  .formula{background:rgba(10,147,150,.1);border:1px solid rgba(10,147,150,.3);border-radius:8px;padding:1rem 1.4rem;font-family:'DM Mono',monospace;font-size:.80rem;color:var(--teal-light);margin:.8rem 0;line-height:1.8;}
+  .mini-table{width:100%;border-collapse:collapse;font-size:.75rem;}
+  .mini-table th{background:rgba(255,255,255,.08);padding:.4rem .7rem;text-align:left;font-weight:600;color:var(--slate-400);text-transform:uppercase;letter-spacing:.8px;}
+  .mini-table td{padding:.4rem .7rem;border-bottom:1px solid rgba(255,255,255,.05);color:rgba(255,255,255,.75);}
+  .mini-table tr:last-child td{border-bottom:none;}
+  .badge{font-size:.7rem;font-weight:600;padding:.2rem .7rem;border-radius:999px;font-family:'DM Mono',monospace;display:inline-block;}
+  .badge-green{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.3);}
+  .badge-red{background:rgba(230,57,70,.2);color:#FCA5A5;border:1px solid rgba(230,57,70,.3);}
+  .badge-amber{background:rgba(233,196,106,.2);color:var(--amber);border:1px solid rgba(233,196,106,.3);}
+  .badge-sky{background:rgba(14,165,233,.2);color:#7DD3FC;border:1px solid rgba(14,165,233,.3);}
+  .badge-slate{background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.12);}
+  .badge-indigo{background:rgba(59,76,202,.25);color:#A5B4FC;border:1px solid rgba(59,76,202,.3);}
+  .nav-slide{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;background:rgba(255,255,255,.03);border-radius:10px;margin-bottom:2rem;}
+  .nav-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--white);border-radius:7px;padding:.5rem 1.4rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;transition:all .2s;}
+  .nav-btn:hover{background:var(--teal);border-color:var(--teal);}
+  .nav-btn:disabled{opacity:.3;cursor:not-allowed;}
+  .slide-dots{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:320px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .2s;border:none;padding:0;}
+  .dot.active{background:var(--teal);width:20px;border-radius:4px;}
+  .slide-hero{background:linear-gradient(135deg,#0F1B2D 0%,#1a2744 50%,#0d2a3a 100%);position:relative;overflow:hidden;}
+  .hero-glow{position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(10,147,150,.2) 0%,transparent 70%);pointer-events:none;}
+  .hero-glow2{position:absolute;bottom:-60px;left:-60px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(59,76,202,.15) 0%,transparent 70%);pointer-events:none;}
+  hr.slide-hr{border:none;border-top:1px solid rgba(255,255,255,.08);margin:1rem 0;}
+  .view-all-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--slate-400);border-radius:7px;padding:.4rem .9rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.75rem;transition:all .2s;}
+  .view-all-btn:hover{background:rgba(255,255,255,.1);color:var(--white);}
+  .roadmap{display:flex;flex-direction:column;gap:0;position:relative;}
+  .roadmap-item{display:flex;align-items:flex-start;gap:1.2rem;padding:.7rem 0;position:relative;}
+  .roadmap-line{position:absolute;left:12px;top:28px;bottom:-8px;width:2px;background:rgba(255,255,255,.08);}
+  .roadmap-icon{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;z-index:1;}
+  .roadmap-item:last-child .roadmap-line{display:none;}
+  /* KPI mockup */
+  .kpi-mock{border-radius:8px;padding:.8rem 1rem;}
+  .kpi-mock .num{font-size:1.5rem;font-weight:700;font-family:'DM Mono',monospace;margin:.2rem 0;}
+  .kpi-mock .label{font-size:.6rem;text-transform:uppercase;letter-spacing:.8px;opacity:.7;}
+  /* Score bar */
+  .score-bar-wrap{background:rgba(255,255,255,.06);border-radius:4px;height:8px;overflow:hidden;margin-top:3px;}
+  .score-bar{height:100%;border-radius:4px;}
+  /* Chart mockup bars */
+  .chart-bars{display:flex;align-items:flex-end;gap:5px;height:70px;padding-top:8px;}
+  .bar-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;}
+  .bar-fill{width:100%;border-radius:3px 3px 0 0;background:var(--indigo-light);opacity:.8;}
+  .bar-label{font-size:.55rem;color:var(--slate-400);}
+  /* Alert bloc mockup */
+  .alert-bloc{border-radius:8px;padding:.8rem 1rem;font-size:.75rem;}
+  .alert-green{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);}
+  .alert-amber{background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.2);}
+  .alert-indigo{background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);}
+  .alert-bloc .title{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem;}
+  @media(max-width:700px){.slide-inner{padding:1.5rem;}.cols-2,.cols-3,.cols-5,.cols-auto{grid-template-columns:1fr;}}
+  @media print{nav,.nav-slide{display:none;}.app{padding-top:0;}.slide{display:block!important;page-break-after:always;box-shadow:none;margin-bottom:0;border-radius:0;}body{background:white;}}
+  body.lang-en [data-fr]{display:none;}
+  body.lang-fr [data-en]{display:none;}
+  body.lang-en [data-en]{display:revert;}
+  body.lang-fr [data-fr]{display:revert;}
+</style>
+</head>
+<body class="lang-fr">
+<nav>
+  <div class="nav-logo">Projel<span>ys</span> · Tutorial</div>
+  <div class="nav-controls">
+    <button class="lang-btn active" id="btn-fr" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    <button class="view-all-btn" onclick="toggleAll()"><span data-fr>Tout voir</span><span data-en>View all</span></button>
+    <span class="slide-counter" id="counter">1 / 12</span>
+  </div>
+</nav>
+<div class="app"><div class="slides-viewport">
+
+<div class="nav-slide">
+  <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>◀</button>
+  <div class="slide-dots" id="dotsContainer"></div>
+  <button class="nav-btn" id="nextBtn" onclick="nextSlide()">▶</button>
+</div>
+
+<!-- ══ S1 COVER ══ -->
+<div class="slide slide-hero active" id="slide-1">
+  <div class="hero-glow"></div><div class="hero-glow2"></div>
+  <div class="slide-inner">
+    <div class="slide-num">01 / 12</div>
+    <div style="max-width:640px;padding-top:1rem;">
+      <div class="tag tag-teal" data-fr>Guide Utilisateur</div><div class="tag tag-teal" data-en>User Guide</div>
+      <h1 class="slide-title" data-fr>Livrables<br><span style="color:var(--teal-light)">Projets</span></h1>
+      <h1 class="slide-title" data-en>Project<br><span style="color:var(--teal-light)">Deliverables</span></h1>
+      <p class="subtitle" style="margin-top:.8rem" data-fr>Vue consolidée de tous les livrables du portefeuille — OTD, OQD, DoD, graphiques mensuels interactifs, alertes automatiques et création de livrables.</p>
+      <p class="subtitle" style="margin-top:.8rem" data-en>Consolidated view of all portfolio deliverables — OTD, OQD, DoD, interactive monthly charts, automatic alerts and deliverable creation.</p>
+    </div>
+    <div style="display:flex;gap:1.5rem;margin-top:2.5rem;flex-wrap:wrap;">
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:var(--teal-light)">12</div><span data-fr>slides</span><span data-en>slides</span></div>
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:var(--amber)">FR / EN</div><span data-fr>bilingue</span><span data-en>bilingual</span></div>
+      <div style="font-size:.75rem;color:var(--slate-400);"><div style="font-size:1.1rem;font-weight:700;color:#6EE7B7">ISO 9001</div><span data-fr>Qualité</span><span data-en>Quality</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S2 SOMMAIRE ══ -->
+<div class="slide" id="slide-2">
+  <div class="slide-inner">
+    <div class="slide-num">02 / 12</div>
+    <div class="tag tag-indigo" data-fr>Sommaire</div><div class="tag tag-indigo" data-en>Table of Contents</div>
+    <h2 class="slide-title" data-fr>Ce que vous allez apprendre</h2>
+    <h2 class="slide-title" data-en>What you'll learn</h2>
+    <div class="cols cols-2" style="margin-top:1.2rem;gap:.8rem;">
+      <div class="roadmap">
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(10,147,150,.2);color:var(--teal-light);">01</div><div class="step-body"><strong data-fr>Contexte & navigation</strong><strong data-en>Context & navigation</strong><br><span data-fr>URL, modules qualité, accès</span><span data-en>URL, quality modules, access</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(59,76,202,.2);color:#A5B4FC;">02</div><div class="step-body"><strong data-fr>Filtres & recherche</strong><strong data-en>Filters & search</strong><br><span data-fr>4 filtres + recherche libre</span><span data-en>4 filters + free search</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.15);color:var(--amber);">03</div><div class="step-body"><strong data-fr>Les 5 KPIs globaux</strong><strong data-en>The 5 global KPIs</strong><br><span data-fr>Total, livrés, OTD, OQD, DoD</span><span data-en>Total, delivered, OTD, OQD, DoD</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(230,57,70,.15);color:#FCA5A5;">04</div><div class="step-body"><strong data-fr>OTD — Calcul & seuils</strong><strong data-en>OTD — Calculation & thresholds</strong><br><span data-fr>On-Time Delivery, formule</span><span data-en>On-Time Delivery, formula</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(16,185,129,.15);color:#6EE7B7;">05</div><div class="step-body"><strong data-fr>OQD & DoD — Calcul</strong><strong data-en>OQD & DoD — Calculation</strong><br><span data-fr>Qualité et retard moyen</span><span data-en>Quality and average delay</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(14,165,233,.15);color:#7DD3FC;">06</div><div class="step-body"><strong data-fr>Alertes automatiques</strong><strong data-en>Automatic alerts</strong><br><span data-fr>Points forts, vigilance, recommandations</span><span data-en>Strengths, watch points, recommendations</span></div></div>
+      </div>
+      <div class="roadmap">
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(139,92,246,.15);color:#C4B5FD;">07</div><div class="step-body"><strong data-fr>Graphiques mensuels</strong><strong data-en>Monthly charts</strong><br><span data-fr>4 graphiques interactifs cliquables</span><span data-en>4 interactive clickable charts</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(233,196,106,.15);color:var(--amber);">08</div><div class="step-body"><strong data-fr>Filtre par mois</strong><strong data-en>Month filter</strong><br><span data-fr>Clic barre → focus mois</span><span data-en>Bar click → month focus</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(10,147,150,.2);color:var(--teal-light);">09</div><div class="step-body"><strong data-fr>Tableau projets synthèse</strong><strong data-en>Project summary table</strong><br><span data-fr>Colonnes, badges couleur, liens</span><span data-en>Columns, color badges, links</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(16,185,129,.15);color:#6EE7B7;">10</div><div class="step-body"><strong data-fr>Créer un livrable</strong><strong data-en>Create a deliverable</strong><br><span data-fr>Panneau latéral, champs, référence auto</span><span data-en>Side panel, fields, auto reference</span></div></div>
+        <div class="roadmap-item"><div class="roadmap-line"></div><div class="roadmap-icon" style="background:rgba(59,76,202,.2);color:#A5B4FC;">11</div><div class="step-body"><strong data-fr>Export & bonnes pratiques</strong><strong data-en>Export & best practices</strong><br><span data-fr>CSV, navigation qualité, conseils</span><span data-en>CSV, quality navigation, tips</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3 CONTEXTE ══ -->
+<div class="slide" id="slide-3">
+  <div class="slide-inner">
+    <div class="slide-num">03 / 12</div>
+    <div class="tag tag-teal" data-fr>Contexte</div><div class="tag tag-teal" data-en>Context</div>
+    <h2 class="slide-title" data-fr>Contexte & navigation qualité</h2>
+    <h2 class="slide-title" data-en>Context & quality navigation</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>La page <strong>Livrables Projets</strong> est la vue consolidée qualité ISO 9001 de tous les livrables sur l'ensemble du portefeuille. Elle répond à la question clé : <em>"Livrons-nous bien et à temps ?"</em></p>
+        <p class="lead" data-en>The <strong>Project Deliverables</strong> page is the ISO 9001 consolidated quality view of all deliverables across the entire portfolio. It answers the key question: <em>"Are we delivering well and on time?"</em></p>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>🔗 URL de la page</h3><h3 style="color:var(--teal-light)" data-en>🔗 Page URL</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">/quality/deliverables-projects</div>
+          <p data-fr>Accessible depuis le menu <strong>Qualité ISO 9001</strong> → Livrables.</p>
+          <p data-en>Accessible from the <strong>Quality ISO 9001</strong> menu → Deliverables.</p>
+        </div>
+        <div class="card card-indigo">
+          <h3 style="color:#A5B4FC" data-fr>🧭 Modules qualité liés</h3><h3 style="color:#A5B4FC" data-en>🧭 Related quality modules</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="font-size:.6rem">←</div><div class="step-body" data-fr><strong>/quality</strong> → Tableau de bord Qualité ISO 9001</div><div class="step-body" data-en><strong>/quality</strong> → ISO 9001 Quality dashboard</div></div>
+            <div class="step"><div class="step-num" style="font-size:.6rem">⊞</div><div class="step-body" data-fr><strong>/quality/non-conformities-projects</strong> → NC vue projets</div><div class="step-body" data-en><strong>/quality/non-conformities-projects</strong> → NC project view</div></div>
+            <div class="step"><div class="step-num" style="font-size:.6rem">📋</div><div class="step-body" data-fr><strong>/quality/audits-projects</strong> → Audits vue projets</div><div class="step-body" data-en><strong>/quality/audits-projects</strong> → Audits project view</div></div>
+            <div class="step"><div class="step-num" style="font-size:.6rem">🔍</div><div class="step-body" data-fr><strong>/projects/[id]/quality/deliverables</strong> → Livrables d'un projet</div><div class="step-body" data-en><strong>/projects/[id]/quality/deliverables</strong> → Project deliverables</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>📡 Sources de données</h3><h3 style="color:#6EE7B7" data-en>📡 Data sources</h3>
+          <ul style="margin-top:.4rem;">
+            <li data-fr><strong>GET /api/quality/deliverables-global</strong> → tous les livrables + séries mensuelles + synthèse projets</li>
+            <li data-en><strong>GET /api/quality/deliverables-global</strong> → all deliverables + monthly series + project summary</li>
+            <li data-fr><strong>GET /api/projects</strong> → liste des projets pour le formulaire de création</li>
+            <li data-en><strong>GET /api/projects</strong> → project list for creation form</li>
+          </ul>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber)" data-fr>🎯 Objectif de la page</h3><h3 style="color:var(--amber)" data-en>🎯 Page objective</h3>
+          <p data-fr>Suivre en temps réel la performance de livraison (délais + qualité) de tout le portefeuille, identifier les projets en difficulté et déclencher des actions correctives ciblées.</p>
+          <p data-en>Monitor delivery performance (schedule + quality) of the entire portfolio in real time, identify struggling projects and trigger targeted corrective actions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S4 FILTRES ══ -->
+<div class="slide" id="slide-4">
+  <div class="slide-inner">
+    <div class="slide-num">04 / 12</div>
+    <div class="tag tag-amber" data-fr>Filtres</div><div class="tag tag-amber" data-en>Filters</div>
+    <h2 class="slide-title" data-fr>Filtres & recherche</h2>
+    <h2 class="slide-title" data-en>Filters & search</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Les filtres s'appliquent simultanément à <strong>tous les éléments de la page</strong> : KPIs, alertes, graphiques mensuels et tableau projets. Seuls les projets ayant des livrables apparaissent dans les listes de filtre.</p>
+        <p class="lead" data-en>Filters apply simultaneously to <strong>all page elements</strong>: KPIs, alerts, monthly charts and project table. Only projects with deliverables appear in filter lists.</p>
+        <table class="mini-table" style="margin-top:.8rem;">
+          <thead><tr><th data-fr>Filtre</th><th data-en>Filter</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>Recherche libre</td><td data-en>Free search</td><td data-fr>N° projet, client, intitulé livrable, référence</td><td data-en>Project #, client, deliverable title, reference</td></tr>
+            <tr><td>Client</td><td>Client</td><td data-fr>Filtre sur le nom du client</td><td data-en>Filter by client name</td></tr>
+            <tr><td data-fr>N° projet</td><td data-en>Project #</td><td data-fr>Sélection d'un projet spécifique</td><td data-en>Select a specific project</td></tr>
+            <tr><td data-fr>Chef de projet</td><td data-en>Project manager</td><td data-fr>Filtrer par responsable de projet</td><td data-en>Filter by project manager</td></tr>
+            <tr><td data-fr>Statut projet</td><td data-en>Project status</td><td data-fr>En cours, Terminé, Annulé…</td><td data-en>In progress, Closed, Cancelled…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-amber" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--amber)" data-fr>🔍 Recherche libre</h3><h3 style="color:var(--amber)" data-en>🔍 Free search</h3>
+          <p data-fr>Cherche dans : N° projet · titre projet · client · référence livrable · intitulé livrable. Insensible à la casse, en temps réel.</p>
+          <p data-en>Searches in: project # · project title · client · deliverable reference · deliverable title. Case-insensitive, real-time.</p>
+        </div>
+        <div class="card card-indigo" style="margin-bottom:.8rem;">
+          <h3 style="color:#A5B4FC" data-fr>📅 Filtre mois (graphiques)</h3><h3 style="color:#A5B4FC" data-en>📅 Month filter (charts)</h3>
+          <p data-fr>En plus des filtres de la barre, <strong>cliquer sur une barre</strong> dans les graphiques mensuels ajoute un filtre supplémentaire par mois. Ce filtre affecte uniquement les KPIs et graphiques (pas le tableau projets).</p>
+          <p data-en>In addition to bar filters, <strong>clicking a bar</strong> in monthly charts adds an extra month filter. This filter affects only KPIs and charts (not the project table).</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Livrables source</h3><h3 style="color:var(--slate-400)" data-en>💡 Source deliverables</h3>
+          <p data-fr>Les listes de filtres (client, N° projet, chef) ne contiennent que les projets ayant au moins un livrable — pas tous les projets du portefeuille.</p>
+          <p data-en>Filter lists (client, project #, PM) only contain projects with at least one deliverable — not all portfolio projects.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S5 KPIs ══ -->
+<div class="slide" id="slide-5">
+  <div class="slide-inner">
+    <div class="slide-num">05 / 12</div>
+    <div class="tag tag-sky" data-fr>KPIs globaux</div><div class="tag tag-sky" data-en>Global KPIs</div>
+    <h2 class="slide-title" data-fr>Les 5 KPIs de synthèse</h2>
+    <h2 class="slide-title" data-en>The 5 summary KPIs</h2>
+    <div class="cols cols-5" style="margin-top:.8rem;gap:.6rem;">
+      <div class="kpi-mock" style="background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);">
+        <div class="label" style="color:#A5B4FC" data-fr>Livrables</div><div class="label" style="color:#A5B4FC" data-en>Deliverables</div>
+        <div class="num" style="color:#A5B4FC">42</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Total après filtres</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>Total after filters</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);">
+        <div class="label" style="color:#6EE7B7" data-fr>Livrés</div><div class="label" style="color:#6EE7B7" data-en>Delivered</div>
+        <div class="num" style="color:#6EE7B7">31</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Avec date de livraison</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>With delivery date set</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(14,165,233,.08);border:1px solid rgba(14,165,233,.2);">
+        <div class="label" style="color:#7DD3FC">OTD</div>
+        <div class="num" style="color:#7DD3FC">87.5%</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Dans les délais</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>On time</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(59,76,202,.08);border:1px solid rgba(59,76,202,.2);">
+        <div class="label" style="color:#A5B4FC">OQD</div>
+        <div class="num" style="color:#A5B4FC">92.3%</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Validés / évalués</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>Validated / evaluated</div>
+      </div>
+      <div class="kpi-mock" style="background:rgba(233,196,106,.08);border:1px solid rgba(233,196,106,.2);">
+        <div class="label" style="color:var(--amber)">DoD</div>
+        <div class="num" style="color:var(--amber)">3.2 j</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-fr>Retard moyen</div>
+        <div style="font-size:.62rem;color:rgba(255,255,255,.4);margin-top:.2rem;" data-en>Average delay</div>
+      </div>
+    </div>
+    <hr class="slide-hr" style="margin-top:1rem;">
+    <div class="cols cols-3" style="gap:.8rem;margin-top:.8rem;">
+      <div class="card card-sky">
+        <h3 style="color:#7DD3FC" data-fr>📦 Total & Livrés</h3><h3 style="color:#7DD3FC" data-en>📦 Total & Delivered</h3>
+        <p data-fr><strong>Total</strong> = nb de livrables après filtres actifs.<br><strong>Livrés</strong> = livrables ayant une date de livraison (<code style="font-family:monospace">deliveredDate</code> renseignée). Un livrable sans date de livraison n'est pas comptabilisé dans les calculs OTD/OQD/DoD.</p>
+        <p data-en><strong>Total</strong> = deliverable count after active filters.<br><strong>Delivered</strong> = deliverables with a delivery date (<code style="font-family:monospace">deliveredDate</code> set). A deliverable without a delivery date is not counted in OTD/OQD/DoD calculations.</p>
+      </div>
+      <div class="card card-emerald">
+        <h3 style="color:#6EE7B7" data-fr>🎨 Seuils couleur OTD / OQD</h3><h3 style="color:#6EE7B7" data-en>🎨 OTD / OQD color thresholds</h3>
+        <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.4rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green">≥ 95%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — excellent</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — excellent</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber">90–94%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — satisfaisant</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — satisfactory</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red">&lt; 90%</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — sous la cible</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — below target</span></div>
+        </div>
+      </div>
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)" data-fr>🎨 Seuils couleur DoD</h3><h3 style="color:var(--amber)" data-en>🎨 DoD color thresholds</h3>
+        <div style="display:flex;flex-direction:column;gap:.35rem;margin-top:.4rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-green">≤ 1 j</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Vert — retard négligeable</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Green — negligible delay</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-amber">1–5 j</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Ambré — retard modéré</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Amber — moderate delay</span></div>
+          <div style="display:flex;align-items:center;gap:.5rem;"><span class="badge badge-red">&gt; 5 j</span><span style="font-size:.72rem;color:var(--slate-400)" data-fr>Rouge — retard important</span><span style="font-size:.72rem;color:var(--slate-400)" data-en>Red — significant delay</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S6 OTD CALCUL ══ -->
+<div class="slide" id="slide-6">
+  <div class="slide-inner">
+    <div class="slide-num">06 / 12</div>
+    <div class="tag tag-sky" data-fr>OTD — Calcul</div><div class="tag tag-sky" data-en>OTD — Calculation</div>
+    <h2 class="slide-title" data-fr>OTD — On-Time Delivery</h2>
+    <h2 class="slide-title" data-en>OTD — On-Time Delivery</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>L'OTD mesure le <strong>% de livrables remis dans les délais</strong>. Il est calculé uniquement sur les livrables ayant une date de livraison ET une date de référence.</p>
+        <p class="lead" data-en>OTD measures the <strong>% of deliverables submitted on time</strong>. It is calculated only on deliverables with both a delivery date AND a reference date.</p>
+        <div class="card card-sky" style="margin-bottom:.8rem;">
+          <h3 style="color:#7DD3FC" data-fr>📐 Formule OTD</h3><h3 style="color:#7DD3FC" data-en>📐 OTD formula</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;line-height:1.9;">
+            <span data-fr>Date référence = revisedDate ?? contractualDate</span>
+            <span data-en>Reference date = revisedDate ?? contractualDate</span><br>
+            <span data-fr>Dans les délais si : deliveredDate ≤ dateRéférence</span>
+            <span data-en>On time if: deliveredDate ≤ referenceDate</span><br><br>
+            OTD = (livrables_dans_délais / livrables_avec_délai) × 100
+          </div>
+        </div>
+        <div class="card card-amber">
+          <h3 style="color:var(--amber)" data-fr>📅 Priorité des dates</h3><h3 style="color:var(--amber)" data-en>📅 Date priority</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:var(--emerald);font-size:.7rem;">1</div><div class="step-body" data-fr><strong>Date révisée</strong> (<code style="font-family:monospace">revisedDate</code>) — prioritaire si renseignée</div><div class="step-body" data-en><strong>Revised date</strong> (<code style="font-family:monospace">revisedDate</code>) — priority if set</div></div>
+            <div class="step"><div class="step-num" style="font-size:.7rem;">2</div><div class="step-body" data-fr><strong>Date contractuelle</strong> (<code style="font-family:monospace">contractualDate</code>) — référence si pas de date révisée</div><div class="step-body" data-en><strong>Contractual date</strong> (<code style="font-family:monospace">contractualDate</code>) — reference if no revised date</div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--slate-400)" data-fr>⚠️ Conditions d'inclusion dans OTD</h3><h3 style="color:var(--slate-400)" data-en>⚠️ OTD inclusion conditions</h3>
+          <p data-fr>Un livrable est pris en compte dans le calcul OTD uniquement si :</p>
+          <p data-en>A deliverable is included in the OTD calculation only if:</p>
+          <ul style="margin-top:.4rem;">
+            <li data-fr><code style="font-family:monospace">deliveredDate</code> est renseigné (livrable livré)</li><li data-en><code style="font-family:monospace">deliveredDate</code> is set (deliverable submitted)</li>
+            <li data-fr>ET <code style="font-family:monospace">contractualDate</code> ou <code style="font-family:monospace">revisedDate</code> est renseigné</li><li data-en>AND <code style="font-family:monospace">contractualDate</code> or <code style="font-family:monospace">revisedDate</code> is set</li>
+          </ul>
+          <p style="margin-top:.5rem;" class="note" data-fr>Les livrables sans date de référence ne sont pas comptabilisés dans l'OTD (ni dans les délais, ni en retard).</p>
+          <p style="margin-top:.5rem;" class="note" data-en>Deliverables without a reference date are not counted in OTD (neither on-time nor late).</p>
+        </div>
+        <div class="card card-rose">
+          <h3 style="color:#FCA5A5" data-fr>💡 Date révisée vs contractuelle</h3><h3 style="color:#FCA5A5" data-en>💡 Revised vs contractual date</h3>
+          <p data-fr>La date révisée reflète une <strong>révision validée du planning</strong>. Si elle est renseignée, elle remplace la date contractuelle comme référence de délai. C'est la date "officielle" après avenant ou re-planning.</p>
+          <p data-en>The revised date reflects a <strong>validated schedule revision</strong>. If set, it replaces the contractual date as the delay reference. It's the "official" date after amendment or re-planning.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S7 OQD DOD ══ -->
+<div class="slide" id="slide-7">
+  <div class="slide-inner">
+    <div class="slide-num">07 / 12</div>
+    <div class="tag tag-emerald" data-fr>OQD & DoD</div><div class="tag tag-emerald" data-en>OQD & DoD</div>
+    <h2 class="slide-title" data-fr>OQD & DoD — Qualité et retard</h2>
+    <h2 class="slide-title" data-en>OQD & DoD — Quality and delay</h2>
+    <div class="cols cols-2" style="margin-top:.8rem;gap:1.5rem;align-items:start;">
+      <div>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>✅ OQD — On-Quality Delivery</h3><h3 style="color:#6EE7B7" data-en>✅ OQD — On-Quality Delivery</h3>
+          <p data-fr>Mesure le % de livrables <strong>validés</strong> parmi ceux qui ont été <strong>évalués</strong> (statut = "Validé" ou "Refusé").</p>
+          <p data-en>Measures the % of <strong>validated</strong> deliverables among those that were <strong>evaluated</strong> (status = "Validated" or "Refused").</p>
+          <div class="formula" style="margin-top:.5rem;font-size:.72rem;">
+            <span data-fr>Évalués = statut "Validé" OU "Refusé"</span>
+            <span data-en>Evaluated = status "Validated" OR "Refused"</span><br>
+            OQD = (validés / évalués) × 100
+          </div>
+          <p class="note" style="margin-top:.4rem;" data-fr>⚠️ Les livrables "En validation" ou avec un autre statut ne sont pas comptabilisés dans l'OQD.</p>
+          <p class="note" style="margin-top:.4rem;" data-en>⚠️ Deliverables "In validation" or with another status are not counted in OQD.</p>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>📋 Statuts des livrables</h3><h3 style="color:var(--slate-400)" data-en>📋 Deliverable statuses</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.4rem;">
+            <span class="badge badge-slate" data-fr>Non commencé</span><span class="badge badge-slate" data-en>Not started</span>
+            <span class="badge badge-sky" data-fr>En cours</span><span class="badge badge-sky" data-en>In progress</span>
+            <span class="badge badge-indigo" data-fr>Livré</span><span class="badge badge-indigo" data-en>Delivered</span>
+            <span class="badge badge-amber" data-fr>En validation</span><span class="badge badge-amber" data-en>In validation</span>
+            <span class="badge badge-green" data-fr>Validé ✓ OQD</span><span class="badge badge-green" data-en>Validated ✓ OQD</span>
+            <span class="badge badge-red" data-fr>Refusé ✓ OQD</span><span class="badge badge-red" data-en>Refused ✓ OQD</span>
+            <span class="badge badge-amber" data-fr>Accepté avec réserves</span><span class="badge badge-amber" data-en>Accepted with reservations</span>
+            <span class="badge badge-slate" data-fr>Annulé</span><span class="badge badge-slate" data-en>Cancelled</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card card-amber" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--amber)" data-fr>⏱ DoD — Depth of Delay</h3><h3 style="color:var(--amber)" data-en>⏱ DoD — Depth of Delay</h3>
+          <p data-fr>Mesure le <strong>retard moyen</strong> en jours sur les livrables livrés en retard.</p>
+          <p data-en>Measures the <strong>average delay</strong> in days on deliverables submitted late.</p>
+          <div class="formula" style="margin-top:.5rem;font-size:.72rem;">
+            <span data-fr>En retard si : deliveredDate &gt; dateRéférence</span>
+            <span data-en>Late if: deliveredDate &gt; referenceDate</span><br><br>
+            <span data-fr>Retard (j) = (deliveredDate – dateRéférence) / ms_par_jour</span>
+            <span data-en>Delay (d) = (deliveredDate – referenceDate) / ms_per_day</span><br><br>
+            DoD = Σ(retards) / nb_livrables_en_retard
+          </div>
+          <p class="note" style="margin-top:.4rem;" data-fr>Si aucun livrable en retard → DoD = 0. Le DoD ne concerne que les livrables livrés (avec date de livraison ET date de référence).</p>
+          <p class="note" style="margin-top:.4rem;" data-en>If no late deliverables → DoD = 0. DoD only applies to delivered deliverables (with delivery date AND reference date).</p>
+        </div>
+        <div class="card card-rose">
+          <h3 style="color:#FCA5A5" data-fr>🎯 Objectifs cibles</h3><h3 style="color:#FCA5A5" data-en>🎯 Target objectives</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th>KPI</th><th data-fr>Cible</th><th data-en>Target</th><th data-fr>Excellence</th><th data-en>Excellence</th></tr></thead>
+            <tbody>
+              <tr><td>OTD</td><td>≥ 90%</td><td>≥ 90%</td><td>≥ 95%</td><td>≥ 95%</td></tr>
+              <tr><td>OQD</td><td>≥ 90%</td><td>≥ 90%</td><td>≥ 95%</td><td>≥ 95%</td></tr>
+              <tr><td>DoD</td><td data-fr>≤ 5 j</td><td data-en>≤ 5 d</td><td data-fr>≤ 1 j</td><td data-en>≤ 1 d</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S8 ALERTES ══ -->
+<div class="slide" id="slide-8">
+  <div class="slide-inner">
+    <div class="slide-num">08 / 12</div>
+    <div class="tag tag-sky" data-fr>Alertes automatiques</div><div class="tag tag-sky" data-en>Automatic alerts</div>
+    <h2 class="slide-title" data-fr>Alertes & recommandations automatiques</h2>
+    <h2 class="slide-title" data-en>Automatic alerts & recommendations</h2>
+    <p class="lead" data-fr>Projelys analyse les KPIs filtrés et génère automatiquement 3 blocs d'analyse pour la période sélectionnée.</p>
+    <p class="lead" data-en>Projelys analyzes filtered KPIs and automatically generates 3 analysis blocks for the selected period.</p>
+    <div class="cols cols-3" style="margin-top:.8rem;gap:.8rem;">
+      <div class="alert-bloc alert-green">
+        <div class="title" style="color:#6EE7B7" data-fr>✅ Points forts</div>
+        <div class="title" style="color:#6EE7B7" data-en>✅ Strengths</div>
+        <ul style="list-style:disc;padding-left:1rem;font-size:.75rem;color:rgba(255,255,255,.7);">
+          <li data-fr>OTD ≥ 95% → "Respect excellent des délais"</li><li data-en>OTD ≥ 95% → "Excellent deadline compliance"</li>
+          <li data-fr>OQD ≥ 95% → "Très bon niveau de qualité"</li><li data-en>OQD ≥ 95% → "Very high quality level"</li>
+          <li data-fr>DoD ≤ 1j → "Retards moyens très faibles"</li><li data-en>DoD ≤ 1d → "Very low average delays"</li>
+        </ul>
+      </div>
+      <div class="alert-bloc alert-amber">
+        <div class="title" style="color:var(--amber)" data-fr>⚠️ Points de vigilance</div>
+        <div class="title" style="color:var(--amber)" data-en>⚠️ Watch points</div>
+        <ul style="list-style:disc;padding-left:1rem;font-size:.75rem;color:rgba(255,255,255,.7);">
+          <li data-fr>OTD 90–94% → surveiller les dérives</li><li data-en>OTD 90–94% → watch for drift</li>
+          <li data-fr>OQD 90–94% → surveiller les refus clients</li><li data-en>OQD 90–94% → watch client refusals</li>
+          <li data-fr>DoD 1–5j → surveiller les jalons critiques</li><li data-en>DoD 1–5d → watch critical milestones</li>
+        </ul>
+      </div>
+      <div class="alert-bloc alert-indigo">
+        <div class="title" style="color:#A5B4FC" data-fr>📝 Recommandations</div>
+        <div class="title" style="color:#A5B4FC" data-en>📝 Recommendations</div>
+        <ul style="list-style:disc;padding-left:1rem;font-size:.75rem;color:rgba(255,255,255,.7);">
+          <li data-fr>OTD &lt; 90% → plan d'actions causes retards</li><li data-en>OTD &lt; 90% → action plan for delay causes</li>
+          <li data-fr>OQD &lt; 90% → check-list validation avant livraison</li><li data-en>OQD &lt; 90% → validation checklist before delivery</li>
+          <li data-fr>DoD &gt; 5j → suivi hebdo livrables en retard</li><li data-en>DoD &gt; 5d → weekly late deliverable tracking</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="slide-hr">
+    <div class="card" style="margin-top:.5rem;">
+      <h3 style="color:var(--slate-400)" data-fr>📅 Période affichée</h3><h3 style="color:var(--slate-400)" data-en>📅 Displayed period</h3>
+      <p data-fr>Le titre de la section indique <strong>"Analyse sur la période filtrée (toute la période)"</strong> ou le mois sélectionné si un clic sur une barre graphique a été effectué. Les 3 blocs se recalculent à chaque changement de filtre.</p>
+      <p data-en>The section title shows <strong>"Analysis for the filtered period (entire period)"</strong> or the selected month if a chart bar was clicked. The 3 blocks recalculate with each filter change.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S9 GRAPHIQUES ══ -->
+<div class="slide" id="slide-9">
+  <div class="slide-inner">
+    <div class="slide-num">09 / 12</div>
+    <div class="tag tag-violet" data-fr>Graphiques mensuels</div><div class="tag tag-violet" data-en>Monthly charts</div>
+    <h2 class="slide-title" data-fr>Les 4 graphiques mensuels interactifs</h2>
+    <h2 class="slide-title" data-en>The 4 interactive monthly charts</h2>
+    <div class="cols cols-2" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Les 4 graphiques recalculent leurs données à partir des livrables filtrés. Les <strong>séries mensuelles</strong> sont basées sur la date de livraison (<code style="font-family:monospace">deliveredDate</code>) de chaque livrable.</p>
+        <p class="lead" data-en>The 4 charts recalculate their data from filtered deliverables. <strong>Monthly series</strong> are based on each deliverable's delivery date (<code style="font-family:monospace">deliveredDate</code>).</p>
+        <table class="mini-table">
+          <thead><tr><th data-fr>Graphique</th><th data-en>Chart</th><th data-fr>Axe Y</th><th data-en>Y axis</th><th data-fr>Info-bulle barre</th><th data-en>Bar tooltip</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>Nb livrables / mois</td><td data-en>Deliverables / month</td><td data-fr>Nb livré</td><td data-en>Delivered count</td><td data-fr>Nombre livré ce mois</td><td data-en>Count delivered this month</td></tr>
+            <tr><td>OTD / mois (%)</td><td>OTD / month (%)</td><td data-fr>% dans délais</td><td data-en>% on time</td><td data-fr>% OTD + nb livrables</td><td data-en>% OTD + deliverable count</td></tr>
+            <tr><td>OQD / mois (%)</td><td>OQD / month (%)</td><td data-fr>% validés</td><td data-en>% validated</td><td data-fr>% OQD + nb validés</td><td data-en>% OQD + validated count</td></tr>
+            <tr><td>DoD / mois (j)</td><td>DoD / month (d)</td><td data-fr>Retard moyen j</td><td data-en>Avg delay d</td><td data-fr>Retard moyen + nb en retard</td><td data-en>Avg delay + late count</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-violet" style="margin-bottom:.8rem;">
+          <h3 style="color:#C4B5FD" data-fr>🖱️ Interaction : clic sur une barre</h3><h3 style="color:#C4B5FD" data-en>🖱️ Interaction: bar click</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num">1</div><div class="step-body" data-fr>Cliquer sur une barre d'un graphique → <strong>filtre tous les KPIs</strong> sur ce mois</div><div class="step-body" data-en>Click a bar in any chart → <strong>filters all KPIs</strong> to that month</div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-body" data-fr>La barre sélectionnée passe en <strong>bleu indigo foncé</strong>, les autres s'estompent à 30%</div><div class="step-body" data-en>Selected bar turns <strong>dark indigo blue</strong>, others fade to 30%</div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-body" data-fr>Cliquer à nouveau sur la même barre → <strong>désélectionne</strong> le mois</div><div class="step-body" data-en>Click the same bar again → <strong>deselects</strong> the month</div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-body" data-fr>Bouton <strong>"Réinitialiser le filtre graphique"</strong> sous chaque graphique</div><div class="step-body" data-en><strong>"Reset chart filter"</strong> button below each chart</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>💡 Filtre mois vs filtres barre</h3><h3 style="color:var(--slate-400)" data-en>💡 Month filter vs bar filters</h3>
+          <p data-fr>Le filtre mois (<code style="font-family:monospace">selectedMonth</code>) filtre les livrables par <strong>date contractuelle ou révisée</strong> — pas par date de livraison. Cela permet d'analyser les KPIs "attendus ce mois-ci".</p>
+          <p data-en>The month filter (<code style="font-family:monospace">selectedMonth</code>) filters deliverables by <strong>contractual or revised date</strong> — not delivery date. This lets you analyze KPIs "expected this month".</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S10 TABLEAU PROJETS ══ -->
+<div class="slide" id="slide-10">
+  <div class="slide-inner">
+    <div class="slide-num">10 / 12</div>
+    <div class="tag tag-teal" data-fr>Tableau projets</div><div class="tag tag-teal" data-en>Projects table</div>
+    <h2 class="slide-title" data-fr>Tableau projets — Synthèse livrables</h2>
+    <h2 class="slide-title" data-en>Projects table — Deliverable summary</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Le tableau recalcule les KPIs <strong>par projet</strong> à partir des livrables filtrés. Chaque ligne est un projet ayant au moins un livrable après filtres.</p>
+        <p class="lead" data-en>The table recalculates KPIs <strong>per project</strong> from filtered deliverables. Each row is a project with at least one deliverable after filters.</p>
+        <table class="mini-table">
+          <thead><tr><th data-fr>Colonne</th><th data-en>Column</th><th data-fr>Description</th><th data-en>Description</th></tr></thead>
+          <tbody>
+            <tr><td data-fr>N° projet</td><td data-en>Project #</td><td data-fr>Lien cliquable → fiche projet</td><td data-en>Clickable link → project sheet</td></tr>
+            <tr><td data-fr>Intitulé</td><td data-en>Title</td><td data-fr>Nom du projet</td><td data-en>Project name</td></tr>
+            <tr><td>Client</td><td>Client</td><td data-fr>Nom du client</td><td data-en>Client name</td></tr>
+            <tr><td data-fr>Chef de projet</td><td data-en>PM</td><td data-fr>Nom du responsable</td><td data-en>Manager name</td></tr>
+            <tr><td>Statut</td><td>Status</td><td data-fr>Badge coloré du statut projet</td><td data-en>Colored project status badge</td></tr>
+            <tr><td data-fr>Livrables</td><td data-en>Deliverables</td><td data-fr>Total du projet (filtrés)</td><td data-en>Project total (filtered)</td></tr>
+            <tr><td data-fr>Livrables livrés</td><td data-en>Delivered</td><td data-fr>Avec date de livraison</td><td data-en>With delivery date</td></tr>
+            <tr><td>OTD / OQD / DoD</td><td>OTD / OQD / DoD</td><td data-fr>Badges colorés (vert/ambré/rouge)</td><td data-en>Colored badges (green/amber/red)</td></tr>
+            <tr><td data-fr>Actions</td><td data-en>Actions</td><td data-fr>3 liens : Livrables · NC · Audits</td><td data-en>3 links: Deliverables · NC · Audits</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card card-teal" style="margin-bottom:.8rem;">
+          <h3 style="color:var(--teal-light)" data-fr>🔗 Liens depuis le tableau</h3><h3 style="color:var(--teal-light)" data-en>🔗 Links from the table</h3>
+          <div class="steps" style="margin-top:.4rem;">
+            <div class="step"><div class="step-num" style="background:var(--indigo);font-size:.65rem">Liv</div><div class="step-body" data-fr><strong>Livrables</strong> → /projects/[id]/quality/deliverables</div><div class="step-body" data-en><strong>Deliverables</strong> → /projects/[id]/quality/deliverables</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(233,196,106,.4);font-size:.65rem">NC</div><div class="step-body" data-fr><strong>Non-conformités</strong> → /projects/[id]/quality/non-conformities</div><div class="step-body" data-en><strong>Non-conformities</strong> → /projects/[id]/quality/non-conformities</div></div>
+            <div class="step"><div class="step-num" style="background:rgba(16,185,129,.3);font-size:.65rem">Au</div><div class="step-body" data-fr><strong>Audits</strong> → /projects/[id]/quality/audit</div><div class="step-body" data-en><strong>Audits</strong> → /projects/[id]/quality/audit</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 style="color:var(--slate-400)" data-fr>📊 Recalcul dynamique</h3><h3 style="color:var(--slate-400)" data-en>📊 Dynamic recalculation</h3>
+          <p data-fr>Les KPIs du tableau (OTD, OQD, DoD) sont <strong>recalculés côté client</strong> à partir des livrables filtrés — ils ne sont pas stockés en base. Modifier les filtres met à jour tout le tableau en temps réel.</p>
+          <p data-en>Table KPIs (OTD, OQD, DoD) are <strong>recalculated client-side</strong> from filtered deliverables — they are not stored in the database. Changing filters updates the entire table in real time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S11 CRÉER UN LIVRABLE ══ -->
+<div class="slide" id="slide-11">
+  <div class="slide-inner">
+    <div class="slide-num">11 / 12</div>
+    <div class="tag tag-emerald" data-fr>Créer un livrable</div><div class="tag tag-emerald" data-en>Create a deliverable</div>
+    <h2 class="slide-title" data-fr>Créer un livrable depuis la vue globale</h2>
+    <h2 class="slide-title" data-en>Create a deliverable from the global view</h2>
+    <div class="cols cols-auto" style="margin-top:.5rem;gap:1.5rem;align-items:start;">
+      <div>
+        <p class="lead" data-fr>Le bouton <strong>"Nouveau livrable"</strong> ouvre un panneau latéral avec un formulaire complet en 2 sections.</p>
+        <p class="lead" data-en>The <strong>"New deliverable"</strong> button opens a side panel with a full 2-section form.</p>
+        <div class="card card-emerald" style="margin-bottom:.8rem;">
+          <h3 style="color:#6EE7B7" data-fr>📋 Section 1 — Identification</h3><h3 style="color:#6EE7B7" data-en>📋 Section 1 — Identification</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Champ</th><th data-en>Field</th><th data-fr>Requis</th><th data-en>Required</th></tr></thead>
+            <tbody>
+              <tr><td data-fr>Projet *</td><td data-en>Project *</td><td data-fr>Oui — liste tous les projets</td><td data-en>Yes — lists all projects</td></tr>
+              <tr><td data-fr>Référence (auto)</td><td data-en>Reference (auto)</td><td data-fr>Non — générée automatiquement</td><td data-en>No — auto-generated</td></tr>
+              <tr><td>Type</td><td>Type</td><td data-fr>Non — 5 types disponibles</td><td data-en>No — 5 types available</td></tr>
+              <tr><td data-fr>Intitulé *</td><td data-en>Title *</td><td data-fr>Oui — nom du livrable</td><td data-en>Yes — deliverable name</td></tr>
+              <tr><td data-fr>Description</td><td data-en>Description</td><td data-fr>Non — contenu attendu</td><td data-en>No — expected content</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="card card-indigo" style="margin-bottom:.8rem;">
+          <h3 style="color:#A5B4FC" data-fr>📋 Section 2 — Responsabilités & planning</h3><h3 style="color:#A5B4FC" data-en>📋 Section 2 — Responsibilities & planning</h3>
+          <table class="mini-table" style="margin-top:.4rem;">
+            <thead><tr><th data-fr>Champ</th><th data-en>Field</th><th data-fr>Utilisation</th><th data-en>Usage</th></tr></thead>
+            <tbody>
+              <tr><td data-fr>Responsable</td><td data-en>Owner</td><td data-fr>Personne en charge</td><td data-en>Person in charge</td></tr>
+              <tr><td data-fr>Référence client</td><td data-en>Client ref.</td><td data-fr>Numéro côté client</td><td data-en>Client-side number</td></tr>
+              <tr><td data-fr>Date contractuelle</td><td data-en>Contractual date</td><td data-fr>Engagement contrat</td><td data-en>Contract commitment</td></tr>
+              <tr><td data-fr>Date révisée</td><td data-en>Revised date</td><td data-fr>Echéance revue / avenant</td><td data-en>Revised deadline / amendment</td></tr>
+              <tr><td data-fr>Date livrée</td><td data-en>Delivered date</td><td data-fr>Si déjà livré</td><td data-en>If already delivered</td></tr>
+              <tr><td data-fr>Date validation</td><td data-en>Validation date</td><td data-fr>Si déjà validé</td><td data-en>If already validated</td></tr>
+              <tr><td data-fr>Statut initial</td><td data-en>Initial status</td><td data-fr>Défaut : Non commencé</td><td data-en>Default: Not started</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card card-teal">
+          <h3 style="color:var(--teal-light)" data-fr>🏷 Référence automatique</h3><h3 style="color:var(--teal-light)" data-en>🏷 Auto reference</h3>
+          <div class="formula" style="margin-top:.4rem;font-size:.72rem;">
+            <span data-fr>Format : Liv_[AAAA]_[NNN]</span>
+            <span data-en>Format: Liv_[YYYY]_[NNN]</span><br>
+            <span data-fr>Exemple : Liv_2025_042</span>
+            <span data-en>Example: Liv_2025_042</span>
+          </div>
+          <p data-fr>Calculée automatiquement à partir des références existantes. Champ grisé non éditable. L'indice s'incrémente à partir du dernier numéro existant pour l'année en cours.</p>
+          <p data-en>Auto-calculated from existing references. Grayed non-editable field. Index increments from the last existing number for the current year.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S12 EXPORT & BONNES PRATIQUES ══ -->
+<div class="slide" id="slide-12">
+  <div class="slide-inner slide-hero" style="background:linear-gradient(135deg,#0F1B2D 0%,#0d1f1a 50%,#091a12 100%);">
+    <div class="slide-num">12 / 12</div>
+    <div class="tag tag-teal" data-fr>Export & Bonnes pratiques</div><div class="tag tag-teal" data-en>Export & Best practices</div>
+    <h2 class="slide-title" data-fr>Export & bonnes pratiques</h2>
+    <h2 class="slide-title" data-en>Export & best practices</h2>
+    <div class="cols cols-3" style="margin-top:.8rem;gap:.8rem;">
+      <div class="card card-teal">
+        <h3 style="color:var(--teal-light)">📥 <span data-fr>Export Excel (CSV)</span><span data-en>Excel export (CSV)</span></h3>
+        <p data-fr>Exporte tous les livrables <strong>filtrés</strong> en CSV (séparateur ";", encodage UTF-8 BOM pour Excel). Colonnes : Id, N° projet, Projet, Client, Chef, Référence, Intitulé, Type, Responsable, toutes les dates, Statut, Commentaires.</p>
+        <p data-en>Exports all <strong>filtered</strong> deliverables as CSV (separator ";", UTF-8 BOM encoding for Excel). Columns: Id, project #, project, client, PM, reference, title, type, owner, all dates, status, comments.</p>
+      </div>
+      <div class="card card-emerald">
+        <h3 style="color:#6EE7B7">🗓 <span data-fr>Revue mensuelle</span><span data-en>Monthly review</span></h3>
+        <p data-fr>Chaque mois, cliquer sur le mois dans le graphique OTD pour cibler les livrables de la période. Si OTD &lt; 90%, analyser le tableau par projet et déclencher des plans d'actions ciblés.</p>
+        <p data-en>Each month, click the month in the OTD chart to target period deliverables. If OTD &lt; 90%, analyze the project table and trigger targeted action plans.</p>
+      </div>
+      <div class="card card-amber">
+        <h3 style="color:var(--amber)">📅 <span data-fr>Renseigner les dates révisées</span><span data-en>Fill revised dates</span></h3>
+        <p data-fr>La date révisée est la référence prioritaire pour l'OTD. Après tout avenant ou re-planning, toujours mettre à jour la date révisée pour que les KPIs reflètent le planning actuel.</p>
+        <p data-en>The revised date is the priority reference for OTD. After any amendment or re-planning, always update the revised date so KPIs reflect the current schedule.</p>
+      </div>
+      <div class="card card-rose">
+        <h3 style="color:#FCA5A5">✅ <span data-fr>Valider les livrables</span><span data-en>Validate deliverables</span></h3>
+        <p data-fr>Un livrable "Livré" sans statut "Validé" ou "Refusé" n'est pas comptabilisé dans l'OQD. Toujours faire passer le statut à "Validé" ou "Refusé" après réception du retour client.</p>
+        <p data-en>A "Delivered" deliverable without "Validated" or "Refused" status is not counted in OQD. Always change status to "Validated" or "Refused" after receiving client feedback.</p>
+      </div>
+      <div class="card card-violet">
+        <h3 style="color:#C4B5FD">🔗 <span data-fr>Navigation croisée</span><span data-en>Cross-navigation</span></h3>
+        <p data-fr>Utilisez les 3 boutons du tableau (Livrables / NC / Audits) pour basculer rapidement entre les modules qualité d'un projet sans repasser par le menu principal.</p>
+        <p data-en>Use the 3 table buttons (Deliverables / NC / Audits) to quickly switch between a project's quality modules without going back to the main menu.</p>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--slate-400)">🔗 <span data-fr>Pages liées</span><span data-en>Related pages</span></h3>
+        <p data-fr>/quality → tableau de bord ISO 9001 · /quality/non-conformities-projects → NC · /quality/audits-projects → Audits · /performance → scores projets · /actions → plan d'actions</p>
+        <p data-en>/quality → ISO 9001 dashboard · /quality/non-conformities-projects → NC · /quality/audits-projects → Audits · /performance → project scores · /actions → action plan</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-slide" style="margin-top:.5rem;">
+  <button class="nav-btn" onclick="prevSlide()" id="prevBtn2">◀</button>
+  <div style="font-size:.78rem;color:var(--slate-400);" data-fr>Utilisez ◀ ▶ ou cliquez les points</div>
+  <div style="font-size:.78rem;color:var(--slate-400);" data-en>Use ◀ ▶ or click the dots</div>
+  <button class="nav-btn" onclick="nextSlide()" id="nextBtn2">▶</button>
+</div>
+
+</div></div>
+<script>
+const TOTAL=12;let current=1,allVisible=false;
+function buildDots(){const c=document.getElementById('dotsContainer');c.innerHTML='';for(let i=1;i<=TOTAL;i++){const d=document.createElement('button');d.className='dot'+(i===current?' active':'');d.onclick=()=>goTo(i);c.appendChild(d);}}
+function goTo(n){if(allVisible)return;document.getElementById('slide-'+current)?.classList.remove('active');current=Math.max(1,Math.min(TOTAL,n));document.getElementById('slide-'+current)?.classList.add('active');document.getElementById('counter').textContent=current+' / '+TOTAL;document.getElementById('prevBtn').disabled=current===1;document.getElementById('nextBtn').disabled=current===TOTAL;const p2=document.getElementById('prevBtn2');const n2=document.getElementById('nextBtn2');if(p2)p2.disabled=current===1;if(n2)n2.disabled=current===TOTAL;buildDots();window.scrollTo({top:56,behavior:'smooth'});}
+function prevSlide(){goTo(current-1);}
+function nextSlide(){goTo(current+1);}
+function toggleAll(){allVisible=!allVisible;document.querySelectorAll('.slide').forEach(s=>{if(allVisible)s.classList.add('all-visible');else s.classList.remove('all-visible');});if(!allVisible)goTo(current);const btn=document.querySelector('.view-all-btn');btn.style.background=allVisible?'rgba(10,147,150,.2)':'';btn.style.borderColor=allVisible?'var(--teal)':'';btn.style.color=allVisible?'var(--teal-light)':'';}
+function setLang(lang){document.body.className='lang-'+lang;document.getElementById('btn-fr').classList.toggle('active',lang==='fr');document.getElementById('btn-en').classList.toggle('active',lang==='en');}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nextSlide();if(e.key==='ArrowLeft'||e.key==='ArrowUp')prevSlide();});
+buildDots();goTo(1);
+</script>
+</body></html>
