@@ -342,20 +342,20 @@ export default function AppShell({
   }, []);
 
   const handleLogout = async () => {
-  try {
-    await fetch("/api/logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      cache: "no-store",
-    });
-  } catch (error) {
-    console.error("Logout error", error);
-  } finally {
-    setSessionUser(null);
-    router.replace("/login");
-    router.refresh();
-  }
-};
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+      });
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      setSessionUser(null);
+      router.replace("/login");
+      router.refresh();
+    }
+  };
 
   const currentProjectId = useMemo(() => {
     const match = pathname.match(/^\/projects\/(\d+)/);
@@ -434,7 +434,7 @@ export default function AppShell({
   );
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-x-hidden">
       {/* Topbar */}
       <header
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center border-b px-3 md:px-5"
@@ -467,20 +467,23 @@ export default function AppShell({
           </button>
 
           {/* Logo + titre */}
-          <Link href="/" className="flex min-w-[210px] shrink-0 items-center gap-3">
-            <div className="flex h-[50px] w-[50px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+          <Link
+            href="/"
+            className="flex min-w-0 flex-1 items-center gap-3"
+          >
+            <div className="flex h-[40px] w-[40px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
               <Image
                 src="/PROJELYS.png"
                 alt="Projelys"
-                width={50}
-                height={50}
-                className="h-[50px] w-[50px] object-contain"
+                width={40}
+                height={40}
+                className="h-[40px] w-[40px] object-contain"
                 priority
               />
             </div>
 
-            <div className="min-w-0">
-              <div className="truncate text-sm font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">
+            <div className="min-w-0 hidden xs:block">
+              <div className="truncate text-[13px] font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">
                 Projelys
               </div>
               <div className="truncate text-[11px] text-slate-500 dark:text-slate-200">
@@ -598,12 +601,12 @@ export default function AppShell({
               </span>
             </button>
 
-            {/* Connexion / profil / abonnement */}
+            {/* Connexion / profil */}
             {!loadingSession && !sessionUser && (
               <>
                 <Link
                   href="/login"
-                  className="inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+                  className="hidden sm:inline-flex h-9 min-w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
                 >
                   Connexion
                 </Link>
@@ -614,8 +617,7 @@ export default function AppShell({
             )}
 
             {sessionUser && (
-              <>                
-                {/* Lien admin visible uniquement pour les admins */}
+              <>
                 {sessionUser.role === "ADMIN" && (
                   <Link
                     href="/admin"
@@ -629,7 +631,7 @@ export default function AppShell({
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="inline-flex h-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-red-950/40"
+                  className="hidden sm:inline-flex h-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 text-[11px] font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-red-950/40"
                   title="Se déconnecter"
                 >
                   Déconnexion
@@ -645,10 +647,15 @@ export default function AppShell({
                   </span>
                 </div>
 
-                {/* Avatar simple mobile */}
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:hidden">
+                {/* Avatar + logout mobile */}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-[11px] font-semibold text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:hidden"
+                  title="Se déconnecter"
+                >
                   {initials}
-                </div>
+                </button>
               </>
             )}
           </div>
@@ -712,7 +719,7 @@ export default function AppShell({
           className="border-t px-2 py-3"
           style={{ borderColor: "var(--border)" }}
         >
-                    {sessionUser && (
+          {sessionUser && (
             <Link
               href="/subscription"
               title={sidebarCollapsed ? "Abonnement" : undefined}
@@ -839,7 +846,7 @@ export default function AppShell({
               className="border-t px-3 py-3"
               style={{ borderColor: "var(--border) " }}
             >
-                            {sessionUser && (
+              {sessionUser && (
                 <Link
                   href="/subscription"
                   className={[
@@ -914,14 +921,14 @@ export default function AppShell({
           paddingTop: `${topbarHeight + 20}px`,
         }}
       >
-        <section className="min-h-[calc(100vh-64px)] bg-[var(--background)] px-4 pb-8 md:px-5">
+        <section className="min-h-[calc(100vh-64px)] bg-[var(--background)] px-3 pb-8 md:px-5">
           {pageTitle && (
-            <div className="mb-6">
-              <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+            <div className="mb-4 md:mb-6">
+              <h1 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
                 {pageTitle}
               </h1>
               {pageSubtitle ? (
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
+                <p className="mt-1 text-xs md:text-sm text-slate-500 dark:text-slate-200">
                   {pageSubtitle}
                 </p>
               ) : null}

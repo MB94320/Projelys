@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 type BillingPlan = "MONTHLY" | "YEARLY";
@@ -25,8 +26,7 @@ export default function SubscriptionPlans({
       setMessage(null);
       setLoadingPlan(plan);
 
-      const priceId =
-        plan === "MONTHLY" ? monthlyPriceId : yearlyPriceId;
+      const priceId = plan === "MONTHLY" ? monthlyPriceId : yearlyPriceId;
 
       if (!priceId) {
         throw new Error(
@@ -100,12 +100,13 @@ export default function SubscriptionPlans({
         </div>
       ) : null}
 
+      {/* Bloc d’actions abonnement */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
         <h2 className="text-base font-semibold text-slate-900 dark:text-white">
           Actions abonnement
         </h2>
 
-        <div className="mt-4">
+        <div className="mt-4 space-y-3">
           {!hasActiveSubscription && (
             <p className="text-sm text-slate-500 dark:text-slate-200">
               Choisissez une formule ci-dessous pour accéder à Projelys Full.
@@ -127,30 +128,35 @@ export default function SubscriptionPlans({
 
           {hasActiveSubscription && cancelAtPeriodEnd && (
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/15 px-4 py-3 text-sm text-amber-700 dark:text-amber-200">
-              Votre abonnement est résilié à échéance. L’accès reste actif jusqu’à la fin de la période en cours.
+              Votre abonnement est résilié à échéance. L’accès reste actif
+              jusqu’à la fin de la période en cours.
             </div>
           )}
         </div>
       </section>
 
+      {/* Choix des formules */}
       {!hasActiveSubscription && (
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
           <h2 className="text-base font-semibold text-slate-900 dark:text-white">
             Choisir une formule
           </h2>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <div className="rounded-2xl border border-yellow-500/30 bg-[var(--surface-muted)] p-5 ring-1 ring-yellow-500/20 dark:bg-slate-700">
-              <div className="mb-3 inline-flex rounded-full bg-yellow-500/15 px-3 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300">
-                Standard
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {/* Essential mensuel – jaune */}
+            <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-5 ring-1 ring-amber-300/40 dark:border-amber-900/60 dark:bg-amber-950/20 dark:ring-amber-800/40">
+              <div className="mb-3 inline-flex rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+                Offre standard
               </div>
+
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Essentiel mensuel
+                    Essential mensuel
                   </div>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-                    Accès limité à Projelys, facturation mensuelle.
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-200">
+                    Entrée de gamme pour structurer l’essentiel du pilotage avec
+                    un périmètre limité.
                   </p>
                 </div>
                 <div className="text-right">
@@ -163,35 +169,37 @@ export default function SubscriptionPlans({
                 </div>
               </div>
 
-              <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-100">
-                <li>- Accès limité à 5 projets, plan de charge, ressources, actions.</li>
-                <li>- Adapté aux freelances.</li>
-                <li>- Résiliable à échéance.</li>
+              <ul className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-100">
+                <li>- Portefeuille & projets limités à 5 projets.</li>
+                <li>- Plan de charge et ressources.</li>
+                <li>- Plan d’actions.</li>
               </ul>
 
               <button
                 type="button"
                 onClick={() => handleCheckout("MONTHLY")}
                 disabled={loadingPlan !== null}
-                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-yellow-500/30 bg-yellow-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-yellow-500 disabled:opacity-60 dark:border-yellow-400/30 dark:bg-yellow-500 dark:hover:bg-yellow-400"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-amber-400/70 bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-400 disabled:opacity-60 dark:border-amber-400/70 dark:bg-amber-500 dark:hover:bg-amber-400"
               >
                 {loadingPlan === "MONTHLY"
                   ? "Redirection..."
-                  : "Choisir le mensuel"}
+                  : "Choisir Essential mensuel"}
               </button>
             </div>
 
-            <div className="rounded-2xl border border-sky-500/30 bg-[var(--surface-muted)] p-5 ring-1 ring-sky-500/20 dark:bg-slate-700">
-              <div className="mb-3 inline-flex rounded-full bg-sky-500/15 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
-                Premium
+            {/* Pro mensuel – sky */}
+            <div className="rounded-2xl border border-sky-300 bg-sky-50/80 p-5 ring-1 ring-sky-300/40 dark:border-sky-900/60 dark:bg-sky-950/20 dark:ring-sky-800/40">
+              <div className="mb-3 inline-flex rounded-full bg-sky-500/15 px-3 py-1 text-xs font-medium text-sky-800 dark:text-sky-200">
+                Offre premium
               </div>
+
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Full mensuel
+                    Pro mensuel
                   </div>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-                    Accès complet à Projelys, facturation mensuelle.
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-200">
+                    Couverture complète Projelys, facturation mensuelle.
                   </p>
                 </div>
                 <div className="text-right">
@@ -204,36 +212,38 @@ export default function SubscriptionPlans({
                 </div>
               </div>
 
-              <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-100">
-                <li>- Accès complet projets, qualité, risques, actions.</li>
-                <li>- Adapté aux freelances et petites structures.</li>
-                <li>- Résiliable à échéance.</li>
+              <ul className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-100">
+                <li>- Portefeuille & projets complets.</li>
+                <li>- Charge, ressources, arbitrages.</li>
+                <li>- Finance, risques, qualité & actions.</li>
               </ul>
 
               <button
                 type="button"
                 onClick={() => handleCheckout("MONTHLY")}
                 disabled={loadingPlan !== null}
-                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-sky-500/30 bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-60 dark:border-sky-400/30 dark:bg-sky-500 dark:hover:bg-sky-400"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-sky-400/70 bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-60 dark:border-sky-400/70 dark:bg-sky-500 dark:hover:bg-sky-400"
               >
                 {loadingPlan === "MONTHLY"
                   ? "Redirection..."
-                  : "Choisir le mensuel"}
+                  : "Choisir Pro mensuel"}
               </button>
             </div>
 
-            <div className="rounded-2xl border border-emerald-500/30 bg-[var(--surface-muted)] p-5 ring-1 ring-emerald-500/20 dark:bg-slate-700">
-              <div className="mb-3 inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                Recommandé
+            {/* Pro annuel – emerald */}
+            <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-5 ring-1 ring-emerald-300/40 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:ring-emerald-800/40">
+              <div className="mb-3 inline-flex rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-200">
+                Pro annuel
               </div>
 
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                    Full annuel
+                    Pro annuel
                   </div>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-                    Accès complet à Projelys, facturation annuelle.
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-200">
+                    Même couverture complète avec engagement annuel pour un
+                    usage durable.
                   </p>
                 </div>
                 <div className="text-right">
@@ -246,22 +256,62 @@ export default function SubscriptionPlans({
                 </div>
               </div>
 
-              <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-100">
-                <li>- Accès complet projets, qualité, risques, actions.</li>
-                <li>- Économie par rapport au mensuel.</li>
-                <li>- Idéal pour un usage continu sur l’année.</li>
+              <ul className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-100">
+                <li>- Couverture complète Projelys.</li>
+                <li>- Vision long terme & usage continu.</li>
+                <li>- Plus avantageux que le mensuel.</li>
               </ul>
 
               <button
                 type="button"
                 onClick={() => handleCheckout("YEARLY")}
                 disabled={loadingPlan !== null}
-                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-emerald-500/30 bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60 dark:border-emerald-400/30 dark:bg-emerald-500 dark:hover:bg-emerald-400"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-emerald-400/70 bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60 dark:border-emerald-400/70 dark:bg-emerald-500 dark:hover:bg-emerald-400"
               >
                 {loadingPlan === "YEARLY"
                   ? "Redirection..."
-                  : "Choisir l’annuel"}
+                  : "Choisir Pro annuel"}
               </button>
+            </div>
+
+            {/* Entreprise – violet */}
+            <div className="rounded-2xl border border-violet-300 bg-violet-50/80 p-5 ring-1 ring-violet-300/40 dark:border-violet-900/60 dark:bg-violet-950/20 dark:ring-violet-800/40">
+              <div className="mb-3 inline-flex rounded-full bg-violet-500/15 px-3 py-1 text-xs font-medium text-violet-800 dark:text-violet-200">
+                Offre entreprise
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    Entreprise
+                  </div>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-200">
+                    Pour TPE, PME, ETI et ESN à partir de 3 collaborateurs avec
+                    cadrage adapté.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                    Sur devis
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-200">
+                    Offre personnalisée
+                  </div>
+                </div>
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-700 dark:text-slate-100">
+                <li>- À partir de 3 collaborateurs.</li>
+                <li>- Déploiement & paramétrage adaptés.</li>
+                <li>- Accompagnement et cadrage sur devis.</li>
+              </ul>
+
+              <Link
+                href="/site/contact?lang=fr"
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-violet-400/70 bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-500 dark:border-violet-400/70 dark:bg-violet-600 dark:hover:bg-violet-500"
+              >
+                Demander un devis
+              </Link>
             </div>
           </div>
         </section>

@@ -11,6 +11,7 @@ function PlanCard({
   ctaHref,
   highlighted = false,
   softButton = false,
+  tone = "slate",
 }: {
   badge: string;
   title: string;
@@ -21,31 +22,66 @@ function PlanCard({
   ctaHref: string;
   highlighted?: boolean;
   softButton?: boolean;
+  tone?: "slate" | "sky" | "yellow" | "emerald" | "violet";
 }) {
+  const toneStyles = {
+    slate: {
+      card: "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900",
+      badge:
+        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+      button: softButton
+        ? "border border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+        : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200",
+    },
+    sky: {
+      card: "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/20",
+      badge: "bg-sky-600 text-white",
+      button: "bg-sky-600 text-white hover:bg-sky-500",
+    },
+    yellow: {
+      card:
+        "border-amber-200 bg-amber-50 dark:border-amber-900/70 dark:bg-amber-950/20",
+      badge: "bg-amber-500 text-white dark:bg-amber-500 dark:text-white",
+      button: softButton
+        ? "border border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200 dark:border-amber-800 dark:bg-amber-900/40 dark:text-amber-100 dark:hover:bg-amber-900/60"
+        : "bg-amber-500 text-white hover:bg-amber-400",
+    },
+    emerald: {
+      card:
+        "border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/20",
+      badge: "bg-emerald-600 text-white",
+      button: softButton
+        ? "border border-emerald-300 bg-emerald-100 text-emerald-900 hover:bg-emerald-200 dark:border-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-100 dark:hover:bg-emerald-900/60"
+        : "bg-emerald-600 text-white hover:bg-emerald-500",
+    },
+    violet: {
+      card:
+        "border-violet-200 bg-violet-50 dark:border-violet-900 dark:bg-violet-950/20",
+      badge: "bg-violet-600 text-white",
+      button: softButton
+        ? "border border-violet-300 bg-violet-100 text-violet-900 hover:bg-violet-200 dark:border-violet-800 dark:bg-violet-900/40 dark:text-violet-100 dark:hover:bg-violet-900/60"
+        : "bg-violet-600 text-white hover:bg-violet-500",
+    },
+  } as const;
+
+  const styles = highlighted ? toneStyles[tone] : toneStyles[tone];
+
   return (
     <div
-      className={`rounded-[30px] border p-8 shadow-sm ${
-        highlighted
-          ? "border-sky-200 bg-sky-50 dark:border-sky-900 dark:bg-sky-950/20"
-          : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
-      }`}
+      className={`rounded-[30px] border p-6 sm:p-8 shadow-sm transition-colors ${styles.card}`}
     >
       <div
-        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-          highlighted
-            ? "bg-sky-600 text-white"
-            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-        }`}
+        className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${styles.badge}`}
       >
         {badge}
       </div>
 
-      <h2 className="mt-5 text-2xl font-semibold text-slate-950 dark:text-white">
+      <h2 className="mt-5 text-xl sm:text-2xl font-semibold text-slate-950 dark:text-white">
         {title}
       </h2>
 
       <div className="mt-5 flex items-end gap-2">
-        <span className="text-4xl font-semibold tracking-[-0.03em] text-slate-950 dark:text-white">
+        <span className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-950 dark:text-white">
           {price}
         </span>
       </div>
@@ -62,13 +98,7 @@ function PlanCard({
 
       <Link
         href={ctaHref}
-        className={`mt-8 inline-flex rounded-xl px-5 py-3 text-sm font-medium transition ${
-          highlighted
-            ? "bg-sky-600 text-white hover:bg-sky-500"
-            : softButton
-            ? "border border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-            : "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-        }`}
+        className={`mt-8 inline-flex w-full justify-center rounded-xl px-5 py-3 text-sm font-medium transition sm:w-auto ${styles.button}`}
       >
         {ctaLabel}
       </Link>
@@ -78,7 +108,7 @@ function PlanCard({
 
 export default function PricingPlans({ lang }: { lang: Lang }) {
   return (
-    <section className="mx-auto max-w-7xl px-6 py-16">
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <PlanCard
           badge={lang === "fr" ? "Offre standard" : "Standard plan"}
@@ -105,6 +135,7 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
           ctaLabel={lang === "fr" ? "Souscrire" : "Subscribe"}
           ctaHref="/subscription"
           softButton
+          tone="yellow"
         />
 
         <PlanCard
@@ -132,6 +163,7 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
           ctaLabel={lang === "fr" ? "Souscrire" : "Subscribe"}
           ctaHref="/subscription"
           highlighted
+          tone="sky"
         />
 
         <PlanCard
@@ -159,6 +191,7 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
           ctaLabel={lang === "fr" ? "Souscrire" : "Subscribe"}
           ctaHref="/subscription"
           softButton
+          tone="emerald"
         />
 
         <PlanCard
@@ -186,6 +219,7 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
           ctaLabel={lang === "fr" ? "Demander un devis" : "Request a quote"}
           ctaHref={`/site/contact?lang=${lang}`}
           softButton
+          tone="violet"
         />
       </div>
     </section>
