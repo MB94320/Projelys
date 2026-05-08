@@ -139,8 +139,52 @@ export default function SubscriptionPlans({
             Choisir une formule
           </h2>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-5 dark:bg-slate-700">
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-yellow-500/30 bg-[var(--surface-muted)] p-5 ring-1 ring-yellow-500/20 dark:bg-slate-700">
+              <div className="mb-3 inline-flex rounded-full bg-yellow-500/15 px-3 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300">
+                Standard
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    Essentiel mensuel
+                  </div>
+                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
+                    Accès limité à Projelys, facturation mensuelle.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                    19,90 €
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-200">
+                    / mois
+                  </div>
+                </div>
+              </div>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-600 dark:text-slate-100">
+                <li>- Accès limité à 5 projets, plan de charge, ressources, actions.</li>
+                <li>- Adapté aux freelances.</li>
+                <li>- Résiliable à échéance.</li>
+              </ul>
+
+              <button
+                type="button"
+                onClick={() => handleCheckout("MONTHLY")}
+                disabled={loadingPlan !== null}
+                className="mt-5 inline-flex w-full items-center justify-center rounded-xl border border-yellow-500/30 bg-yellow-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-yellow-500 disabled:opacity-60 dark:border-yellow-400/30 dark:bg-yellow-500 dark:hover:bg-yellow-400"
+              >
+                {loadingPlan === "MONTHLY"
+                  ? "Redirection..."
+                  : "Choisir le mensuel"}
+              </button>
+            </div>
+
+            <div className="rounded-2xl border border-sky-500/30 bg-[var(--surface-muted)] p-5 ring-1 ring-sky-500/20 dark:bg-slate-700">
+              <div className="mb-3 inline-flex rounded-full bg-sky-500/15 px-3 py-1 text-xs font-medium text-sky-700 dark:text-sky-300">
+                Premium
+              </div>
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900 dark:text-white">
