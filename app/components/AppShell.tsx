@@ -47,13 +47,7 @@ const navItems: {
     shortLabel: "Dashboard",
     href: "/",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <rect x="3" y="3" width="8" height="8" rx="2" />
         <rect x="13" y="3" width="8" height="5" rx="2" />
         <rect x="13" y="10" width="8" height="11" rx="2" />
@@ -67,13 +61,7 @@ const navItems: {
     shortLabel: "Projets",
     href: "/projects",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <path d="M3 7h18" />
         <path d="M6 4h4l1 2h7a2 2 0 0 1 2 2v9a3 3 0 0 1-3 3H7a4 4 0 0 1-4-4V6a2 2 0 0 1 2-2h1z" />
       </svg>
@@ -85,13 +73,7 @@ const navItems: {
     shortLabel: "AVV",
     href: "/presales",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <path d="M4 19h16" />
         <path d="M6 16V8" />
         <path d="M12 16V5" />
@@ -105,13 +87,7 @@ const navItems: {
     shortLabel: "Charge",
     href: "/loadplan",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <rect x="3" y="4" width="18" height="17" rx="2" />
         <path d="M8 2v4M16 2v4M3 10h18" />
       </svg>
@@ -123,13 +99,7 @@ const navItems: {
     shortLabel: "Perf",
     href: "/performance",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <path d="M4 19h16" />
         <path d="M7 15l3-3 3 2 4-5" />
         <path d="M17 9h2v2" />
@@ -142,13 +112,7 @@ const navItems: {
     shortLabel: "Skills",
     href: "/skills",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <circle cx="8" cy="8" r="3" />
         <circle cx="16" cy="8" r="3" />
         <path d="M3 20a5 5 0 0 1 10 0" />
@@ -162,13 +126,7 @@ const navItems: {
     shortLabel: "Risques",
     href: "/risks-opportunities",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <path d="M12 3 2 21h20L12 3z" />
         <path d="M12 9v5" />
         <path d="M12 18h.01" />
@@ -181,13 +139,7 @@ const navItems: {
     shortLabel: "Finance",
     href: "/finance",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <circle cx="12" cy="12" r="9" />
         <path d="M9 10c0-1.1 1.2-2 3-2s3 .9 3 2-1.2 2-3 2-3 .9-3 2 1.2 2 3 2 3-.9 3-2" />
       </svg>
@@ -199,13 +151,7 @@ const navItems: {
     shortLabel: "Actions",
     href: "/actions",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <path d="M9 11l3 3L22 4" />
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
       </svg>
@@ -217,13 +163,7 @@ const navItems: {
     shortLabel: "Qualité",
     href: "/quality",
     icon: (
-      <svg
-        className="h-[18px] w-[18px]"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.9"
-      >
+      <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
         <path d="M12 3l2.8 5.6L21 9.5l-4.5 4.3 1 6.2L12 17l-5.5 3 1-6.2L3 9.5l6.2-.9L12 3z" />
       </svg>
     ),
@@ -293,6 +233,18 @@ export default function AppShell({
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -434,44 +386,32 @@ export default function AppShell({
   );
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] overflow-x-hidden">
-      {/* Topbar */}
+    <div className="min-h-screen overflow-x-hidden bg-[var(--background)] text-[var(--foreground)]">
       <header
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center border-b px-3 md:px-5"
         style={{
           background:
             theme === "dark"
-              ? "rgba(30, 41, 59, 0.96)"
-              : "rgba(248, 250, 252, 0.96)",
+              ? "rgba(30, 41, 59, 0.98)"
+              : "rgba(248, 250, 252, 0.98)",
           borderColor: "var(--border)",
           backdropFilter: "blur(14px)",
         }}
       >
         <div className="flex w-full items-center gap-3">
-          {/* Mobile menu button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(true)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-600 md:hidden dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 md:hidden dark:border-slate-600 dark:bg-slate-800 dark:text-white"
             title="Ouvrir le menu"
           >
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-            >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
 
-          {/* Logo + titre */}
-          <Link
-            href="/"
-            className="flex min-w-0 flex-1 items-center gap-3"
-          >
-            <div className="flex h-[40px] w-[40px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+          <Link href="/" className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="flex h-[40px] w-[40px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
               <Image
                 src="/PROJELYS.png"
                 alt="Projelys"
@@ -482,26 +422,19 @@ export default function AppShell({
               />
             </div>
 
-            <div className="min-w-0 hidden xs:block">
+            <div className="min-w-0">
               <div className="truncate text-[13px] font-bold tracking-[0.08em] uppercase text-slate-900 dark:text-white">
                 Projelys
               </div>
-              <div className="truncate text-[11px] text-slate-500 dark:text-slate-200">
+              <div className="hidden truncate text-[11px] text-slate-500 dark:text-slate-200 sm:block">
                 Project Portfolio & Performance Control
               </div>
             </div>
           </Link>
 
-          {/* Barre de recherche desktop */}
           <div className="hidden flex-1 justify-center xl:flex">
             <div className="flex w-full max-w-[440px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-4 py-2 dark:border-slate-600 dark:bg-slate-700">
-              <svg
-                className="mr-2 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-200"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
+              <svg className="mr-2 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <circle cx="11" cy="11" r="6" />
                 <path d="m16 16 4 4" />
               </svg>
@@ -513,7 +446,6 @@ export default function AppShell({
             </div>
           </div>
 
-          {/* Actions à droite */}
           <div className="ml-auto flex min-w-0 items-center gap-2 md:gap-3">
             <div className="hidden items-center whitespace-nowrap text-[13px] font-bold text-slate-600 dark:text-slate-100 lg:flex">
               {todayLabel}
@@ -524,13 +456,10 @@ export default function AppShell({
               ) : null}
             </div>
 
-            {/* Langue */}
             <div className="relative hidden sm:block">
               <select
                 value={currentLang}
-                onChange={(e) =>
-                  setCurrentLang(e.target.value === "en" ? "en" : "fr")
-                }
+                onChange={(e) => setCurrentLang(e.target.value === "en" ? "en" : "fr")}
                 className="appearance-none rounded-full border border-slate-200 bg-[var(--surface-muted)] py-2 pl-3 pr-8 text-[11px] font-medium text-slate-500 outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
               >
                 {languageOptions.map((lang) => (
@@ -544,64 +473,37 @@ export default function AppShell({
               </span>
             </div>
 
-            {/* Theme toggle */}
             <button
               type="button"
-              onClick={() =>
-                setTheme((prev) => (prev === "light" ? "dark" : "light"))
-              }
+              onClick={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-600 transition hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600"
-              title={
-                theme === "light"
-                  ? "Passer en mode sombre"
-                  : "Passer en mode clair"
-              }
+              title={theme === "light" ? "Passer en mode sombre" : "Passer en mode clair"}
             >
               {theme === "light" ? (
-                <svg
-                  className="h-4 w-4 text-amber-500"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
+                <svg className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <circle cx="12" cy="12" r="4" />
                   <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
                 </svg>
               ) : (
-                <svg
-                  className="h-4 w-4 text-slate-50"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
+                <svg className="h-4 w-4 text-slate-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                 </svg>
               )}
             </button>
 
-            {/* Cloche notifications */}
             <button
               type="button"
               className="hidden h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-[var(--surface-muted)] text-slate-500 dark:border-slate-600 dark:bg-slate-700 dark:text-white sm:inline-flex"
               title="Notifications"
             >
               <span className="relative inline-flex">
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M10 21h4" />
                   <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 </svg>
               </span>
             </button>
 
-            {/* Connexion / profil */}
             {!loadingSession && !sessionUser && (
               <>
                 <Link
@@ -637,17 +539,13 @@ export default function AppShell({
                   Déconnexion
                 </button>
 
-                {/* Badge nom + initiales desktop */}
                 <div className="hidden max-w-[160px] items-center rounded-full border border-slate-200 bg-[var(--surface-muted)] px-3 py-1 text-[11px] text-slate-600 dark:border-slate-600 dark:bg-slate-700 dark:text-white md:inline-flex">
                   <span className="mr-2 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-slate-900 text-[10px] font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
                     {initials}
                   </span>
-                  <span className="truncate">
-                    {sessionUser.name || sessionUser.email}
-                  </span>
+                  <span className="truncate">{sessionUser.name || sessionUser.email}</span>
                 </div>
 
-                {/* Avatar + logout mobile */}
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -662,7 +560,6 @@ export default function AppShell({
         </div>
       </header>
 
-      {/* Sidebar desktop */}
       <aside
         className={`fixed left-0 z-40 hidden ${sidebarWidthClass} md:flex flex-col transition-all duration-300`}
         style={{
@@ -688,59 +585,34 @@ export default function AppShell({
             title={sidebarCollapsed ? "Déplier le menu" : "Réduire le menu"}
           >
             {sidebarCollapsed ? (
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 18l6-6-6-6" />
               </svg>
             ) : (
-              <svg
-                className="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
             )}
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 pb-3">
-          {renderNav(false)}
-        </div>
+        <div className="flex-1 overflow-y-auto px-2 pb-3">{renderNav(false)}</div>
 
-        <div
-          className="border-t px-2 py-3"
-          style={{ borderColor: "var(--border)" }}
-        >
+        <div className="border-t px-2 py-3" style={{ borderColor: "var(--border)" }}>
           {sessionUser && (
             <Link
               href="/subscription"
               title={sidebarCollapsed ? "Abonnement" : undefined}
               className={[
                 "mb-2 flex items-center transition",
-                sidebarCollapsed
-                  ? "justify-center rounded-xl py-2.5"
-                  : "gap-3 rounded-xl px-3 py-2.5",
+                sidebarCollapsed ? "justify-center rounded-xl py-2.5" : "gap-3 rounded-xl px-3 py-2.5",
                 activeSection === "subscription"
                   ? "bg-sky-600 text-white shadow-sm"
                   : "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-300 dark:hover:bg-sky-500/25",
               ].join(" ")}
             >
               <span className="inline-flex h-8 w-8 items-center justify-center">
-                <svg
-                  className="h-[18px] w-[18px]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                >
+                <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
                   <path d="M4 7h16" />
                   <rect x="4" y="7" width="16" height="11" rx="2" />
                   <path d="M10 11h4" />
@@ -749,15 +621,11 @@ export default function AppShell({
 
               {!sidebarCollapsed && (
                 <div className="min-w-0">
-                  <div className="truncate text-[13px] font-semibold">
-                    Abonnement
-                  </div>
+                  <div className="truncate text-[13px] font-semibold">Abonnement</div>
                   <div
                     className={[
                       "truncate text-[10px]",
-                      activeSection === "subscription"
-                        ? "text-white/80"
-                        : "text-sky-600 dark:text-sky-300/80",
+                      activeSection === "subscription" ? "text-white/80" : "text-sky-600 dark:text-sky-300/80",
                     ].join(" ")}
                   >
                     Offre et facturation
@@ -766,6 +634,7 @@ export default function AppShell({
               )}
             </Link>
           )}
+
           {sessionUser?.role === "ADMIN" && (
             <Link
               href="/admin"
@@ -778,13 +647,7 @@ export default function AppShell({
               ].join(" ")}
             >
               <span className="inline-flex h-8 w-8 items-center justify-center">
-                <svg
-                  className="h-[18px] w-[18px]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.9"
-                >
+                <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
                   <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
                   <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
                 </svg>
@@ -792,12 +655,8 @@ export default function AppShell({
 
               {!sidebarCollapsed && (
                 <div className="min-w-0">
-                  <div className="truncate text-[13px] font-medium">
-                    Administration
-                  </div>
-                  <div className="truncate text-[10px] text-[var(--sidebar-muted)]">
-                    Comptes et accès
-                  </div>
+                  <div className="truncate text-[13px] font-medium">Administration</div>
+                  <div className="truncate text-[10px] text-[var(--sidebar-muted)]">Comptes et accès</div>
                 </div>
               )}
             </Link>
@@ -805,130 +664,103 @@ export default function AppShell({
         </div>
       </aside>
 
-      {/* Menu mobile */}
       {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-[1px] md:hidden"
+            className="fixed inset-0 z-40 bg-slate-950/45 md:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
           <div
-            className="fixed inset-y-0 left-0 z-50 w-[88vw] max-w-[320px] border-r bg-[var(--sidebar)] md:hidden"
-            style={{
-              borderColor: "var(--border)",
-              paddingTop: `${topbarHeight}px`,
-            }}
+            className="fixed left-0 top-16 z-50 h-[calc(100dvh-64px)] w-[88vw] max-w-[340px] overflow-hidden border-r bg-white shadow-2xl md:hidden dark:bg-slate-900"
+            style={{ borderColor: "var(--border)" }}
           >
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
-                Navigation
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b px-4 py-3" style={{ borderColor: "var(--border)" }}>
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--sidebar-muted)]">
+                  Navigation
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[var(--sidebar-muted)] hover:bg-[var(--surface-muted)]"
-              >
-                <svg
-                  className="h-4 w-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
-              </button>
-            </div>
 
-            <div className="px-3 pb-3">{renderNav(true)}</div>
+              <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
+                {renderNav(true)}
 
-            <div
-              className="border-t px-3 py-3"
-              style={{ borderColor: "var(--border) " }}
-            >
-              {sessionUser && (
-                <Link
-                  href="/subscription"
-                  className={[
-                    "mb-2 flex items-center gap-3 rounded-xl px-3 py-3 transition",
-                    activeSection === "subscription"
-                      ? "bg-sky-600 text-white shadow-sm"
-                      : "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-300 dark:hover:bg-sky-500/25",
-                  ].join(" ")}
-                >
-                  <span className="inline-flex h-8 w-8 items-center justify-center">
-                    <svg
-                      className="h-[18px] w-[18px]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.9"
-                    >
-                      <path d="M4 7h16" />
-                      <rect x="4" y="7" width="16" height="11" rx="2" />
-                      <path d="M10 11h4" />
-                    </svg>
-                  </span>
-                  <div>
-                    <div className="text-[13px] font-semibold">Abonnement</div>
-                    <div
+                <div className="mt-3 border-t pt-3" style={{ borderColor: "var(--border)" }}>
+                  {sessionUser && (
+                    <Link
+                      href="/subscription"
                       className={[
-                        "text-[10px]",
+                        "mb-2 flex items-center gap-3 rounded-xl px-3 py-3 transition",
                         activeSection === "subscription"
-                          ? "text-white/80"
-                          : "text-sky-600 dark:text-sky-300/80",
+                          ? "bg-sky-600 text-white shadow-sm"
+                          : "bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/15 dark:text-sky-300 dark:hover:bg-sky-500/25",
                       ].join(" ")}
                     >
-                      Offre et facturation
-                    </div>
-                  </div>
-                </Link>
-              )}
-              {sessionUser?.role === "ADMIN" && (
-                <Link
-                  href="/admin"
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-[var(--sidebar-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--sidebar-foreground)]"
-                >
-                  <span className="inline-flex h-8 w-8 items-center justify-center">
-                    <svg
-                      className="h-[18px] w-[18px]"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.9"
+                      <span className="inline-flex h-8 w-8 items-center justify-center">
+                        <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+                          <path d="M4 7h16" />
+                          <rect x="4" y="7" width="16" height="11" rx="2" />
+                          <path d="M10 11h4" />
+                        </svg>
+                      </span>
+                      <div>
+                        <div className="text-[13px] font-semibold">Abonnement</div>
+                        <div
+                          className={[
+                            "text-[10px]",
+                            activeSection === "subscription" ? "text-white/80" : "text-sky-600 dark:text-sky-300/80",
+                          ].join(" ")}
+                        >
+                          Offre et facturation
+                        </div>
+                      </div>
+                    </Link>
+                  )}
+
+                  {sessionUser?.role === "ADMIN" && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-3 rounded-xl px-3 py-3 text-[var(--sidebar-muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--sidebar-foreground)]"
                     >
-                      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
-                      <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
-                    </svg>
-                  </span>
-                  <div>
-                    <div className="text-[13px] font-medium">Administration</div>
-                    <div className="text-[10px] text-[var(--sidebar-muted)]">
-                      Comptes et accès
-                    </div>
-                  </div>
-                </Link>
-              )}
+                      <span className="inline-flex h-8 w-8 items-center justify-center">
+                        <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+                          <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7Z" />
+                          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9c.64.26 1.33.4 2.02.4H21a2 2 0 1 1 0 4h-.09c-.69 0-1.38.14-2.02.4Z" />
+                        </svg>
+                      </span>
+                      <div>
+                        <div className="text-[13px] font-medium">Administration</div>
+                        <div className="text-[10px] text-[var(--sidebar-muted)]">Comptes et accès</div>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </>
       )}
 
-      {/* Contenu principal */}
       <main
         className={`transition-all duration-300 ${contentPaddingClass}`}
-        style={{
-          paddingTop: `${topbarHeight + 20}px`,
-        }}
+        style={{ paddingTop: `${topbarHeight + 20}px` }}
       >
         <section className="min-h-[calc(100vh-64px)] bg-[var(--background)] px-3 pb-8 md:px-5">
           {pageTitle && (
             <div className="mb-4 md:mb-6">
-              <h1 className="text-lg md:text-xl font-semibold text-slate-900 dark:text-white">
+              <h1 className="text-lg font-semibold text-slate-900 dark:text-white md:text-xl">
                 {pageTitle}
               </h1>
               {pageSubtitle ? (
-                <p className="mt-1 text-xs md:text-sm text-slate-500 dark:text-slate-200">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-200 md:text-sm">
                   {pageSubtitle}
                 </p>
               ) : null}
