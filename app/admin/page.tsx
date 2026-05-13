@@ -34,26 +34,24 @@ function normalizeRole(role: unknown): UserRole {
   return "FULL";
 }
 
-const copy = {
+const pageCopy = {
   fr: {
     pageTitle: "Administration",
     pageSubtitle:
       "Gestion de votre compte administrateur, des utilisateurs et des abonnements.",
-    securityAccount:
-      "Accéder aux réglages de sécurité de votre propre compte.",
-    securityAccountButton: "Sécurité du compte (utilisateur)",
+    securityAccess: "Accéder aux réglages de sécurité de votre propre compte.",
+    securityButton: "Sécurité du compte (utilisateur)",
     adminProfile: "Profil administrateur",
-    adminProfileDesc:
+    adminProfileText:
       "Informations de base associées à votre compte administrateur.",
     displayName: "Nom affiché",
     notProvided: "Non renseigné",
     email: "Email",
     role: "Rôle",
-    adminSecurity: "Sécurité (administrateur)",
-    adminSecurityDesc:
-      "Modifier le mot de passe de votre compte administrateur.",
-    usersSubscriptions: "Utilisateurs & abonnements",
-    usersSubscriptionsDesc:
+    securityAdmin: "Sécurité (administrateur)",
+    securityAdminText: "Modifier le mot de passe de votre compte administrateur.",
+    usersAndSubs: "Utilisateurs & abonnements",
+    usersAndSubsText:
       "Gérer les comptes utilisateurs, les accès et votre abonnement.",
     subscription: "Abonnement",
     manageUsers: "Gérer les utilisateurs (voir la liste)",
@@ -62,22 +60,18 @@ const copy = {
     pageTitle: "Administration",
     pageSubtitle:
       "Manage your administrator account, users and subscriptions.",
-    securityAccount:
-      "Access the security settings of your own account.",
-    securityAccountButton: "Account security (user)",
+    securityAccess: "Access your own account security settings.",
+    securityButton: "Account security (user)",
     adminProfile: "Administrator profile",
-    adminProfileDesc:
-      "Basic information associated with your administrator account.",
+    adminProfileText: "Basic information linked to your administrator account.",
     displayName: "Display name",
     notProvided: "Not provided",
     email: "Email",
     role: "Role",
-    adminSecurity: "Security (administrator)",
-    adminSecurityDesc:
-      "Change the password of your administrator account.",
-    usersSubscriptions: "Users & subscriptions",
-    usersSubscriptionsDesc:
-      "Manage user accounts, access rights and your subscription.",
+    securityAdmin: "Security (administrator)",
+    securityAdminText: "Change your administrator account password.",
+    usersAndSubs: "Users & subscriptions",
+    usersAndSubsText: "Manage user accounts, access and your subscription.",
     subscription: "Subscription",
     manageUsers: "Manage users (view list)",
   },
@@ -86,7 +80,7 @@ const copy = {
 export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = searchParams ? await searchParams : undefined;
   const lang = params?.lang === "en" ? "en" : "fr";
-  const t = copy[lang];
+  const t = pageCopy[lang];
 
   const user = await requireAdmin();
 
@@ -131,6 +125,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
   return (
     <AppShell
+      lang={lang}
       activeSection="dashboard"
       pageTitle={t.pageTitle}
       pageSubtitle={t.pageSubtitle}
@@ -139,7 +134,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         <div className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm dark:bg-slate-800 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm text-slate-600 dark:text-slate-200">
-              {t.securityAccount}
+              {t.securityAccess}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -147,7 +142,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               href={`/settings/security?lang=${lang}`}
               className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800"
             >
-              {t.securityAccountButton}
+              {t.securityButton}
             </Link>
           </div>
         </div>
@@ -158,7 +153,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
               {t.adminProfile}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-              {t.adminProfileDesc}
+              {t.adminProfileText}
             </p>
 
             <dl className="mt-4 space-y-3 text-sm">
@@ -187,10 +182,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-              {t.adminSecurity}
+              {t.securityAdmin}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-              {t.adminSecurityDesc}
+              {t.securityAdminText}
             </p>
             <div className="mt-4">
               <SecurityForm />
@@ -202,10 +197,10 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-                {t.usersSubscriptions}
+                {t.usersAndSubs}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-                {t.usersSubscriptionsDesc}
+                {t.usersAndSubsText}
               </p>
             </div>
 

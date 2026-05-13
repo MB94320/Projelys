@@ -23,7 +23,6 @@ export async function POST(req: NextRequest) {
     }
 
     const planConfig = getStripePlanConfig(plan);
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     const dbUser = await prisma.user.findUnique({
@@ -33,7 +32,7 @@ export async function POST(req: NextRequest) {
     if (!dbUser) {
       return NextResponse.json(
         { error: "Utilisateur introuvable." },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -91,7 +90,7 @@ export async function POST(req: NextRequest) {
         error:
           error?.message || "Erreur lors de la création du checkout Stripe.",
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

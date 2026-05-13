@@ -17,21 +17,19 @@ const pageCopy = {
     pageTitle: "Abonnement",
     pageSubtitle: "Choisissez votre formule et gérez votre accès Projelys.",
     noPlan: "Aucune offre active",
-    monthly: "Mensuelle",
-    yearly: "Annuelle",
     essentialMonthly: "Essential mensuel",
     proMonthly: "Pro mensuel",
     proYearly: "Pro annuel",
+    enterprise: "Entreprise",
   },
   en: {
     pageTitle: "Subscription",
     pageSubtitle: "Choose your plan and manage your Projelys access.",
     noPlan: "No active plan",
-    monthly: "Monthly",
-    yearly: "Yearly",
     essentialMonthly: "Essential monthly",
     proMonthly: "Pro monthly",
     proYearly: "Pro yearly",
+    enterprise: "Enterprise",
   },
 };
 
@@ -60,11 +58,20 @@ export default async function SubscriptionPage({
 
   const latestSubscription = dbUser?.subscriptions?.[0] ?? null;
 
+  const subscriptionStatus = latestSubscription?.status
+    ? String(latestSubscription.status)
+    : null;
+  const billingCycle = latestSubscription?.billingCycle
+    ? String(latestSubscription.billingCycle)
+    : null;
+  const currentPlan = latestSubscription?.plan
+    ? String(latestSubscription.plan)
+    : null;
+
   const hasActiveSubscription =
-    latestSubscription?.status === "ACTIVE";
+    subscriptionStatus === "ACTIVE" || subscriptionStatus === "TRIALING";
 
   const cancelAtPeriodEnd = latestSubscription?.cancelAtPeriodEnd ?? false;
-  const billingCycle = latestSubscription?.billingCycle ?? null;
 
   const dateLocale = lang === "en" ? "en-GB" : "fr-FR";
 
@@ -77,21 +84,27 @@ export default async function SubscriptionPage({
     : null;
 
   const currentPlanName =
-    latestSubscription?.plan === "LIMITED"
+    currentPlan === "ESSENTIAL"
       ? t.essentialMonthly
-      : latestSubscription?.plan === "FULL" && billingCycle === "YEARLY"
+      : currentPlan === "FULL" && billingCycle === "YEARLY"
       ? t.proYearly
-      : latestSubscription?.plan === "FULL"
+      : currentPlan === "FULL"
       ? t.proMonthly
+      : currentPlan === "ENTERPRISE"
+      ? t.enterprise
       : t.noPlan;
 
   const currentPlanPriceLabel =
-    latestSubscription?.plan === "LIMITED"
+    currentPlan === "ESSENTIAL"
       ? `19,90 € ${lang === "en" ? "/ month" : "/ mois"}`
-      : latestSubscription?.plan === "FULL" && billingCycle === "YEARLY"
+      : currentPlan === "FULL" && billingCycle === "YEARLY"
       ? `490 € ${lang === "en" ? "/ year" : "/ an"}`
-      : latestSubscription?.plan === "FULL"
+      : currentPlan === "FULL"
       ? `49,90 € ${lang === "en" ? "/ month" : "/ mois"}`
+      : currentPlan === "ENTERPRISE"
+      ? lang === "en"
+        ? "Custom quote"
+        : "Sur devis"
       : null;
 
   const monthlyPriceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_FULL_MONTHLY;

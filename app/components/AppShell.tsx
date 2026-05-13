@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 
@@ -23,6 +23,7 @@ type AppShellProps = {
   children: ReactNode;
   pageTitle?: string;
   pageSubtitle?: string;
+  lang?: "fr" | "en";
 };
 
 type Theme = "light" | "dark";
@@ -347,26 +348,21 @@ export default function AppShell({
   children,
   pageTitle,
   pageSubtitle,
+  lang = "fr",
 }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [theme, setTheme] = useState<Theme>("light");
-  const [currentLang, setCurrentLang] = useState<Lang>("fr");
   const [todayLabel, setTodayLabel] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
+  const currentLang: Lang = lang === "en" ? "en" : "fr";
   const t = translations[currentLang];
   const navItems = navItemsByLang[currentLang];
-
-  useEffect(() => {
-    const langFromUrl = searchParams.get("lang");
-    setCurrentLang(langFromUrl === "en" ? "en" : "fr");
-  }, [searchParams]);
 
   useEffect(() => {
     const now = new Date();
@@ -407,7 +403,7 @@ export default function AppShell({
 
   useEffect(() => {
     setMobileMenuOpen(false);
-  }, [pathname, searchParams]);
+  }, [pathname, currentLang]);
 
   useEffect(() => {
     if (mobileMenuOpen) {
@@ -476,9 +472,9 @@ export default function AppShell({
   };
 
   const changeLang = (nextLang: Lang) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("lang", nextLang);
-    router.replace(`${pathname}?${params.toString()}`);
+    const url = new URL(window.location.href);
+    url.searchParams.set("lang", nextLang);
+    router.replace(`${url.pathname}${url.search}${url.hash}`);
   };
 
   const withLang = (href: string) => {
