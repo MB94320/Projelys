@@ -2,6 +2,31 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { requireAdmin, createPasswordHash } from "@/app/lib/auth";
 
+type SubscriptionPlanView =
+  | "LIMITED"
+  | "ESSENTIAL"
+  | "FULL_MONTHLY"
+  | "FULL_YEARLY"
+  | "ENTERPRISE"
+  | "NONE";
+
+function mapViewPlanToDb(plan: SubscriptionPlanView) {
+  switch (plan) {
+    case "ESSENTIAL":
+      return { plan: "ESSENTIAL", billingCycle: "MONTHLY", role: "LIMITED", status: "ACTIVE" };
+    case "FULL_MONTHLY":
+      return { plan: "FULL", billingCycle: "MONTHLY", role: "FULL", status: "ACTIVE" };
+    case "FULL_YEARLY":
+      return { plan: "FULL", billingCycle: "YEARLY", role: "FULL", status: "ACTIVE" };
+    case "ENTERPRISE":
+      return { plan: "ENTERPRISE", billingCycle: "YEARLY", role: "FULL", status: "ACTIVE" };
+    case "LIMITED":
+      return { plan: "LIMITED", billingCycle: "TRIAL", role: "LIMITED", status: "ACTIVE" };
+    default:
+      return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const admin = await requireAdmin();
@@ -18,6 +43,14 @@ export async function POST(req: Request) {
     const password = String(body?.password ?? "");
     const role = String(body?.role ?? "FULL").toUpperCase();
     const isActive = body?.isActive !== false;
+
+    const subscriptionPlan = String(body?.subscriptionPlan ?? "NONE") as SubscriptionPlanView;
+    const subscriptionPeriodStart = body?.subscriptionPeriodStart
+      ? new Date(body.subscriptionPeriodStart)
+      : null;
+    const subscriptionPeriodEnd = body?.subscriptionPeriodEnd
+      ? new Date(body.subscriptionPeriodEnd)
+      : null;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -52,16 +85,33 @@ export async function POST(req: Request) {
     }
 
     const passwordHash = await createPasswordHash(password);
+    const mapped = mapViewPlanToDb(subscriptionPlan);
+
+    const effectiveRole = mapped ? mapped.role : role;
 
     const user = await prisma.user.create({
       data: {
         email,
         name,
         passwordHash,
-        role: role as any,
+        role: effectiveRole as any,
         isActive,
       },
     });
+
+    if (mapped) {
+      await prisma.subscription.create({
+        data: {
+          userId: user.id,
+          plan: mapped.plan as any,
+          billingCycle: mapped.billingCycle as any,
+          status: (isActive ? mapped.status : "PENDING") as any,
+          currentPeriodStart: subscriptionPeriodStart,
+          currentPeriodEnd: subscriptionPeriodEnd,
+          cancelAtPeriodEnd: false,
+        },
+      });
+    }
 
     return NextResponse.json({
       ok: true,

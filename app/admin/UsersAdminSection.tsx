@@ -50,6 +50,8 @@ const copy = {
     endDate: "Fin",
     createdAt: "Créé le",
     modify: "Modifier",
+    save: "Enregistrer",
+    cancel: "Annuler",
     delete: "Supprimer",
     createUser: "Créer l'utilisateur",
     creating: "Création...",
@@ -59,13 +61,10 @@ const copy = {
     createSuccess: "Utilisateur créé avec succès.",
     updateSuccess: "Utilisateur mis à jour avec succès.",
     statusSuccess: "Statut utilisateur mis à jour.",
-    roleSuccess: "Rôle utilisateur mis à jour.",
-    offerSuccess: "Offre utilisateur mise à jour.",
     deleteSuccess: "Utilisateur supprimé avec succès.",
     createError: "Erreur lors de la création de l'utilisateur.",
     updateError: "Erreur lors de la mise à jour de l'utilisateur.",
     statusError: "Erreur lors de la mise à jour du statut.",
-    roleError: "Erreur lors du changement de rôle.",
     deleteError: "Erreur lors de la suppression de l'utilisateur.",
     refreshError: "Impossible de recharger les utilisateurs.",
     displayedNamePlaceholder: "Nom affiché",
@@ -84,7 +83,7 @@ const copy = {
     enterpriseContracts: "Entreprise",
     noSubscription: "Sans abonnement",
     activeContracts: "Contrats actifs",
-    scheduledCancel: "Résiliation programmée",
+    scheduledCancel: "Résiliation / arrêt",
     pendingContracts: "En attente",
     expiredContracts: "Expirés",
     offerLabels: {
@@ -123,6 +122,8 @@ const copy = {
     endDate: "End",
     createdAt: "Created",
     modify: "Edit",
+    save: "Save",
+    cancel: "Cancel",
     delete: "Delete",
     createUser: "Create user",
     creating: "Creating...",
@@ -132,13 +133,10 @@ const copy = {
     createSuccess: "User created successfully.",
     updateSuccess: "User updated successfully.",
     statusSuccess: "User status updated.",
-    roleSuccess: "User role updated.",
-    offerSuccess: "User offer updated.",
     deleteSuccess: "User deleted successfully.",
     createError: "Error while creating user.",
     updateError: "Error while updating user.",
     statusError: "Error while updating status.",
-    roleError: "Error while updating role.",
     deleteError: "Error while deleting user.",
     refreshError: "Unable to reload users.",
     displayedNamePlaceholder: "Display name",
@@ -157,7 +155,7 @@ const copy = {
     enterpriseContracts: "Enterprise",
     noSubscription: "No subscription",
     activeContracts: "Active contracts",
-    scheduledCancel: "Scheduled cancellation",
+    scheduledCancel: "Stopped / canceled",
     pendingContracts: "Pending",
     expiredContracts: "Expired",
     offerLabels: {
@@ -233,10 +231,19 @@ export default function UsersAdminSection({
 
   const refreshUsers = async () => {
     const res = await fetch("/api/admin/users", { cache: "no-store" });
-    const data = await res.json();
+    const raw = await res.text();
+
+    let data: any = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      throw new Error(t.refreshError);
+    }
+
     if (!res.ok) {
       throw new Error(data?.error || t.refreshError);
     }
+
     setUsers(data.users);
   };
 
@@ -323,7 +330,14 @@ export default function UsersAdminSection({
         }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+
+      let data: any = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(t.createError);
+      }
 
       if (!res.ok) {
         throw new Error(data?.error || t.createError);
@@ -357,7 +371,14 @@ export default function UsersAdminSection({
         body: JSON.stringify({ userId: user.id, isActive: !user.isActive }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+
+      let data: any = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(t.statusError);
+      }
 
       if (!res.ok) {
         throw new Error(data?.error || t.statusError);
@@ -367,32 +388,6 @@ export default function UsersAdminSection({
       await refreshUsers();
     } catch (err: any) {
       setError(err?.message || t.statusError);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChangeRole = async (user: UserRow, role: UserRole) => {
-    resetMessages();
-    try {
-      setLoading(true);
-
-      const res = await fetch("/api/admin/change-user-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, role }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.error || t.roleError);
-      }
-
-      setMessage(t.roleSuccess);
-      await refreshUsers();
-    } catch (err: any) {
-      setError(err?.message || t.roleError);
     } finally {
       setLoading(false);
     }
@@ -416,7 +411,14 @@ export default function UsersAdminSection({
         }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+
+      let data: any = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(t.updateError);
+      }
 
       if (!res.ok) {
         throw new Error(data?.error || t.updateError);
@@ -447,7 +449,14 @@ export default function UsersAdminSection({
         body: JSON.stringify({ userId: user.id }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+
+      let data: any = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(t.deleteError);
+      }
 
       if (!res.ok) {
         throw new Error(data?.error || t.deleteError);
@@ -468,122 +477,6 @@ export default function UsersAdminSection({
 
   return (
     <div className="mt-4 space-y-4 text-xs">
-      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 dark:bg-slate-700">
-        <div className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">
-          {t.analyticsTitle}
-        </div>
-        <p className="mb-4 text-xs text-slate-500 dark:text-slate-300">
-          {t.analyticsSubtitle}
-        </p>
-
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.totalUsers}
-            </div>
-            <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-              {analytics.totalUsers}
-            </div>
-          </div>
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.activeUsers}
-            </div>
-            <div className="mt-2 text-lg font-semibold text-emerald-600 dark:text-emerald-300">
-              {analytics.activeUsers}
-            </div>
-          </div>
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.subscribedUsers}
-            </div>
-            <div className="mt-2 text-lg font-semibold text-sky-600 dark:text-sky-300">
-              {analytics.subscribedUsers}
-            </div>
-          </div>
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.limitedUsers}
-            </div>
-            <div className="mt-2 text-lg font-semibold text-amber-600 dark:text-amber-300">
-              {analytics.limitedUsers}
-            </div>
-          </div>
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.adminUsers}
-            </div>
-            <div className="mt-2 text-lg font-semibold text-violet-600 dark:text-violet-300">
-              {analytics.adminUsers}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="mb-2 text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.offer}
-            </div>
-            <div className="space-y-1.5 text-[11px]">
-              <div className="flex items-center justify-between"><span>{t.essentialContracts}</span><span>{analytics.essentialContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.fullContracts}</span><span>{analytics.fullContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.monthlyContracts}</span><span>{analytics.monthlyContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.yearlyContracts}</span><span>{analytics.yearlyContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.enterpriseContracts}</span><span>{analytics.enterpriseContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.noSubscription}</span><span>{analytics.noSubscription}</span></div>
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
-            <div className="mb-2 text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              {t.status}
-            </div>
-            <div className="space-y-1.5 text-[11px]">
-              <div className="flex items-center justify-between"><span>{t.activeContracts}</span><span>{analytics.activeContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.scheduledCancel}</span><span>{analytics.scheduledCancel}</span></div>
-              <div className="flex items-center justify-between"><span>{t.pendingContracts}</span><span>{analytics.pendingContracts}</span></div>
-              <div className="flex items-center justify-between"><span>{t.expiredContracts}</span><span>{analytics.expiredContracts}</span></div>
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800 md:col-span-2">
-            <div className="mb-3 text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Répartition visuelle
-            </div>
-            <div className="space-y-2">
-              {[
-                { label: t.essentialContracts, value: analytics.essentialContracts, color: "bg-amber-500" },
-                { label: t.monthlyContracts, value: analytics.monthlyContracts, color: "bg-sky-500" },
-                { label: t.yearlyContracts, value: analytics.yearlyContracts, color: "bg-emerald-500" },
-                { label: t.enterpriseContracts, value: analytics.enterpriseContracts, color: "bg-violet-500" },
-              ].map((item) => {
-                const percent =
-                  analytics.subscribedUsers > 0
-                    ? Math.round((item.value / analytics.subscribedUsers) * 100)
-                    : 0;
-
-                return (
-                  <div key={item.label}>
-                    <div className="mb-1 flex items-center justify-between text-[11px]">
-                      <span className="text-slate-700 dark:text-slate-200">{item.label}</span>
-                      <span className="text-slate-500 dark:text-slate-400">
-                        {item.value} • {percent}%
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700">
-                      <div
-                        className={`h-2 rounded-full ${item.color}`}
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 dark:bg-slate-700">
         <div className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">
           {t.createTitle}
@@ -711,6 +604,58 @@ export default function UsersAdminSection({
 
       <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 dark:bg-slate-700">
         <div className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">
+          {t.analyticsTitle}
+        </div>
+        <p className="mb-4 text-xs text-slate-500 dark:text-slate-300">
+          {t.analyticsSubtitle}
+        </p>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
+            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {t.totalUsers}
+            </div>
+            <div className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
+              {analytics.totalUsers}
+            </div>
+          </div>
+          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
+            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {t.activeUsers}
+            </div>
+            <div className="mt-2 text-lg font-semibold text-emerald-600 dark:text-emerald-300">
+              {analytics.activeUsers}
+            </div>
+          </div>
+          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
+            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {t.subscribedUsers}
+            </div>
+            <div className="mt-2 text-lg font-semibold text-sky-600 dark:text-sky-300">
+              {analytics.subscribedUsers}
+            </div>
+          </div>
+          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
+            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {t.limitedUsers}
+            </div>
+            <div className="mt-2 text-lg font-semibold text-amber-600 dark:text-amber-300">
+              {analytics.limitedUsers}
+            </div>
+          </div>
+          <div className="rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
+            <div className="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              {t.adminUsers}
+            </div>
+            <div className="mt-2 text-lg font-semibold text-violet-600 dark:text-violet-300">
+              {analytics.adminUsers}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] p-4 dark:bg-slate-700">
+        <div className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">
           {t.existingTitle}
         </div>
 
@@ -741,13 +686,11 @@ export default function UsersAdminSection({
                     <td className="rounded-l-xl px-3 py-3 text-slate-900 dark:text-white">
                       {u.name || "—"}
                     </td>
-
                     <td className="px-3 py-3">
                       <div className="max-w-[220px] truncate text-slate-900 dark:text-white">
                         {u.email}
                       </div>
                     </td>
-
                     <td className="px-3 py-3">
                       {isEditing ? (
                         <select
@@ -760,23 +703,20 @@ export default function UsersAdminSection({
                           <option value="LIMITED">LIMITED</option>
                         </select>
                       ) : (
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={[
-                              "inline-flex rounded-full px-2 py-1 text-[10px] font-semibold",
-                              u.role === "ADMIN"
-                                ? "bg-violet-100 text-violet-700 dark:bg-violet-950/30 dark:text-violet-200"
-                                : u.role === "FULL"
-                                ? "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-200"
-                                : "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-200",
-                            ].join(" ")}
-                          >
-                            {u.role}
-                          </span>
-                        </div>
+                        <span
+                          className={[
+                            "inline-flex rounded-full px-2 py-1 text-[10px] font-semibold",
+                            u.role === "ADMIN"
+                              ? "bg-violet-100 text-violet-700 dark:bg-violet-950/30 dark:text-violet-200"
+                              : u.role === "FULL"
+                              ? "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-200"
+                              : "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-200",
+                          ].join(" ")}
+                        >
+                          {u.role}
+                        </span>
                       )}
                     </td>
-
                     <td className="px-3 py-3">
                       {isEditing ? (
                         <select
@@ -797,7 +737,6 @@ export default function UsersAdminSection({
                         </span>
                       )}
                     </td>
-
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         <button
@@ -818,7 +757,6 @@ export default function UsersAdminSection({
                         </span>
                       </div>
                     </td>
-
                     <td className="px-3 py-3">
                       {isEditing ? (
                         <input
@@ -831,7 +769,6 @@ export default function UsersAdminSection({
                         formatDate(u.subscriptionPeriodStart, lang)
                       )}
                     </td>
-
                     <td className="px-3 py-3">
                       {isEditing ? (
                         <input
@@ -844,11 +781,9 @@ export default function UsersAdminSection({
                         formatDate(u.subscriptionPeriodEnd, lang)
                       )}
                     </td>
-
                     <td className="px-3 py-3 text-slate-500 dark:text-slate-300">
                       {formatDate(u.createdAt, lang)}
                     </td>
-
                     <td className="rounded-r-xl px-3 py-3 text-right">
                       <div className="flex justify-end gap-2">
                         {isEditing ? (
@@ -858,14 +793,14 @@ export default function UsersAdminSection({
                               onClick={() => handleUpdateUser(u.id)}
                               className="inline-flex items-center rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-[10px] font-medium text-sky-700 hover:bg-sky-100 dark:border-sky-900/40 dark:bg-sky-950/20 dark:text-sky-200"
                             >
-                              {t.modify}
+                              {t.save}
                             </button>
                             <button
                               type="button"
                               onClick={cancelEdit}
                               className="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-medium text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                             >
-                              Annuler
+                              {t.cancel}
                             </button>
                           </>
                         ) : (
