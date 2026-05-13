@@ -6,6 +6,56 @@ import { prisma } from "@/app/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+function mapStripeStatusToDbStatus(status: string) {
+  switch (status) {
+    case "active":
+      return "ACTIVE";
+    case "trialing":
+      return "ACTIVE";
+    case "past_due":
+      return "PENDING";
+    case "unpaid":
+      return "PENDING";
+    case "incomplete":
+      return "PENDING";
+    case "incomplete_expired":
+      return "CANCELED";
+    case "canceled":
+      return "CANCELED";
+    default:
+      return "PENDING";
+  }
+}
+
+function mapSelectedPlanToInternalPlan(selectedPlan: string | undefined | null) {
+  switch (selectedPlan) {
+    case "ESSENTIAL_MONTHLY":
+      return {
+        plan: "LIMITED" as const,
+        role: "LIMITED" as const,
+        billingCycle: "MONTHLY" as const,
+      };
+    case "PRO_MONTHLY":
+      return {
+        plan: "FULL" as const,
+        role: "FULL" as const,
+        billingCycle: "MONTHLY" as const,
+      };
+    case "PRO_YEARLY":
+      return {
+        plan: "FULL" as const,
+        role: "FULL" as const,
+        billingCycle: "YEARLY" as const,
+      };
+    default:
+      return {
+        plan: "FULL" as const,
+        role: "FULL" as const,
+        billingCycle: "MONTHLY" as const,
+      };
+  }
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("stripe-signature");
@@ -13,7 +63,7 @@ export async function POST(req: Request) {
   if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json(
       { error: "Webhook Stripe non configuré." },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -24,12 +74,12 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET
+      process.env.STRIPE_WEBHOOK_SECRET,
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: `Signature invalide: ${err.message}` },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -49,44 +99,66 @@ export async function POST(req: Request) {
         const stripeCustomerId =
           typeof session.customer === "string" ? session.customer : null;
 
+        const selectedPlan = session.metadata?.selectedPlan || null;
+        const mappedPlan = mapSelectedPlanToInternalPlan(selectedPlan);
+
         if (stripeSubscriptionId) {
           const stripeSub = await stripe.subscriptions.retrieve(
-            stripeSubscriptionId
+            stripeSubscriptionId,
           );
-
-          const recurringInterval =
-            stripeSub.items.data[0]?.price?.recurring?.interval;
-
-          const billingCycle =
-            recurringInterval === "year" ? "YEARLY" : "MONTHLY";
 
           const currentPeriodStartUnix = (stripeSub as any)
             .current_period_start as number | undefined;
           const currentPeriodEndUnix = (stripeSub as any)
             .current_period_end as number | undefined;
 
-          await prisma.subscription.create({
-            data: {
-              userId,
-              plan: "FULL",
-              billingCycle,
-              status: "ACTIVE",
-              currentPeriodStart: currentPeriodStartUnix
-                ? new Date(currentPeriodStartUnix * 1000)
-                : null,
-              currentPeriodEnd: currentPeriodEndUnix
-                ? new Date(currentPeriodEndUnix * 1000)
-                : null,
-              cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
-              stripeCustomerId,
+          const existing = await prisma.subscription.findFirst({
+            where: {
               stripeSubscriptionId,
             },
           });
 
+          if (!existing) {
+            await prisma.subscription.create({
+              data: {
+                userId,
+                plan: mappedPlan.plan,
+                billingCycle: mappedPlan.billingCycle,
+                status: mapStripeStatusToDbStatus(stripeSub.status),
+                currentPeriodStart: currentPeriodStartUnix
+                  ? new Date(currentPeriodStartUnix * 1000)
+                  : null,
+                currentPeriodEnd: currentPeriodEndUnix
+                  ? new Date(currentPeriodEndUnix * 1000)
+                  : null,
+                cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
+                stripeCustomerId,
+                stripeSubscriptionId,
+              },
+            });
+          } else {
+            await prisma.subscription.update({
+              where: { id: existing.id },
+              data: {
+                plan: mappedPlan.plan,
+                billingCycle: mappedPlan.billingCycle,
+                status: mapStripeStatusToDbStatus(stripeSub.status),
+                currentPeriodStart: currentPeriodStartUnix
+                  ? new Date(currentPeriodStartUnix * 1000)
+                  : existing.currentPeriodStart,
+                currentPeriodEnd: currentPeriodEndUnix
+                  ? new Date(currentPeriodEndUnix * 1000)
+                  : existing.currentPeriodEnd,
+                cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
+                stripeCustomerId,
+              },
+            });
+          }
+
           await prisma.user.update({
             where: { id: userId },
             data: {
-              role: "FULL",
+              role: mappedPlan.role,
               isActive: true,
             },
           });
@@ -97,6 +169,13 @@ export async function POST(req: Request) {
 
       case "customer.subscription.updated": {
         const sub = event.data.object as Stripe.Subscription;
+
+        const selectedPlan =
+          sub.metadata?.selectedPlan ||
+          sub.items.data[0]?.price?.nickname ||
+          null;
+
+        const mappedPlan = mapSelectedPlanToInternalPlan(selectedPlan);
 
         const currentPeriodStartUnix = (sub as any).current_period_start as
           | number
@@ -110,7 +189,9 @@ export async function POST(req: Request) {
             stripeSubscriptionId: sub.id,
           },
           data: {
-            status: sub.status === "active" ? "ACTIVE" : "PENDING",
+            plan: mappedPlan.plan,
+            billingCycle: mappedPlan.billingCycle,
+            status: mapStripeStatusToDbStatus(sub.status),
             cancelAtPeriodEnd: sub.cancel_at_period_end,
             currentPeriodStart: currentPeriodStartUnix
               ? new Date(currentPeriodStartUnix * 1000)
@@ -120,6 +201,22 @@ export async function POST(req: Request) {
               : null,
           },
         });
+
+        const existing = await prisma.subscription.findFirst({
+          where: { stripeSubscriptionId: sub.id },
+        });
+
+        if (existing) {
+          await prisma.user.update({
+            where: { id: existing.userId },
+            data: {
+              role:
+                mapStripeStatusToDbStatus(sub.status) === "ACTIVE"
+                  ? mappedPlan.role
+                  : "LIMITED",
+            },
+          });
+        }
 
         break;
       }
@@ -142,6 +239,7 @@ export async function POST(req: Request) {
             where: { id: existing.id },
             data: {
               status: "CANCELED",
+              cancelAtPeriodEnd: false,
               currentPeriodEnd: currentPeriodEndUnix
                 ? new Date(currentPeriodEndUnix * 1000)
                 : existing.currentPeriodEnd,
@@ -165,9 +263,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error: any) {
+    console.error("Stripe webhook error", error);
+
     return NextResponse.json(
       { error: error?.message || "Erreur webhook Stripe." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -17,7 +17,9 @@ export async function POST() {
     const subscription = await prisma.subscription.findFirst({
       where: {
         userId: user.id,
-        status: "ACTIVE",
+        status: {
+          in: ["ACTIVE", "PENDING"],
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -27,7 +29,7 @@ export async function POST() {
     if (!subscription?.stripeSubscriptionId) {
       return NextResponse.json(
         { error: "Aucun abonnement actif Stripe trouvé." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -35,7 +37,7 @@ export async function POST() {
       subscription.stripeSubscriptionId,
       {
         cancel_at_period_end: true,
-      }
+      },
     );
 
     const currentPeriodEndUnix = (updated as any).current_period_end as
@@ -59,7 +61,7 @@ export async function POST() {
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || "Erreur lors de la résiliation." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

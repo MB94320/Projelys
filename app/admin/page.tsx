@@ -17,6 +17,14 @@ type UserRow = {
   role: UserRole;
   isActive: boolean;
   createdAt: string;
+  subscriptionPeriodStart: string | null;
+  subscriptionPeriodEnd: string | null;
+};
+
+type AdminPageProps = {
+  searchParams?: Promise<{
+    lang?: string;
+  }>;
 };
 
 function normalizeRole(role: unknown): UserRole {
@@ -26,11 +34,64 @@ function normalizeRole(role: unknown): UserRole {
   return "FULL";
 }
 
-export default async function AdminPage() {
+const copy = {
+  fr: {
+    pageTitle: "Administration",
+    pageSubtitle:
+      "Gestion de votre compte administrateur, des utilisateurs et des abonnements.",
+    securityAccount:
+      "Accéder aux réglages de sécurité de votre propre compte.",
+    securityAccountButton: "Sécurité du compte (utilisateur)",
+    adminProfile: "Profil administrateur",
+    adminProfileDesc:
+      "Informations de base associées à votre compte administrateur.",
+    displayName: "Nom affiché",
+    notProvided: "Non renseigné",
+    email: "Email",
+    role: "Rôle",
+    adminSecurity: "Sécurité (administrateur)",
+    adminSecurityDesc:
+      "Modifier le mot de passe de votre compte administrateur.",
+    usersSubscriptions: "Utilisateurs & abonnements",
+    usersSubscriptionsDesc:
+      "Gérer les comptes utilisateurs, les accès et votre abonnement.",
+    subscription: "Abonnement",
+    manageUsers: "Gérer les utilisateurs (voir la liste)",
+  },
+  en: {
+    pageTitle: "Administration",
+    pageSubtitle:
+      "Manage your administrator account, users and subscriptions.",
+    securityAccount:
+      "Access the security settings of your own account.",
+    securityAccountButton: "Account security (user)",
+    adminProfile: "Administrator profile",
+    adminProfileDesc:
+      "Basic information associated with your administrator account.",
+    displayName: "Display name",
+    notProvided: "Not provided",
+    email: "Email",
+    role: "Role",
+    adminSecurity: "Security (administrator)",
+    adminSecurityDesc:
+      "Change the password of your administrator account.",
+    usersSubscriptions: "Users & subscriptions",
+    usersSubscriptionsDesc:
+      "Manage user accounts, access rights and your subscription.",
+    subscription: "Subscription",
+    manageUsers: "Manage users (view list)",
+  },
+};
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
+  const params = searchParams ? await searchParams : undefined;
+  const lang = params?.lang === "en" ? "en" : "fr";
+  const t = copy[lang];
+
   const user = await requireAdmin();
 
   if (!user) {
-    redirect("/login?next=/admin");
+    redirect(`/login?next=/admin&lang=${lang}`);
   }
 
   const dbUsers = await prisma.user.findMany({
@@ -42,6 +103,14 @@ export default async function AdminPage() {
       role: true,
       isActive: true,
       createdAt: true,
+      subscriptions: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: {
+          currentPeriodStart: true,
+          currentPeriodEnd: true,
+        },
+      },
     },
   });
 
@@ -52,60 +121,63 @@ export default async function AdminPage() {
     role: normalizeRole(u.role),
     isActive: u.isActive,
     createdAt: u.createdAt.toISOString(),
+    subscriptionPeriodStart: u.subscriptions[0]?.currentPeriodStart
+      ? u.subscriptions[0].currentPeriodStart.toISOString()
+      : null,
+    subscriptionPeriodEnd: u.subscriptions[0]?.currentPeriodEnd
+      ? u.subscriptions[0].currentPeriodEnd.toISOString()
+      : null,
   }));
 
   return (
     <AppShell
       activeSection="dashboard"
-      pageTitle="Administration"
-      pageSubtitle="Gestion de votre compte administrateur, des utilisateurs et des abonnements."
+      pageTitle={t.pageTitle}
+      pageSubtitle={t.pageSubtitle}
     >
       <div className="max-w-6xl space-y-6">
-        {/* Bandeau d'action rapide */}
         <div className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm dark:bg-slate-800 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm text-slate-600 dark:text-slate-200">
-              Accéder aux réglages de sécurité de votre propre compte.
+              {t.securityAccount}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/settings/security"
+              href={`/settings/security?lang=${lang}`}
               className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800"
             >
-              Sécurité du compte (utilisateur)
+              {t.securityAccountButton}
             </Link>
           </div>
         </div>
 
-        {/* Profil admin + Sécurité admin côte à côte */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {/* Profil admin */}
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-              Profil administrateur
+              {t.adminProfile}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-              Informations de base associées à votre compte administrateur.
+              {t.adminProfileDesc}
             </p>
 
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
                 <dt className="text-slate-500 dark:text-slate-200">
-                  Nom affiché
+                  {t.displayName}
                 </dt>
                 <dd className="font-medium text-slate-900 dark:text-white">
-                  {user.name || "Non renseigné"}
+                  {user.name || t.notProvided}
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
-                <dt className="text-slate-500 dark:text-slate-200">Email</dt>
+                <dt className="text-slate-500 dark:text-slate-200">{t.email}</dt>
                 <dd className="font-medium text-slate-900 dark:text-white">
                   {user.email}
                 </dd>
               </div>
               <div className="flex items-center justify-between gap-4 rounded-xl bg-[var(--surface-muted)] px-3 py-2 dark:bg-slate-700">
-                <dt className="text-slate-500 dark:text-slate-200">Rôle</dt>
+                <dt className="text-slate-500 dark:text-slate-200">{t.role}</dt>
                 <dd className="font-medium text-emerald-600 dark:text-emerald-300">
                   {user.role}
                 </dd>
@@ -113,13 +185,12 @@ export default async function AdminPage() {
             </dl>
           </section>
 
-          {/* Sécurité admin */}
           <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-              Sécurité (administrateur)
+              {t.adminSecurity}
             </h2>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-              Modifier le mot de passe de votre compte administrateur.
+              {t.adminSecurityDesc}
             </p>
             <div className="mt-4">
               <SecurityForm />
@@ -127,31 +198,29 @@ export default async function AdminPage() {
           </section>
         </div>
 
-        {/* Utilisateurs + abonnement dans un bloc séparé */}
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-base font-semibold text-slate-900 dark:text-white">
-                Utilisateurs & abonnements
+                {t.usersSubscriptions}
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-200">
-                Gérer les comptes utilisateurs, les accès et votre abonnement.
+                {t.usersSubscriptionsDesc}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
               <Link
-                href="/admin/subscription"
+                href={`/subscription?lang=${lang}`}
                 className="inline-flex items-center justify-center rounded-xl border border-sky-500/40 bg-sky-600 px-4 py-2 text-sm font-medium text-white hover:bg-sky-500 dark:border-sky-400/40 dark:bg-sky-500 dark:hover:bg-sky-400"
               >
-                Abonnement
+                {t.subscription}
               </Link>
-              {/* Bouton pour faire défiler vers la liste des utilisateurs */}
               <a
                 href="#users-admin-section"
                 className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50 dark:hover:bg-slate-800"
               >
-                Gérer les utilisateurs (voir la liste)
+                {t.manageUsers}
               </a>
             </div>
           </div>

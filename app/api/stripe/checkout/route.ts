@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getStripe } from "@/app/lib/stripe";
+import { getStripe, getStripePlanConfig } from "@/app/lib/stripe";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
 
@@ -15,12 +15,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const priceId = String(body?.priceId || "");
     const plan = String(body?.plan || "");
+    const lang = body?.lang === "en" ? "en" : "fr";
 
-    if (!priceId) {
-      return NextResponse.json({ error: "priceId requis." }, { status: 400 });
+    if (!plan) {
+      return NextResponse.json({ error: "Plan requis." }, { status: 400 });
     }
+
+    const planConfig = getStripePlanConfig(plan);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -31,7 +33,7 @@ export async function POST(req: NextRequest) {
     if (!dbUser) {
       return NextResponse.json(
         { error: "Utilisateur introuvable." },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -54,21 +56,28 @@ export async function POST(req: NextRequest) {
       stripeCustomerId = customer.id;
     }
 
+    const successUrl = `${appUrl}/subscription?success=1&lang=${lang}`;
+    const cancelUrl = `${appUrl}/subscription?cancel=1&lang=${lang}`;
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       customer: stripeCustomerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/subscription?success=1`,
-      cancel_url: `${appUrl}/subscription?cancel=1`,
+      line_items: [{ price: planConfig.priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       allow_promotion_codes: true,
       metadata: {
         userId: String(dbUser.id),
-        selectedPlan: plan,
+        selectedPlan: planConfig.label,
+        internalPlan: planConfig.internalPlan,
+        billingCycle: planConfig.billingCycle,
       },
       subscription_data: {
         metadata: {
           userId: String(dbUser.id),
-          selectedPlan: plan,
+          selectedPlan: planConfig.label,
+          internalPlan: planConfig.internalPlan,
+          billingCycle: planConfig.billingCycle,
         },
       },
     });
@@ -82,7 +91,7 @@ export async function POST(req: NextRequest) {
         error:
           error?.message || "Erreur lors de la création du checkout Stripe.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

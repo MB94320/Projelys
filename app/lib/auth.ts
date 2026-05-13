@@ -21,10 +21,6 @@ type SessionPayload = {
 const COOKIE_NAME = "projelys_session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7;
 
-// =========================
-// Secret
-// =========================
-
 function getSecret() {
   const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
   if (!secret) {
@@ -32,10 +28,6 @@ function getSecret() {
   }
   return secret;
 }
-
-// =========================
-// Base64 URL helpers
-// =========================
 
 function base64UrlEncode(input: string) {
   return Buffer.from(input, "utf8")
@@ -51,10 +43,6 @@ function base64UrlDecode(input: string) {
   const padded = pad ? normalized + "=".repeat(4 - pad) : normalized;
   return Buffer.from(padded, "base64").toString("utf8");
 }
-
-// =========================
-// Session signing
-// =========================
 
 function sign(value: string) {
   return crypto.createHmac("sha256", getSecret()).update(value).digest("hex");
@@ -94,10 +82,6 @@ export function verifySignedSession(
     return null;
   }
 }
-
-// =========================
-// Cookie session helpers
-// =========================
 
 export async function getSessionUser() {
   const cookieStore = await cookies();
@@ -150,11 +134,6 @@ export async function requireAdmin() {
 }
 
 export const sessionCookieName = COOKIE_NAME;
-
-// =========================
-// Password hashing
-// Compatible avec tes routes admin / auth
-// =========================
 
 export function createPasswordHash(password: string) {
   if (!password || password.length < 8) {

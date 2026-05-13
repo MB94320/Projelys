@@ -31,7 +31,6 @@ model Project {
   risks   Risk[]
   audits  Audit[]
 
-  // --- Qualité ---
   deliverables      Deliverable[]
   nonConformities   NonConformity[]
   customerIssues    CustomerIssue[]
@@ -42,7 +41,6 @@ model Project {
   highRiskCount    Int? @default(0)
   opportunityCount Int? @default(0)
 
-  // --- KPIs livrables / NC / audits stockés sur le projet ---
   deliverablesCount   Int   @default(0)
   deliveredCount      Int   @default(0)
   deliverablesOtdRate Float @default(0)
@@ -57,7 +55,6 @@ model Project {
   previousAuditRate Float @default(0)
   currentAuditRate  Float @default(0)
 
-  // --- Performance opérationnelle / page Performance ---
   customerSatisfaction Float @default(0)
   csListening          Float @default(0)
   csPlanning           Float @default(0)
@@ -503,8 +500,8 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  sessions      Session[]
-  subscriptions Subscription[]
+  sessions            Session[]
+  subscriptions       Subscription[]
   passwordResetTokens PasswordResetToken[]
 }
 
@@ -552,7 +549,9 @@ enum UserRole {
 
 enum SubscriptionPlan {
   LIMITED
+  ESSENTIAL
   FULL
+  ENTERPRISE
 }
 
 enum BillingCycle {
@@ -564,14 +563,16 @@ enum BillingCycle {
 enum SubscriptionStatus {
   PENDING
   ACTIVE
+  TRIALING
   CANCELED
   EXPIRED
 }
+
 model PasswordResetToken {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
 
