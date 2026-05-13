@@ -9,6 +9,13 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 type UserRole = "ADMIN" | "FULL" | "LIMITED";
+type SubscriptionPlanView =
+  | "LIMITED"
+  | "ESSENTIAL"
+  | "FULL_MONTHLY"
+  | "FULL_YEARLY"
+  | "ENTERPRISE"
+  | "NONE";
 
 type UserRow = {
   id: number;
@@ -17,8 +24,13 @@ type UserRow = {
   role: UserRole;
   isActive: boolean;
   createdAt: string;
+  subscriptionPlan: SubscriptionPlanView;
+  subscriptionStatus: string | null;
+  billingCycle: string | null;
   subscriptionPeriodStart: string | null;
   subscriptionPeriodEnd: string | null;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
 };
 
 type AdminPageProps = {
@@ -32,6 +44,18 @@ function normalizeRole(role: unknown): UserRole {
   if (r === "ADMIN") return "ADMIN";
   if (r === "LIMITED") return "LIMITED";
   return "FULL";
+}
+
+function normalizePlan(plan: unknown, billingCycle: unknown): SubscriptionPlanView {
+  const p = String(plan || "");
+  const cycle = String(billingCycle || "");
+
+  if (p === "ESSENTIAL") return "ESSENTIAL";
+  if (p === "ENTERPRISE") return "ENTERPRISE";
+  if (p === "FULL" && cycle === "YEARLY") return "FULL_YEARLY";
+  if (p === "FULL") return "FULL_MONTHLY";
+  if (p === "LIMITED") return "LIMITED";
+  return "NONE";
 }
 
 const pageCopy = {
@@ -52,9 +76,9 @@ const pageCopy = {
     securityAdminText: "Modifier le mot de passe de votre compte administrateur.",
     usersAndSubs: "Utilisateurs & abonnements",
     usersAndSubsText:
-      "Gérer les comptes utilisateurs, les accès et votre abonnement.",
+      "Gérer les comptes utilisateurs, les accès et les informations d’abonnement.",
     subscription: "Abonnement",
-    manageUsers: "Gérer les utilisateurs (voir la liste)",
+    manageUsers: "Gérer les utilisateurs",
   },
   en: {
     pageTitle: "Administration",
@@ -71,9 +95,10 @@ const pageCopy = {
     securityAdmin: "Security (administrator)",
     securityAdminText: "Change your administrator account password.",
     usersAndSubs: "Users & subscriptions",
-    usersAndSubsText: "Manage user accounts, access and your subscription.",
+    usersAndSubsText:
+      "Manage user accounts, access and subscription information.",
     subscription: "Subscription",
-    manageUsers: "Manage users (view list)",
+    manageUsers: "Manage users",
   },
 };
 
@@ -101,27 +126,41 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         orderBy: { createdAt: "desc" },
         take: 1,
         select: {
+          plan: true,
+          status: true,
+          billingCycle: true,
           currentPeriodStart: true,
           currentPeriodEnd: true,
+          stripeCustomerId: true,
+          stripeSubscriptionId: true,
         },
       },
     },
   });
 
-  const users: UserRow[] = dbUsers.map((u): UserRow => ({
-    id: u.id,
-    email: u.email,
-    name: u.name,
-    role: normalizeRole(u.role),
-    isActive: u.isActive,
-    createdAt: u.createdAt.toISOString(),
-    subscriptionPeriodStart: u.subscriptions[0]?.currentPeriodStart
-      ? u.subscriptions[0].currentPeriodStart.toISOString()
-      : null,
-    subscriptionPeriodEnd: u.subscriptions[0]?.currentPeriodEnd
-      ? u.subscriptions[0].currentPeriodEnd.toISOString()
-      : null,
-  }));
+  const users: UserRow[] = dbUsers.map((u): UserRow => {
+    const sub = u.subscriptions[0];
+
+    return {
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      role: normalizeRole(u.role),
+      isActive: u.isActive,
+      createdAt: u.createdAt.toISOString(),
+      subscriptionPlan: normalizePlan(sub?.plan, sub?.billingCycle),
+      subscriptionStatus: sub?.status ? String(sub.status) : null,
+      billingCycle: sub?.billingCycle ? String(sub.billingCycle) : null,
+      subscriptionPeriodStart: sub?.currentPeriodStart
+        ? sub.currentPeriodStart.toISOString()
+        : null,
+      subscriptionPeriodEnd: sub?.currentPeriodEnd
+        ? sub.currentPeriodEnd.toISOString()
+        : null,
+      stripeCustomerId: sub?.stripeCustomerId ?? null,
+      stripeSubscriptionId: sub?.stripeSubscriptionId ?? null,
+    };
+  });
 
   return (
     <AppShell
@@ -130,7 +169,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
       pageTitle={t.pageTitle}
       pageSubtitle={t.pageSubtitle}
     >
-      <div className="max-w-6xl space-y-6">
+      <div className="max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-sm dark:bg-slate-800 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm text-slate-600 dark:text-slate-200">
@@ -224,7 +263,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             id="users-admin-section"
             className="mt-4 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900"
           >
-            <UsersAdminSection initialUsers={users} />
+            <UsersAdminSection initialUsers={users} lang={lang} />
           </div>
         </section>
       </div>

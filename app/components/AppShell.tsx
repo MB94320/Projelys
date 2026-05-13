@@ -472,6 +472,7 @@ export default function AppShell({
   };
 
   const changeLang = (nextLang: Lang) => {
+    if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
     url.searchParams.set("lang", nextLang);
     router.replace(`${url.pathname}${url.search}${url.hash}`);
