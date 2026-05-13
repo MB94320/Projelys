@@ -9,13 +9,7 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 type UserRole = "ADMIN" | "FULL" | "LIMITED";
-type SubscriptionPlanView =
-  | "LIMITED"
-  | "ESSENTIAL"
-  | "FULL_MONTHLY"
-  | "FULL_YEARLY"
-  | "ENTERPRISE"
-  | "NONE";
+type SubscriptionPlanView = "LIMITED" | "ESSENTIAL" | "FULL_MONTHLY" | "FULL_YEARLY" | "ENTERPRISE" | "NONE";
 
 type UserRow = {
   id: number;
@@ -26,11 +20,8 @@ type UserRow = {
   createdAt: string;
   subscriptionPlan: SubscriptionPlanView;
   subscriptionStatus: string | null;
-  billingCycle: string | null;
   subscriptionPeriodStart: string | null;
   subscriptionPeriodEnd: string | null;
-  stripeCustomerId: string | null;
-  stripeSubscriptionId: string | null;
 };
 
 type AdminPageProps = {
@@ -46,13 +37,13 @@ function normalizeRole(role: unknown): UserRole {
   return "FULL";
 }
 
-function normalizePlan(plan: unknown, billingCycle: unknown): SubscriptionPlanView {
+function normalizeSubscriptionPlan(plan: unknown, billingCycle: unknown): SubscriptionPlanView {
   const p = String(plan || "");
-  const cycle = String(billingCycle || "");
+  const c = String(billingCycle || "");
 
   if (p === "ESSENTIAL") return "ESSENTIAL";
   if (p === "ENTERPRISE") return "ENTERPRISE";
-  if (p === "FULL" && cycle === "YEARLY") return "FULL_YEARLY";
+  if (p === "FULL" && c === "YEARLY") return "FULL_YEARLY";
   if (p === "FULL") return "FULL_MONTHLY";
   if (p === "LIMITED") return "LIMITED";
   return "NONE";
@@ -76,9 +67,9 @@ const pageCopy = {
     securityAdminText: "Modifier le mot de passe de votre compte administrateur.",
     usersAndSubs: "Utilisateurs & abonnements",
     usersAndSubsText:
-      "Gérer les comptes utilisateurs, les accès et les informations d’abonnement.",
+      "Gérer les comptes utilisateurs, les accès et votre abonnement.",
     subscription: "Abonnement",
-    manageUsers: "Gérer les utilisateurs",
+    manageUsers: "Gérer les utilisateurs (voir la liste)",
   },
   en: {
     pageTitle: "Administration",
@@ -95,10 +86,9 @@ const pageCopy = {
     securityAdmin: "Security (administrator)",
     securityAdminText: "Change your administrator account password.",
     usersAndSubs: "Users & subscriptions",
-    usersAndSubsText:
-      "Manage user accounts, access and subscription information.",
+    usersAndSubsText: "Manage user accounts, access and your subscription.",
     subscription: "Subscription",
-    manageUsers: "Manage users",
+    manageUsers: "Manage users (view list)",
   },
 };
 
@@ -127,40 +117,36 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
         take: 1,
         select: {
           plan: true,
-          status: true,
           billingCycle: true,
+          status: true,
           currentPeriodStart: true,
           currentPeriodEnd: true,
-          stripeCustomerId: true,
-          stripeSubscriptionId: true,
         },
       },
     },
   });
 
-  const users: UserRow[] = dbUsers.map((u): UserRow => {
-    const sub = u.subscriptions[0];
-
-    return {
-      id: u.id,
-      email: u.email,
-      name: u.name,
-      role: normalizeRole(u.role),
-      isActive: u.isActive,
-      createdAt: u.createdAt.toISOString(),
-      subscriptionPlan: normalizePlan(sub?.plan, sub?.billingCycle),
-      subscriptionStatus: sub?.status ? String(sub.status) : null,
-      billingCycle: sub?.billingCycle ? String(sub.billingCycle) : null,
-      subscriptionPeriodStart: sub?.currentPeriodStart
-        ? sub.currentPeriodStart.toISOString()
-        : null,
-      subscriptionPeriodEnd: sub?.currentPeriodEnd
-        ? sub.currentPeriodEnd.toISOString()
-        : null,
-      stripeCustomerId: sub?.stripeCustomerId ?? null,
-      stripeSubscriptionId: sub?.stripeSubscriptionId ?? null,
-    };
-  });
+  const users: UserRow[] = dbUsers.map((u): UserRow => ({
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    role: normalizeRole(u.role),
+    isActive: u.isActive,
+    createdAt: u.createdAt.toISOString(),
+    subscriptionPlan: normalizeSubscriptionPlan(
+      u.subscriptions[0]?.plan,
+      u.subscriptions[0]?.billingCycle
+    ),
+    subscriptionStatus: u.subscriptions[0]?.status
+      ? String(u.subscriptions[0]?.status)
+      : null,
+    subscriptionPeriodStart: u.subscriptions[0]?.currentPeriodStart
+      ? u.subscriptions[0].currentPeriodStart.toISOString()
+      : null,
+    subscriptionPeriodEnd: u.subscriptions[0]?.currentPeriodEnd
+      ? u.subscriptions[0].currentPeriodEnd.toISOString()
+      : null,
+  }));
 
   return (
     <AppShell
