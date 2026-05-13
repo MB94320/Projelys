@@ -31,22 +31,25 @@ function mapSelectedPlanToInternalPlan(selectedPlan: string | undefined | null) 
   switch (selectedPlan) {
     case "ESSENTIAL_MONTHLY":
       return {
-        plan: "LIMITED" as const,
+        plan: "ESSENTIAL" as const,
         role: "LIMITED" as const,
         billingCycle: "MONTHLY" as const,
       };
-    case "PRO_MONTHLY":
+
+    case "FULL_MONTHLY":
       return {
         plan: "FULL" as const,
         role: "FULL" as const,
         billingCycle: "MONTHLY" as const,
       };
-    case "PRO_YEARLY":
+
+    case "FULL_YEARLY":
       return {
         plan: "FULL" as const,
         role: "FULL" as const,
         billingCycle: "YEARLY" as const,
       };
+
     default:
       return {
         plan: "FULL" as const,
@@ -63,7 +66,7 @@ export async function POST(req: Request) {
   if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json(
       { error: "Webhook Stripe non configuré." },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -74,12 +77,12 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET,
+      process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: `Signature invalide: ${err.message}` },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -104,7 +107,7 @@ export async function POST(req: Request) {
 
         if (stripeSubscriptionId) {
           const stripeSub = await stripe.subscriptions.retrieve(
-            stripeSubscriptionId,
+            stripeSubscriptionId
           );
 
           const currentPeriodStartUnix = (stripeSub as any)
@@ -171,9 +174,7 @@ export async function POST(req: Request) {
         const sub = event.data.object as Stripe.Subscription;
 
         const selectedPlan =
-          sub.metadata?.selectedPlan ||
-          sub.items.data[0]?.price?.nickname ||
-          null;
+          sub.metadata?.selectedPlan || sub.items.data[0]?.price?.nickname || null;
 
         const mappedPlan = mapSelectedPlanToInternalPlan(selectedPlan);
 
@@ -267,7 +268,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { error: error?.message || "Erreur webhook Stripe." },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
