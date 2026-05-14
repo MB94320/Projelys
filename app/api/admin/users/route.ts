@@ -10,7 +10,10 @@ type SubscriptionPlanView =
   | "ENTERPRISE"
   | "NONE";
 
-function normalizeSubscriptionPlan(plan: unknown, billingCycle: unknown): SubscriptionPlanView {
+function normalizeSubscriptionPlan(
+  plan: unknown,
+  billingCycle: unknown
+): SubscriptionPlanView {
   const p = String(plan || "");
   const c = String(billingCycle || "");
 
@@ -25,15 +28,40 @@ function normalizeSubscriptionPlan(plan: unknown, billingCycle: unknown): Subscr
 function mapViewPlanToDb(plan: SubscriptionPlanView) {
   switch (plan) {
     case "ESSENTIAL":
-      return { plan: "ESSENTIAL", billingCycle: "MONTHLY", role: "LIMITED" };
+      return {
+        plan: "ESSENTIAL",
+        billingCycle: "MONTHLY",
+        role: "LIMITED",
+        status: "ACTIVE",
+      };
     case "FULL_MONTHLY":
-      return { plan: "FULL", billingCycle: "MONTHLY", role: "FULL" };
+      return {
+        plan: "FULL",
+        billingCycle: "MONTHLY",
+        role: "FULL",
+        status: "ACTIVE",
+      };
     case "FULL_YEARLY":
-      return { plan: "FULL", billingCycle: "YEARLY", role: "FULL" };
+      return {
+        plan: "FULL",
+        billingCycle: "YEARLY",
+        role: "FULL",
+        status: "ACTIVE",
+      };
     case "ENTERPRISE":
-      return { plan: "ENTERPRISE", billingCycle: "YEARLY", role: "FULL" };
+      return {
+        plan: "ENTERPRISE",
+        billingCycle: "YEARLY",
+        role: "FULL",
+        status: "ACTIVE",
+      };
     case "LIMITED":
-      return { plan: "LIMITED", billingCycle: "TRIAL", role: "LIMITED" };
+      return {
+        plan: "LIMITED",
+        billingCycle: "TRIAL",
+        role: "LIMITED",
+        status: "ACTIVE",
+      };
     default:
       return null;
   }
@@ -43,7 +71,10 @@ export async function GET() {
   try {
     const admin = await requireAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Non autorisé." },
+        { status: 401 }
+      );
     }
 
     const users = await prisma.user.findMany({
@@ -105,17 +136,25 @@ export async function PATCH(req: Request) {
   try {
     const admin = await requireAdmin();
     if (!admin) {
-      return NextResponse.json({ error: "Non autorisé." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Non autorisé." },
+        { status: 401 }
+      );
     }
 
     const body = await req.json();
+
     const userId = Number(body?.userId);
     const role = String(body?.role ?? "FULL").toUpperCase();
-    const isActive = Boolean(body?.isActive);
-    const subscriptionPlan = String(body?.subscriptionPlan ?? "NONE") as SubscriptionPlanView;
+    const isActive = body?.isActive !== false;
+    const subscriptionPlan = String(
+      body?.subscriptionPlan ?? "NONE"
+    ) as SubscriptionPlanView;
+
     const subscriptionPeriodStart = body?.subscriptionPeriodStart
       ? new Date(body.subscriptionPeriodStart)
       : null;
+
     const subscriptionPeriodEnd = body?.subscriptionPeriodEnd
       ? new Date(body.subscriptionPeriodEnd)
       : null;
@@ -128,16 +167,23 @@ export async function PATCH(req: Request) {
     }
 
     if (!["ADMIN", "FULL", "LIMITED"].includes(role)) {
-      return NextResponse.json({ error: "Rôle invalide." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Rôle invalide." },
+        { status: 400 }
+      );
     }
 
-    const updatedUser = await prisma.user.update({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId },
-      data: {
-        role: role as any,
-        isActive,
-      },
+      select: { id: true },
     });
+
+    if (!existingUser) {
+      return NextResponse.json(
+        { error: "Utilisateur introuvable." },
+        { status: 404 }
+      );
+    }
 
     const latestSubscription = await prisma.subscription.findFirst({
       where: { userId },
@@ -146,6 +192,22 @@ export async function PATCH(req: Request) {
 
     const mapped = mapViewPlanToDb(subscriptionPlan);
 
+    let finalRole = role;
+    if (mapped && role !== "ADMIN") {
+      finalRole = mapped.role;
+    }
+    if (subscriptionPlan === "NONE" && role !== "ADMIN") {
+      finalRole = isActive ? "LIMITED" : role;
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: finalRole as any,
+        isActive,
+      },
+    });
+
     if (mapped) {
       if (latestSubscription) {
         await prisma.subscription.update({
@@ -153,9 +215,10 @@ export async function PATCH(req: Request) {
           data: {
             plan: mapped.plan as any,
             billingCycle: mapped.billingCycle as any,
+            status: (isActive ? mapped.status : "CANCELED") as any,
             currentPeriodStart: subscriptionPeriodStart,
             currentPeriodEnd: subscriptionPeriodEnd,
-            status: isActive ? ("ACTIVE" as any) : ("CANCELED" as any),
+            cancelAtPeriodEnd: false,
           },
         });
       } else {
@@ -164,21 +227,22 @@ export async function PATCH(req: Request) {
             userId,
             plan: mapped.plan as any,
             billingCycle: mapped.billingCycle as any,
-            status: isActive ? ("ACTIVE" as any) : ("PENDING" as any),
+            status: (isActive ? mapped.status : "PENDING") as any,
             currentPeriodStart: subscriptionPeriodStart,
             currentPeriodEnd: subscriptionPeriodEnd,
             cancelAtPeriodEnd: false,
           },
         });
       }
-    }
-
-    if (subscriptionPlan === "NONE" && latestSubscription) {
+    } else if (subscriptionPlan === "NONE" && latestSubscription) {
       await prisma.subscription.update({
         where: { id: latestSubscription.id },
         data: {
           status: "CANCELED" as any,
-          currentPeriodEnd: subscriptionPeriodEnd ?? latestSubscription.currentPeriodEnd,
+          currentPeriodStart: subscriptionPeriodStart,
+          currentPeriodEnd:
+            subscriptionPeriodEnd ?? latestSubscription.currentPeriodEnd,
+          cancelAtPeriodEnd: false,
         },
       });
     }

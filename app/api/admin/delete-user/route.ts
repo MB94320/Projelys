@@ -21,7 +21,10 @@ export async function POST(req: Request) {
 
     if (userId === admin.id) {
       return NextResponse.json(
-        { error: "Vous ne pouvez pas supprimer votre propre compte administrateur connecté." },
+        {
+          error:
+            "Vous ne pouvez pas supprimer votre propre compte administrateur connecté.",
+        },
         { status: 400 }
       );
     }

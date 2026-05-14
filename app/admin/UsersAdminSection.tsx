@@ -86,6 +86,9 @@ const copy = {
     scheduledCancel: "Résiliation / arrêt",
     pendingContracts: "En attente",
     expiredContracts: "Expirés",
+    distributionOffers: "Répartition des offres",
+    distributionStatuses: "Répartition des statuts",
+    distributionRoles: "Répartition des rôles",
     offerLabels: {
       LIMITED: "Limited",
       ESSENTIAL: "Essential",
@@ -158,6 +161,9 @@ const copy = {
     scheduledCancel: "Stopped / canceled",
     pendingContracts: "Pending",
     expiredContracts: "Expired",
+    distributionOffers: "Offer distribution",
+    distributionStatuses: "Status distribution",
+    distributionRoles: "Role distribution",
     offerLabels: {
       LIMITED: "Limited",
       ESSENTIAL: "Essential",
@@ -194,6 +200,95 @@ function toInputDate(value: string | null) {
 function fromInputDate(value: string) {
   if (!value) return null;
   return new Date(`${value}T00:00:00.000Z`).toISOString();
+}
+
+function percent(value: number, total: number) {
+  if (!total) return 0;
+  return Math.round((value / total) * 100);
+}
+
+function Donut({
+  value,
+  total,
+  colorClass,
+  label,
+}: {
+  value: number;
+  total: number;
+  colorClass: string;
+  label: string;
+}) {
+  const p = percent(value, total);
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-[var(--surface)] p-3 dark:bg-slate-800">
+      <div className="relative h-14 w-14 shrink-0">
+        <div className="absolute inset-0 rounded-full border-[8px] border-slate-200 dark:border-slate-700" />
+        <div
+          className={`absolute inset-0 rounded-full ${colorClass}`}
+          style={{
+            clipPath: `polygon(50% 50%, 50% 0%, ${
+              p <= 25
+                ? `${50 + p * 2}% 0%`
+                : p <= 50
+                ? "100% 0%, 100% 50%"
+                : p <= 75
+                ? "100% 0%, 100% 100%, 50% 100%"
+                : "100% 0%, 100% 100%, 0% 100%, 0% 0%"
+            })`,
+            opacity: 0.95,
+          }}
+        />
+        <div className="absolute inset-[10px] flex items-center justify-center rounded-full bg-white text-[10px] font-semibold text-slate-700 dark:bg-slate-900 dark:text-white">
+          {p}%
+        </div>
+      </div>
+      <div>
+        <div className="text-[11px] font-medium text-slate-900 dark:text-white">
+          {label}
+        </div>
+        <div className="text-[10px] text-slate-500 dark:text-slate-400">
+          {value} / {total}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BarGroup({
+  title,
+  items,
+}: {
+  title: string;
+  items: { label: string; value: number; color: string }[];
+}) {
+  const max = Math.max(...items.map((i) => i.value), 1);
+
+  return (
+    <div className="rounded-xl bg-[var(--surface)] p-4 dark:bg-slate-800">
+      <div className="mb-3 text-[11px] font-semibold text-slate-900 dark:text-white">
+        {title}
+      </div>
+      <div className="space-y-3">
+        {items.map((item) => (
+          <div key={item.label}>
+            <div className="mb-1 flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-300">
+              <span>{item.label}</span>
+              <span>{item.value}</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700">
+              <div
+                className="h-2 rounded-full"
+                style={{
+                  width: `${Math.max((item.value / max) * 100, item.value > 0 ? 8 : 0)}%`,
+                  background: item.color,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function UsersAdminSection({
@@ -650,6 +745,50 @@ export default function UsersAdminSection({
             <div className="mt-2 text-lg font-semibold text-violet-600 dark:text-violet-300">
               {analytics.adminUsers}
             </div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 xl:grid-cols-3">
+          <BarGroup
+            title={t.distributionOffers}
+            items={[
+              { label: t.essentialContracts, value: analytics.essentialContracts, color: "#f59e0b" },
+              { label: t.monthlyContracts, value: analytics.monthlyContracts, color: "#0ea5e9" },
+              { label: t.yearlyContracts, value: analytics.yearlyContracts, color: "#10b981" },
+              { label: t.enterpriseContracts, value: analytics.enterpriseContracts, color: "#8b5cf6" },
+              { label: t.noSubscription, value: analytics.noSubscription, color: "#94a3b8" },
+            ]}
+          />
+
+          <BarGroup
+            title={t.distributionStatuses}
+            items={[
+              { label: t.activeContracts, value: analytics.activeContracts, color: "#22c55e" },
+              { label: t.scheduledCancel, value: analytics.scheduledCancel, color: "#f97316" },
+              { label: t.pendingContracts, value: analytics.pendingContracts, color: "#eab308" },
+              { label: t.expiredContracts, value: analytics.expiredContracts, color: "#64748b" },
+            ]}
+          />
+
+          <div className="space-y-3">
+            <Donut
+              value={analytics.subscribedUsers}
+              total={analytics.totalUsers}
+              colorClass="bg-sky-500"
+              label={t.subscribedUsers}
+            />
+            <Donut
+              value={analytics.fullContracts}
+              total={Math.max(analytics.subscribedUsers, 1)}
+              colorClass="bg-emerald-500"
+              label={t.fullContracts}
+            />
+            <Donut
+              value={analytics.adminUsers}
+              total={Math.max(analytics.totalUsers, 1)}
+              colorClass="bg-violet-500"
+              label={t.adminUsers}
+            />
           </div>
         </div>
       </div>

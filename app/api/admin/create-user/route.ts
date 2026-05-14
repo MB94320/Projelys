@@ -13,15 +13,40 @@ type SubscriptionPlanView =
 function mapViewPlanToDb(plan: SubscriptionPlanView) {
   switch (plan) {
     case "ESSENTIAL":
-      return { plan: "ESSENTIAL", billingCycle: "MONTHLY", role: "LIMITED", status: "ACTIVE" };
+      return {
+        plan: "ESSENTIAL",
+        billingCycle: "MONTHLY",
+        role: "LIMITED",
+        status: "ACTIVE",
+      };
     case "FULL_MONTHLY":
-      return { plan: "FULL", billingCycle: "MONTHLY", role: "FULL", status: "ACTIVE" };
+      return {
+        plan: "FULL",
+        billingCycle: "MONTHLY",
+        role: "FULL",
+        status: "ACTIVE",
+      };
     case "FULL_YEARLY":
-      return { plan: "FULL", billingCycle: "YEARLY", role: "FULL", status: "ACTIVE" };
+      return {
+        plan: "FULL",
+        billingCycle: "YEARLY",
+        role: "FULL",
+        status: "ACTIVE",
+      };
     case "ENTERPRISE":
-      return { plan: "ENTERPRISE", billingCycle: "YEARLY", role: "FULL", status: "ACTIVE" };
+      return {
+        plan: "ENTERPRISE",
+        billingCycle: "YEARLY",
+        role: "FULL",
+        status: "ACTIVE",
+      };
     case "LIMITED":
-      return { plan: "LIMITED", billingCycle: "TRIAL", role: "LIMITED", status: "ACTIVE" };
+      return {
+        plan: "LIMITED",
+        billingCycle: "TRIAL",
+        role: "LIMITED",
+        status: "ACTIVE",
+      };
     default:
       return null;
   }
@@ -44,10 +69,14 @@ export async function POST(req: Request) {
     const role = String(body?.role ?? "FULL").toUpperCase();
     const isActive = body?.isActive !== false;
 
-    const subscriptionPlan = String(body?.subscriptionPlan ?? "NONE") as SubscriptionPlanView;
+    const subscriptionPlan = String(
+      body?.subscriptionPlan ?? "NONE"
+    ) as SubscriptionPlanView;
+
     const subscriptionPeriodStart = body?.subscriptionPeriodStart
       ? new Date(body.subscriptionPeriodStart)
       : null;
+
     const subscriptionPeriodEnd = body?.subscriptionPeriodEnd
       ? new Date(body.subscriptionPeriodEnd)
       : null;
@@ -87,7 +116,10 @@ export async function POST(req: Request) {
     const passwordHash = await createPasswordHash(password);
     const mapped = mapViewPlanToDb(subscriptionPlan);
 
-    const effectiveRole = mapped ? mapped.role : role;
+    let effectiveRole = role;
+    if (mapped && role !== "ADMIN") {
+      effectiveRole = mapped.role;
+    }
 
     const user = await prisma.user.create({
       data: {
@@ -119,7 +151,7 @@ export async function POST(req: Request) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: String(user.role),
         isActive: user.isActive,
       },
     });
