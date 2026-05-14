@@ -47,13 +47,13 @@ const copy = {
     cancelSuccess: "Abonnement programmé pour résiliation à échéance.",
 
     actionsTitle: "Actions abonnement",
-    chooseIntro: "Choisissez une formule ci-dessous pour accéder à Projelys.",
+    chooseIntro: "Consultez les formules disponibles et gérez votre accès Projelys.",
     unsubscribe: "Se désabonner",
     processing: "Traitement...",
     cancelledInfo:
       "Votre abonnement est résilié à échéance. L’accès reste actif jusqu’à la fin de la période en cours.",
 
-    choosePlan: "Choisir une formule",
+    choosePlan: "Formules disponibles",
     standardOffer: "Offre standard",
     premiumOffer: "Offre premium",
     yearlyOffer: "Pro annuel",
@@ -82,6 +82,9 @@ const copy = {
     requestQuote: "Demander un devis",
     redirecting: "Redirection...",
     onQuote: "Sur devis",
+    currentPlanBadge: "Votre offre actuelle",
+    alreadySubscribed: "Abonnement déjà actif",
+    changeByContact: "Pour changer d’offre, contactez l’administration ou passez par le processus prévu.",
 
     essentialFeatures: [
       "Portefeuille & projets limités à 5 projets.",
@@ -133,13 +136,13 @@ const copy = {
     cancelSuccess: "Subscription scheduled for cancellation at period end.",
 
     actionsTitle: "Subscription actions",
-    chooseIntro: "Choose a plan below to access Projelys.",
+    chooseIntro: "Review available plans and manage your Projelys access.",
     unsubscribe: "Unsubscribe",
     processing: "Processing...",
     cancelledInfo:
       "Your subscription is scheduled for cancellation. Access remains active until the end of the current billing period.",
 
-    choosePlan: "Choose a plan",
+    choosePlan: "Available plans",
     standardOffer: "Standard offer",
     premiumOffer: "Premium offer",
     yearlyOffer: "Yearly Pro",
@@ -168,6 +171,9 @@ const copy = {
     requestQuote: "Request a quote",
     redirecting: "Redirecting...",
     onQuote: "Custom quote",
+    currentPlanBadge: "Your current plan",
+    alreadySubscribed: "Subscription already active",
+    changeByContact: "To change plan, contact administration or use the planned process.",
 
     essentialFeatures: [
       "Portfolio & projects limited to 5 projects.",
@@ -303,6 +309,8 @@ export default function SubscriptionPlans({
       : t.active
     : t.noPlan;
 
+  const disablePlanButtons = hasActiveSubscription && !cancelAtPeriodEnd;
+
   return (
     <div className="space-y-6">
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800 xl:p-6">
@@ -364,23 +372,31 @@ export default function SubscriptionPlans({
         </h2>
 
         <div className="mt-4 space-y-3">
-          {!hasActiveSubscription && (
-            <p className="text-sm text-slate-600 dark:text-slate-200">
-              {t.chooseIntro}
-            </p>
-          )}
+          <p className="text-sm text-slate-600 dark:text-slate-200">
+            {t.chooseIntro}
+          </p>
 
           {hasActiveSubscription && !cancelAtPeriodEnd && (
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={loadingPlan !== null}
-                className="inline-flex items-center justify-center rounded-xl border border-rose-500/30 bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60 dark:border-rose-400/30 dark:bg-rose-500 dark:hover:bg-rose-400"
-              >
-                {loadingPlan ? t.processing : t.unsubscribe}
-              </button>
-            </div>
+            <>
+              <div className="rounded-xl border border-sky-500/20 bg-sky-500/10 px-4 py-3 text-sm text-sky-700 dark:text-sky-200">
+                {t.alreadySubscribed}
+              </div>
+
+              <div className="text-sm text-slate-500 dark:text-slate-300">
+                {t.changeByContact}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={loadingPlan !== null}
+                  className="inline-flex items-center justify-center rounded-xl border border-rose-500/30 bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-500 disabled:opacity-60 dark:border-rose-400/30 dark:bg-rose-500 dark:hover:bg-rose-400"
+                >
+                  {loadingPlan ? t.processing : t.unsubscribe}
+                </button>
+              </div>
+            </>
           )}
 
           {hasActiveSubscription && cancelAtPeriodEnd && (
@@ -391,190 +407,224 @@ export default function SubscriptionPlans({
         </div>
       </section>
 
-      {!hasActiveSubscription && (
-        <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800 xl:p-6 2xl:p-7">
-          <div className="mb-5 flex flex-col gap-2">
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white md:text-lg">
-              {t.choosePlan}
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-200">
-              {t.chooseIntro}
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-sm dark:bg-slate-800 xl:p-6 2xl:p-7">
+        <div className="mb-5 flex flex-col gap-2">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white md:text-lg">
+            {t.choosePlan}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-200">
+            {t.chooseIntro}
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-1 xl:grid-cols-2 3xl:grid-cols-4">
+          <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-amber-300 bg-amber-50/80 p-6 ring-1 ring-amber-300/40 dark:border-amber-900/60 dark:bg-amber-950/20 dark:ring-amber-800/40">
+            <div className="mb-3 inline-flex w-fit rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-200">
+              {t.standardOffer}
+            </div>
+
+            {currentPlanName === t.essentialMonthly && (
+              <div className="mb-3 inline-flex w-fit rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-slate-900">
+                {t.currentPlanBadge}
+              </div>
+            )}
+
+            <div className="border-b border-amber-300/60 pb-4 dark:border-amber-800/50">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {t.essentialMonthly}
+                  </div>
+                </div>
+                <div className="shrink-0 text-left xl:text-right">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                    19,90 €
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-200">
+                    {t.monthlySuffix}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
+              {t.essentialDesc}
             </p>
+
+            <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
+              {t.essentialFeatures.map((item) => (
+                <li key={item}>- {item}</li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => handleCheckout("ESSENTIAL_MONTHLY")}
+              disabled={loadingPlan !== null || disablePlanButtons}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-amber-400/70 bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-400/70 dark:bg-amber-500 dark:hover:bg-amber-400"
+            >
+              {loadingPlan === "ESSENTIAL_MONTHLY"
+                ? t.redirecting
+                : disablePlanButtons
+                ? t.alreadySubscribed
+                : t.chooseEssential}
+            </button>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-1 xl:grid-cols-2 3xl:grid-cols-4">
-            <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-amber-300 bg-amber-50/80 p-6 ring-1 ring-amber-300/40 dark:border-amber-900/60 dark:bg-amber-950/20 dark:ring-amber-800/40">
-              <div className="mb-3 inline-flex w-fit rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-200">
-                {t.standardOffer}
-              </div>
+          <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-sky-300 bg-sky-50/80 p-6 ring-1 ring-sky-300/40 dark:border-sky-900/60 dark:bg-sky-950/20 dark:ring-sky-800/40">
+            <div className="mb-3 inline-flex w-fit rounded-full bg-sky-500/15 px-3 py-1 text-xs font-medium text-sky-800 dark:text-sky-200">
+              {t.premiumOffer}
+            </div>
 
-              <div className="border-b border-amber-300/60 pb-4 dark:border-amber-800/50">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {t.essentialMonthly}
-                    </div>
+            {currentPlanName === t.proMonthly && (
+              <div className="mb-3 inline-flex w-fit rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-slate-900">
+                {t.currentPlanBadge}
+              </div>
+            )}
+
+            <div className="border-b border-sky-300/60 pb-4 dark:border-sky-800/50">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {t.proMonthly}
                   </div>
-                  <div className="shrink-0 text-left xl:text-right">
-                    <div className="text-lg font-semibold text-slate-900 dark:text-white">
-                      19,90 €
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-200">
-                      {t.monthlySuffix}
-                    </div>
+                </div>
+                <div className="shrink-0 text-left xl:text-right">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                    49,90 €
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-200">
+                    {t.monthlySuffix}
                   </div>
                 </div>
               </div>
-
-              <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
-                {t.essentialDesc}
-              </p>
-
-              <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
-                {t.essentialFeatures.map((item) => (
-                  <li key={item}>- {item}</li>
-                ))}
-              </ul>
-
-              <button
-                type="button"
-                onClick={() => handleCheckout("ESSENTIAL_MONTHLY")}
-                disabled={loadingPlan !== null}
-                className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-amber-400/70 bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-400 disabled:opacity-60 dark:border-amber-400/70 dark:bg-amber-500 dark:hover:bg-amber-400"
-              >
-                {loadingPlan === "ESSENTIAL_MONTHLY" ? t.redirecting : t.chooseEssential}
-              </button>
             </div>
 
-            <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-sky-300 bg-sky-50/80 p-6 ring-1 ring-sky-300/40 dark:border-sky-900/60 dark:bg-sky-950/20 dark:ring-sky-800/40">
-              <div className="mb-3 inline-flex w-fit rounded-full bg-sky-500/15 px-3 py-1 text-xs font-medium text-sky-800 dark:text-sky-200">
-                {t.premiumOffer}
-              </div>
+            <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
+              {t.proMonthlyDesc}
+            </p>
 
-              <div className="border-b border-sky-300/60 pb-4 dark:border-sky-800/50">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {t.proMonthly}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-left xl:text-right">
-                    <div className="text-lg font-semibold text-slate-900 dark:text-white">
-                      49,90 €
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-200">
-                      {t.monthlySuffix}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
+              {t.proMonthlyFeatures.map((item) => (
+                <li key={item}>- {item}</li>
+              ))}
+            </ul>
 
-              <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
-                {t.proMonthlyDesc}
-              </p>
-
-              <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
-                {t.proMonthlyFeatures.map((item) => (
-                  <li key={item}>- {item}</li>
-                ))}
-              </ul>
-
-              <button
-                type="button"
-                onClick={() => handleCheckout("FULL_MONTHLY")}
-                disabled={loadingPlan !== null}
-                className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-sky-400/70 bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-500 disabled:opacity-60 dark:border-sky-400/70 dark:bg-sky-500 dark:hover:bg-sky-400"
-              >
-                {loadingPlan === "FULL_MONTHLY" ? t.redirecting : t.chooseProMonthly}
-              </button>
-            </div>
-
-            <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-emerald-300 bg-emerald-50/80 p-6 ring-1 ring-emerald-300/40 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:ring-emerald-800/40">
-              <div className="mb-3 inline-flex w-fit rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-200">
-                {t.yearlyOffer}
-              </div>
-
-              <div className="border-b border-emerald-300/60 pb-4 dark:border-emerald-800/50">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {t.proYearly}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-left xl:text-right">
-                    <div className="text-lg font-semibold text-slate-900 dark:text-white">
-                      490 €
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-200">
-                      {t.yearlySuffix}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
-                {t.proYearlyDesc}
-              </p>
-
-              <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
-                {t.proYearlyFeatures.map((item) => (
-                  <li key={item}>- {item}</li>
-                ))}
-              </ul>
-
-              <button
-                type="button"
-                onClick={() => handleCheckout("FULL_YEARLY")}
-                disabled={loadingPlan !== null}
-                className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-emerald-400/70 bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60 dark:border-emerald-400/70 dark:bg-emerald-500 dark:hover:bg-emerald-400"
-              >
-                {loadingPlan === "FULL_YEARLY" ? t.redirecting : t.chooseProYearly}
-              </button>
-            </div>
-
-            <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-violet-300 bg-violet-50/80 p-6 ring-1 ring-violet-300/40 dark:border-violet-900/60 dark:bg-violet-950/20 dark:ring-violet-800/40">
-              <div className="mb-3 inline-flex w-fit rounded-full bg-violet-500/15 px-3 py-1 text-xs font-medium text-violet-800 dark:text-violet-200">
-                {t.enterpriseOffer}
-              </div>
-
-              <div className="border-b border-violet-300/60 pb-4 dark:border-violet-800/50">
-                <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {t.enterprise}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-left xl:text-right">
-                    <div className="text-lg font-semibold text-slate-900 dark:text-white">
-                      {t.onQuote}
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-200">
-                      {t.enterpriseSuffix}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
-                {t.enterpriseDesc}
-              </p>
-
-              <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
-                {t.enterpriseFeatures.map((item) => (
-                  <li key={item}>- {item}</li>
-                ))}
-              </ul>
-
-              <Link
-                href={contactHref}
-                className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-violet-400/70 bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-500 dark:border-violet-400/70 dark:bg-violet-600 dark:hover:bg-violet-500"
-              >
-                {t.requestQuote}
-              </Link>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleCheckout("FULL_MONTHLY")}
+              disabled={loadingPlan !== null || disablePlanButtons}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-sky-400/70 bg-sky-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-400/70 dark:bg-sky-500 dark:hover:bg-sky-400"
+            >
+              {loadingPlan === "FULL_MONTHLY"
+                ? t.redirecting
+                : disablePlanButtons
+                ? t.alreadySubscribed
+                : t.chooseProMonthly}
+            </button>
           </div>
-        </section>
-      )}
+
+          <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-emerald-300 bg-emerald-50/80 p-6 ring-1 ring-emerald-300/40 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:ring-emerald-800/40">
+            <div className="mb-3 inline-flex w-fit rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-800 dark:text-emerald-200">
+              {t.yearlyOffer}
+            </div>
+
+            {currentPlanName === t.proYearly && (
+              <div className="mb-3 inline-flex w-fit rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-slate-900">
+                {t.currentPlanBadge}
+              </div>
+            )}
+
+            <div className="border-b border-emerald-300/60 pb-4 dark:border-emerald-800/50">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {t.proYearly}
+                  </div>
+                </div>
+                <div className="shrink-0 text-left xl:text-right">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                    490 €
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-200">
+                    {t.yearlySuffix}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
+              {t.proYearlyDesc}
+            </p>
+
+            <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
+              {t.proYearlyFeatures.map((item) => (
+                <li key={item}>- {item}</li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              onClick={() => handleCheckout("FULL_YEARLY")}
+              disabled={loadingPlan !== null || disablePlanButtons}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-emerald-400/70 bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-emerald-400/70 dark:bg-emerald-500 dark:hover:bg-emerald-400"
+            >
+              {loadingPlan === "FULL_YEARLY"
+                ? t.redirecting
+                : disablePlanButtons
+                ? t.alreadySubscribed
+                : t.chooseProYearly}
+            </button>
+          </div>
+
+          <div className="flex h-full min-h-[460px] flex-col rounded-2xl border border-violet-300 bg-violet-50/80 p-6 ring-1 ring-violet-300/40 dark:border-violet-900/60 dark:bg-violet-950/20 dark:ring-violet-800/40">
+            <div className="mb-3 inline-flex w-fit rounded-full bg-violet-500/15 px-3 py-1 text-xs font-medium text-violet-800 dark:text-violet-200">
+              {t.enterpriseOffer}
+            </div>
+
+            {currentPlanName === t.enterprise && (
+              <div className="mb-3 inline-flex w-fit rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-white dark:text-slate-900">
+                {t.currentPlanBadge}
+              </div>
+            )}
+
+            <div className="border-b border-violet-300/60 pb-4 dark:border-violet-800/50">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                    {t.enterprise}
+                  </div>
+                </div>
+                <div className="shrink-0 text-left xl:text-right">
+                  <div className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {t.onQuote}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-slate-200">
+                    {t.enterpriseSuffix}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-200">
+              {t.enterpriseDesc}
+            </p>
+
+            <ul className="mt-4 flex-1 space-y-2 text-sm leading-6 text-slate-700 dark:text-slate-100">
+              {t.enterpriseFeatures.map((item) => (
+                <li key={item}>- {item}</li>
+              ))}
+            </ul>
+
+            <Link
+              href={contactHref}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-violet-400/70 bg-violet-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-violet-500 dark:border-violet-400/70 dark:bg-violet-600 dark:hover:bg-violet-500"
+            >
+              {t.requestQuote}
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
