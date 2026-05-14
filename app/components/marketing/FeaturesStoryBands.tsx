@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 import { Lang } from "./marketing-content";
 
 function Marker({
@@ -37,18 +40,44 @@ function Marker({
   );
 }
 
+function StoryImage({
+  src,
+  alt,
+}: {
+  src: string;
+  alt: string;
+}) {
+  const [error, setError] = useState(false);
+
+  if (error) {
+    return (
+      <div className="flex min-h-[260px] w-full items-center justify-center bg-slate-100 text-sm text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+        {alt}
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={1600}
+      height={950}
+      className="h-auto w-full object-cover"
+      onError={() => setError(true)}
+    />
+  );
+}
+
 export default function FeaturesStoryBands({ lang }: { lang: Lang }) {
   return (
     <section className="mx-auto max-w-7xl px-6 py-6 pb-16">
       <div className="grid gap-10">
         <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
           <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <Image
+            <StoryImage
               src="/Screen/Projet-Unique.jpg"
               alt={lang === "fr" ? "Pilotage projet" : "Project delivery"}
-              width={1600}
-              height={950}
-              className="h-auto w-full object-cover"
             />
           </div>
 
@@ -107,24 +136,18 @@ export default function FeaturesStoryBands({ lang }: { lang: Lang }) {
           </div>
 
           <div className="order-1 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:order-2">
-            <Image
+            <StoryImage
               src="/Screen/Projet-Unique-Gantt.jpg"
               alt={lang === "fr" ? "Vue Gantt" : "Gantt view"}
-              width={1600}
-              height={950}
-              className="h-auto w-full object-cover"
             />
           </div>
         </div>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_0.95fr] lg:items-center">
           <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <Image
+            <StoryImage
               src="/Screen/Perfiormance-radar.jpg"
               alt={lang === "fr" ? "Vue performance" : "Performance view"}
-              width={1600}
-              height={950}
-              className="h-auto w-full object-cover"
             />
           </div>
 
@@ -183,12 +206,9 @@ export default function FeaturesStoryBands({ lang }: { lang: Lang }) {
           </div>
 
           <div className="order-1 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:order-2">
-            <Image
+            <StoryImage
               src="/Screen/Quality-target.jpg"
               alt={lang === "fr" ? "Objectifs qualité" : "Quality targets"}
-              width={1600}
-              height={950}
-              className="h-auto w-full object-cover"
             />
           </div>
         </div>

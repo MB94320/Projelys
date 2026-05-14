@@ -31,33 +31,37 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/92 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/92">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <Link
           href={`/site?lang=${lang}`}
-          className="flex min-w-0 items-center gap-3"
+          className="flex min-w-0 shrink-0 items-center gap-3"
           onClick={() => {
             setOpen(false);
             setMobileOpen(false);
           }}
         >
-          <Image
-            src="/PROJELYS.png"
-            alt="Projelys"
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-xl object-contain"
-          />
+          <div className="flex h-[40px] w-[40px] items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:shadow-md dark:border-slate-700 dark:bg-slate-800">
+            <Image
+              src="/PROJELYS.png"
+              alt="Projelys"
+              width={40}
+              height={40}
+              className="h-[40px] w-[40px] object-contain"
+              priority
+            />
+          </div>
+
           <div className="hidden min-w-0 sm:block">
-            <div className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 dark:text-white sm:text-sm">
+            <div className="truncate text-[13px] font-bold uppercase tracking-[0.08em] text-slate-950 dark:text-white">
               Projelys
             </div>
-            <div className="truncate text-[10px] text-slate-500 dark:text-slate-400 sm:text-xs">
+            <div className="truncate text-[11px] text-slate-600 dark:text-slate-300">
               Project Portfolio & Performance Control
             </div>
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="ml-4 hidden items-center gap-7 lg:flex">
           <div className="relative">
             <button
               type="button"
@@ -140,7 +144,7 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="ml-auto flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
           <LanguageToggle />
 
           <Link
@@ -151,7 +155,7 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
           </Link>
 
           <Link
-            href="/login"
+            href={`/login?lang=${lang}`}
             className="hidden rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 md:inline-flex"
           >
             {t.nav.login}
@@ -306,7 +310,7 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
             <div className="border-t border-slate-300 bg-slate-200 px-4 py-4 dark:border-slate-800 dark:bg-slate-950">
               <div className="space-y-2">
                 <Link
-                  href="/login"
+                  href={`/login?lang=${lang}`}
                   onClick={() => setMobileOpen(false)}
                   className="block rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-center text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >

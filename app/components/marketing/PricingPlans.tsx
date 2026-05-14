@@ -1,5 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Lang } from "./marketing-content";
+
+type CheckoutPlan = "ESSENTIAL_MONTHLY" | "FULL_MONTHLY" | "FULL_YEARLY";
 
 function PlanCard({
   badge,
@@ -8,10 +13,12 @@ function PlanCard({
   subtitle,
   features,
   ctaLabel,
-  ctaHref,
   highlighted = false,
   softButton = false,
   tone = "slate",
+  onSubscribe,
+  isLoading = false,
+  ctaHref,
 }: {
   badge: string;
   title: string;
@@ -19,10 +26,12 @@ function PlanCard({
   subtitle: string;
   features: string[];
   ctaLabel: string;
-  ctaHref: string;
   highlighted?: boolean;
   softButton?: boolean;
   tone?: "slate" | "sky" | "yellow" | "emerald" | "violet";
+  onSubscribe?: () => void;
+  isLoading?: boolean;
+  ctaHref?: string;
 }) {
   const toneStyles = {
     slate: {
@@ -68,7 +77,7 @@ function PlanCard({
 
   return (
     <div
-      className={`rounded-[30px] border p-6 sm:p-8 shadow-sm transition-colors ${styles.card}`}
+      className={`rounded-[30px] border p-6 shadow-sm transition-colors sm:p-8 ${styles.card}`}
     >
       <div
         className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${styles.badge}`}
@@ -76,12 +85,12 @@ function PlanCard({
         {badge}
       </div>
 
-      <h2 className="mt-5 text-xl sm:text-2xl font-semibold text-slate-950 dark:text-white">
+      <h2 className="mt-5 text-xl font-semibold text-slate-950 dark:text-white sm:text-2xl">
         {title}
       </h2>
 
       <div className="mt-5 flex items-end gap-2">
-        <span className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em] text-slate-950 dark:text-white">
+        <span className="text-3xl font-semibold tracking-[-0.03em] text-slate-950 dark:text-white sm:text-4xl">
           {price}
         </span>
       </div>
@@ -96,19 +105,105 @@ function PlanCard({
         ))}
       </div>
 
-      <Link
-        href={ctaHref}
-        className={`mt-8 inline-flex w-full justify-center rounded-xl px-5 py-3 text-sm font-medium transition sm:w-auto ${styles.button}`}
-      >
-        {ctaLabel}
-      </Link>
+      {onSubscribe ? (
+        <button
+          type="button"
+          onClick={onSubscribe}
+          disabled={isLoading}
+          className={`mt-8 inline-flex w-full justify-center rounded-xl px-5 py-3 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto ${styles.button}`}
+        >
+          {isLoading ? (ctaLabel === "Souscrire" ? "Redirection..." : "Redirecting...") : ctaLabel}
+        </button>
+      ) : (
+        <Link
+          href={ctaHref || "#"}
+          className={`mt-8 inline-flex w-full justify-center rounded-xl px-5 py-3 text-sm font-medium transition sm:w-auto ${styles.button}`}
+        >
+          {ctaLabel}
+        </Link>
+      )}
     </div>
   );
 }
 
 export default function PricingPlans({ lang }: { lang: Lang }) {
+  const [loadingPlan, setLoadingPlan] = useState<CheckoutPlan | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleCheckout(plan: CheckoutPlan) {
+    try {
+      setError(null);
+      setLoadingPlan(plan);
+
+      const envMap = {
+        ESSENTIAL_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_ESSENTIAL_MONTHLY_PRICE_ID,
+        FULL_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_FULL_MONTHLY_PRICE_ID,
+        FULL_YEARLY: process.env.NEXT_PUBLIC_STRIPE_FULL_YEARLY_PRICE_ID,
+      } as const;
+
+      const priceId = envMap[plan];
+
+      if (!priceId) {
+        throw new Error(
+          lang === "fr"
+            ? "Le priceId Stripe public est manquant pour cette offre."
+            : "The public Stripe priceId is missing for this plan."
+        );
+      }
+
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId,
+          plan,
+          lang,
+          source: "marketing-pricing",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            (lang === "fr"
+              ? "Impossible de créer la session Stripe."
+              : "Unable to create Stripe session.")
+        );
+      }
+
+      if (!data?.url) {
+        throw new Error(
+          lang === "fr"
+            ? "Aucune URL Stripe reçue."
+            : "No Stripe URL received."
+        );
+      }
+
+      window.location.href = data.url;
+    } catch (e: any) {
+      setError(
+        e?.message ||
+          (lang === "fr"
+            ? "Erreur pendant la redirection Stripe."
+            : "Error during Stripe redirect.")
+      );
+    } finally {
+      setLoadingPlan(null);
+    }
+  }
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      {error ? (
+        <div className="mb-6 rounded-2xl border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-200">
+          {error}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <PlanCard
           badge={lang === "fr" ? "Offre standard" : "Standard plan"}
@@ -133,7 +228,8 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
                 ]
           }
           ctaLabel={lang === "fr" ? "Souscrire" : "Subscribe"}
-          ctaHref="/subscription"
+          onSubscribe={() => handleCheckout("ESSENTIAL_MONTHLY")}
+          isLoading={loadingPlan === "ESSENTIAL_MONTHLY"}
           softButton
           tone="yellow"
         />
@@ -161,7 +257,8 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
                 ]
           }
           ctaLabel={lang === "fr" ? "Souscrire" : "Subscribe"}
-          ctaHref="/subscription"
+          onSubscribe={() => handleCheckout("FULL_MONTHLY")}
+          isLoading={loadingPlan === "FULL_MONTHLY"}
           highlighted
           tone="sky"
         />
@@ -189,7 +286,8 @@ export default function PricingPlans({ lang }: { lang: Lang }) {
                 ]
           }
           ctaLabel={lang === "fr" ? "Souscrire" : "Subscribe"}
-          ctaHref="/subscription"
+          onSubscribe={() => handleCheckout("FULL_YEARLY")}
+          isLoading={loadingPlan === "FULL_YEARLY"}
           softButton
           tone="emerald"
         />
