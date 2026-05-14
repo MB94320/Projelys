@@ -23,10 +23,23 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!mobileOpen) {
+      setMobileDiscoverOpen(false);
+    }
+  }, [mobileOpen]);
+
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/92 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/92">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
-        <Link href={`/site?lang=${lang}`} className="flex min-w-0 items-center gap-3">
+        <Link
+          href={`/site?lang=${lang}`}
+          className="flex min-w-0 items-center gap-3"
+          onClick={() => {
+            setOpen(false);
+            setMobileOpen(false);
+          }}
+        >
           <Image
             src="/PROJELYS.png"
             alt="Projelys"
@@ -147,10 +160,10 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 lg:hidden"
-            aria-label="Ouvrir le menu"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-slate-100 text-slate-700 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            aria-label={lang === "fr" ? "Ouvrir le menu" : "Open menu"}
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
@@ -158,41 +171,65 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
       </div>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-[70] lg:hidden">
           <div
-            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-slate-950/55 backdrop-blur-[3px]"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 flex w-[86vw] max-w-[340px] flex-col border-r border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-950">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                Menu
-              </span>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                aria-label="Fermer le menu"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 6l12 12M18 6 6 18" />
-                </svg>
-              </button>
-            </div>
 
-            <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 dark:border-slate-800 dark:bg-slate-900">
-              <div className="text-sm font-semibold text-slate-900 dark:text-white">Projelys</div>
-              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Project Portfolio & Performance Control
+          <aside className="absolute inset-y-0 left-0 flex w-[88vw] max-w-[360px] flex-col overflow-hidden border-r border-slate-700 bg-slate-100 shadow-2xl dark:bg-slate-900">
+            <div className="border-b border-slate-300 bg-slate-200/95 px-4 py-4 dark:border-slate-800 dark:bg-slate-950/95">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Image
+                    src="/PROJELYS.png"
+                    alt="Projelys"
+                    width={42}
+                    height={42}
+                    className="h-10 w-10 rounded-xl bg-white object-contain p-1 shadow-sm dark:bg-slate-800"
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate text-xs font-semibold uppercase tracking-[0.18em] text-slate-900 dark:text-white">
+                      Projelys
+                    </div>
+                    <div className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+                      {lang === "fr" ? "Navigation du site" : "Site navigation"}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  aria-label={lang === "fr" ? "Fermer le menu" : "Close menu"}
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M6 6l12 12M18 6 6 18" />
+                  </svg>
+                </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-              <div className="space-y-1">
+            <div className="border-b border-slate-300 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/80">
+              <div className="rounded-2xl border border-slate-300 bg-slate-200 px-3 py-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+                <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                  {lang === "fr" ? "Accès rapide" : "Quick access"}
+                </div>
+                <div className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
+                  {lang === "fr"
+                    ? "Retrouve les pages clés du site, avec un menu lisible et visible sur mobile."
+                    : "Reach the key website pages with a readable mobile sidebar."}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto bg-slate-100 px-3 py-4 dark:bg-slate-900">
+              <nav className="space-y-2">
                 <button
                   type="button"
                   onClick={() => setMobileDiscoverOpen((v) => !v)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900"
+                  className="flex w-full items-center justify-between rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-left text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   <span>{lang === "fr" ? "Découvrir" : "Explore"}</span>
                   <svg
@@ -207,24 +244,25 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
                 </button>
 
                 {mobileDiscoverOpen && (
-                  <div className="ml-2 space-y-1">
+                  <div className="ml-1 space-y-2 border-l-2 border-slate-300 pl-3 dark:border-slate-700">
                     <Link
                       href={`/site/how-it-works?lang=${lang}`}
                       onClick={() => {
                         setMobileDiscoverOpen(false);
                         setMobileOpen(false);
                       }}
-                      className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-cyan-50 dark:text-slate-100 dark:hover:bg-slate-900"
+                      className="block rounded-xl bg-cyan-50 px-3 py-3 text-sm font-medium text-slate-800 hover:bg-cyan-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                     >
                       {lang === "fr" ? "Méthode de pilotage" : "How it works"}
                     </Link>
+
                     <Link
                       href={`/site/about?lang=${lang}`}
                       onClick={() => {
                         setMobileDiscoverOpen(false);
                         setMobileOpen(false);
                       }}
-                      className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-fuchsia-50 dark:text-slate-100 dark:hover:bg-slate-900"
+                      className="block rounded-xl bg-fuchsia-50 px-3 py-3 text-sm font-medium text-slate-800 hover:bg-fuchsia-100 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                     >
                       {lang === "fr" ? "À propos" : "About"}
                     </Link>
@@ -234,7 +272,7 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
                 <Link
                   href={`/site/features?lang=${lang}`}
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900"
+                  className="block rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   {t.nav.features}
                 </Link>
@@ -242,7 +280,7 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
                 <Link
                   href={`/site/pricing?lang=${lang}`}
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900"
+                  className="block rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   {t.nav.pricing}
                 </Link>
@@ -250,7 +288,7 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
                 <Link
                   href={`/site/security?lang=${lang}`}
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900"
+                  className="block rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   {t.nav.security}
                 </Link>
@@ -258,30 +296,33 @@ export default function MarketingHeader({ lang }: { lang: Lang }) {
                 <Link
                   href={`/site/contact?lang=${lang}`}
                   onClick={() => setMobileOpen(false)}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900"
+                  className="block rounded-xl border border-slate-300 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   {t.nav.contact}
                 </Link>
-              </div>
+              </nav>
             </div>
 
-            <div className="mt-4 space-y-2 border-t border-slate-200 pt-4 dark:border-slate-800">
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="block rounded-lg border border-slate-300 px-3 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
-              >
-                {t.nav.login}
-              </Link>
-              <Link
-                href={`/site/contact?lang=${lang}`}
-                onClick={() => setMobileOpen(false)}
-                className="block rounded-lg bg-sky-600 px-3 py-2 text-center text-sm font-medium text-white shadow-sm shadow-sky-600/25 hover:bg-sky-500"
-              >
-                {t.nav.demo}
-              </Link>
+            <div className="border-t border-slate-300 bg-slate-200 px-4 py-4 dark:border-slate-800 dark:bg-slate-950">
+              <div className="space-y-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-center text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  {t.nav.login}
+                </Link>
+
+                <Link
+                  href={`/site/contact?lang=${lang}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-xl bg-sky-600 px-3 py-2.5 text-center text-sm font-medium text-white shadow-sm shadow-sky-600/25 hover:bg-sky-500"
+                >
+                  {t.nav.demo}
+                </Link>
+              </div>
             </div>
-          </div>
+          </aside>
         </div>
       )}
     </header>
